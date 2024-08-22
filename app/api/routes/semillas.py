@@ -25,35 +25,41 @@ def valida_url(url: str = Query(...)):
     #     return {"message": f"La URL {url} es válida."}
     # else:
     #     raise HTTPException(status_code=400, detail="URL no válida.")
+
     try:
         ret_code: int = 0
         ret_txt: str = ""
         datos_str = "" # si llevara información sería en formato json
         
         resultado = valida_url_db(ret_code, ret_txt, url, datos_str)
+        codigo_error = resultado['ret_code']
+        mensaje      = resultado['ret_txt']
+    
+        if codigo_error < 0:
+            raise HTTPException(status_code=500, detail=mensaje)
 
-        print("01", resultado)
 
-        if resultado is None:
-            raise HTTPException(status_code=500, detail="Error connecting to database or executing procedure")
-
-        codigo_error = resultado['codigo_error']
-        mensaje      = resultado['mensaje']
         # datos      = json.loads(resultado['datos'])
         datos        = resultado['datos']
-        print("datos --> ", resultado['datos'])
         
         if codigo_error != 0:
             raise HTTPException(status_code=400, detail=mensaje)
 
-        return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos={})
+        return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos=datos)
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
-        return None, str(e)
+        return ValidaUrlResponse(codigo_error=-1, mensaje=str(e), datos={})
+    
+    except HTTPException as http_ex:
+        print(f"HTTPException: {http_ex.detail}")
+        return ValidaUrlResponse(codigo_error=-1, mensaje=http_ex.detail, datos={})
+
     except Exception as e:
         print(f"Error : {e}")
-        return None, str(e)
+        print("porque sale por aquí?")
+        return ValidaUrlResponse(codigo_error=-1, mensaje=str(e), datos={})
+        
 
 #----------------------------------------------------------------------------------
 '''

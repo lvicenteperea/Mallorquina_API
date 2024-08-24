@@ -49,12 +49,15 @@ logger.info("Inicio de la ejecución")
 # -----------------------------------------------------------------------------------------------
 async def http_exception_handler(request: Request, exc: HTTPException):
     
-    logger.error(f"HTTPException: {exc.detail} (status: {exc.status_code})")
+    # if isinstance(exc.detail, dict):
+    #     pass
+    # else:
+        logger.error(f"HTTPException: {exc.detail} (status: {exc.status_code})")
 
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"codigo_error": exc.status_code, "mensaje": exc.detail, "datos": {}},
-    )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"codigo_error": exc.status_code, "mensaje": exc.detail},
+        )
 
 async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError):
     logger.error(f"JSONDecodeError: {exc.msg} (line: {exc.lineno}, col: {exc.colno})")

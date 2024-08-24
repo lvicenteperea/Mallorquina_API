@@ -19,7 +19,8 @@ def valida_url(url: str = Query(...)):
     is_valid = url.startswith("http")
     
     if not (is_valid):
-        raise HTTPException(status_code=400, detail="URL no válida.")
+        # raise HTTPException(status_code=400, detail="URL no válida.")
+        return ValidaUrlResponse(codigo_error=-1, mensaje="URL no válida.", datos={})
 
     ret_code: int = 0
     ret_txt: str = ""
@@ -28,11 +29,14 @@ def valida_url(url: str = Query(...)):
     resultado = valida_url_db(ret_code, ret_txt, url, datos_str)
     codigo_error = resultado['ret_code']
     mensaje      = resultado['ret_txt']
+    datos        = resultado['datos']
 
     if codigo_error < 0:
-        raise HTTPException(status_code=500, detail=mensaje)
-
-    datos = resultado['datos']
+        raise HTTPException(status_code=500, detail= {"ret_code": codigo_error,
+                                                      "ret_txt": mensaje,
+                                                      "datos": datos
+                                                     }
+                           )
 
     return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos=datos)
 

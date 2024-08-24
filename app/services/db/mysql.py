@@ -17,15 +17,17 @@ def get_db_connection():
         return connection
     
     except Error as e:
-        print(f"Error connecting to MySQL: {e}")
-        return None
+        raise HTTPException(status_code=400, detail= {"ret_code": -1,
+                                                      "ret_txt": str(e),
+                                                     }
+                           )
 
 def valida_url_db(ret_code, ret_txt:str, url:str, datos_str:str):
 
     connection = get_db_connection()
     if not connection:
         return {"ret_code": -1,
-                "ret_txt": "Error connecting to database",
+                "ret_txt": "Error al conectarse a la BBDD",
                 "datos": {}
                }
     
@@ -44,13 +46,10 @@ def valida_url_db(ret_code, ret_txt:str, url:str, datos_str:str):
                }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-        # print(f"Error executing stored procedure: {e}")
-        # return {"ret_code": -1,
-        #         "ret_txt": str(e),
-        #         "datos": {}
-        #        }
-        
+        raise HTTPException(status_code=400, detail={"ret_code": -1,
+                                                     "ret_txt": str(e)
+                                                    }
+                           )
     finally:
         if connection.is_connected():
             cursor.close()

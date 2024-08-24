@@ -1,6 +1,69 @@
-
-2024-08-24 11:06:46,976 - app_logger - ERROR - HTTPException: URL no válida. (status: 400)
-2024-08-24 11:07:47,256 - uvicorn.error - INFO - Shutting down
-2024-08-24 11:07:47,366 - uvicorn.error - INFO - Waiting for application shutdown.
-2024-08-24 11:07:47,366 - uvicorn.error - INFO - Application shutdown complete.
-2024-08-24 11:07:47,367 - uvicorn.error - INFO - Finished server process [2356]
+2024-08-24 11:06:46,976 - app_logger - ERROR - HTTPException: URL no vï¿½lida. (status: 400)
+2024-08-25 00:27:25,378 - app_logger - ERROR - HTTPException: {'ret_code': -1, 'ret_txt': "2003 (HY000): Can't connect to MySQL server on '127.0.0.1:3306' (10061)", 'datos': {}} (status: 400)
+2024-08-25 00:30:35,059 - app_logger - INFO - Inicio de la ejecución
+2024-08-25 00:30:35,598 - uvicorn.error - INFO - Started server process [36128]
+2024-08-25 00:30:35,599 - uvicorn.error - INFO - Waiting for application startup.
+2024-08-25 00:30:35,599 - uvicorn.error - INFO - Application startup complete.
+2024-08-25 00:34:48,622 - app_logger - INFO - Inicio de la ejecución
+2024-08-25 00:34:49,179 - uvicorn.error - INFO - Started server process [8508]
+2024-08-25 00:34:49,179 - uvicorn.error - INFO - Waiting for application startup.
+2024-08-25 00:34:49,180 - uvicorn.error - INFO - Application startup complete.
+2024-08-25 00:34:59,814 - app_logger - ERROR - HTTPException: {'ret_code': -1, 'ret_txt': "2003 (HY000): Can't connect to MySQL server on '127.0.0.1:3306' (10061)"} (status: 400)
+2024-08-25 00:36:38,753 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'codigo_error' where it is not associated with a value
+2024-08-25 00:36:38,753 - uvicorn.error - ERROR - Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 372, in run_asgi
+    result = await app(self.scope, self.receive, self.send)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 75, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\applications.py", line 269, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\applications.py", line 124, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\middleware\errors.py", line 184, in __call__
+    raise exc
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\middleware\errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\exceptions.py", line 93, in __call__
+    raise exc
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\exceptions.py", line 82, in __call__
+    await self.app(scope, receive, sender)
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 21, in __call__
+    raise e
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await route.handle(scope, receive, send)
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 266, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 65, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\routing.py", line 227, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\routing.py", line 162, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\concurrency.py", line 41, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\to_thread.py", line 33, in run_sync
+    return await get_asynclib().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\_backends\_asyncio.py", line 877, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\_backends\_asyncio.py", line 807, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Nube\GitHub\Madre_API\app\api\routes\semillas.py", line 23, in valida_url
+    return ValidaUrlResponse(codigo_error=codigo_error, mensaje="URL no válida.", datos={})
+                                          ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'codigo_error' where it is not associated with a value
+2024-08-25 00:37:23,659 - app_logger - INFO - Inicio de la ejecución
+2024-08-25 00:37:24,232 - uvicorn.error - INFO - Started server process [24652]
+2024-08-25 00:37:24,233 - uvicorn.error - INFO - Waiting for application startup.
+2024-08-25 00:37:24,233 - uvicorn.error - INFO - Application startup complete.

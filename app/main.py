@@ -1,8 +1,13 @@
-from fastapi import FastAPI
+# uvicorn app.main:app --reload
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+
+import json
+
+from app.exceptions import http_exception_handler, json_decode_error_handler, generic_exception_handler
 from app.api.routes import router as api_router
 from app.config.settings import settings
 
-# uvicorn app.main:app --reload
 
 '''
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +16,8 @@ from app.middleware.logging import LoggingMiddleware
 from app.middleware.exception import ExceptionMiddleware
 from app.middleware.auth import AuthMiddleware
 '''
+
+
 
 # -----------------------------------------------------------------------------------------------
 # FASTAPI
@@ -23,6 +30,13 @@ app.include_router(api_router)
 async def read_root():
     return {"message": "Welcome to the API MADRE"}
 
+
+# -----------------------------------------------------------------------------------------------
+# EXCEPTION HANDLERS
+# -----------------------------------------------------------------------------------------------
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(json.JSONDecodeError, json_decode_error_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 '''

@@ -1,0 +1,6 @@
+
+2024-08-24 11:06:46,976 - app_logger - ERROR - HTTPException: URL no válida. (status: 400)
+2024-08-24 11:07:47,256 - uvicorn.error - INFO - Shutting down
+2024-08-24 11:07:47,366 - uvicorn.error - INFO - Waiting for application shutdown.
+2024-08-24 11:07:47,366 - uvicorn.error - INFO - Application shutdown complete.
+2024-08-24 11:07:47,367 - uvicorn.error - INFO - Finished server process [2356]

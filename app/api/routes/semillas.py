@@ -1,9 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from app.api.schemas.precodigo import PrecodigoRequest 
 import json
-
-
-from fastapi import APIRouter, HTTPException
 from app.api.schemas.url import ValidaUrlResponse
 from app.services.db.mysql import valida_url_db
 
@@ -19,46 +16,27 @@ router = APIRouter()
 @router.get("/valida_url")
 #----------------------------------------------------------------------------------
 def valida_url(url: str = Query(...)):
-    # is_valid = url.startswith("http")
+    is_valid = url.startswith("http")
     
-    # if is_valid:
-    #     return {"message": f"La URL {url} es válida."}
-    # else:
-    #     raise HTTPException(status_code=400, detail="URL no válida.")
+    if not (is_valid):
+        raise HTTPException(status_code=400, detail="URL no válida.")
 
-    try:
-        ret_code: int = 0
-        ret_txt: str = ""
-        datos_str = "" # si llevara información sería en formato json
-        
-        resultado = valida_url_db(ret_code, ret_txt, url, datos_str)
-        codigo_error = resultado['ret_code']
-        mensaje      = resultado['ret_txt']
+    ret_code: int = 0
+    ret_txt: str = ""
+    datos_str = "" # si llevara información sería en formato json
     
-        if codigo_error < 0:
-            raise HTTPException(status_code=500, detail=mensaje)
+    resultado = valida_url_db(ret_code, ret_txt, url, datos_str)
+    codigo_error = resultado['ret_code']
+    mensaje      = resultado['ret_txt']
+
+    if codigo_error < 0:
+        raise HTTPException(status_code=500, detail=mensaje)
+
+    datos = resultado['datos']
+
+    return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos=datos)
 
 
-        # datos      = json.loads(resultado['datos'])
-        datos        = resultado['datos']
-        
-        if codigo_error != 0:
-            raise HTTPException(status_code=400, detail=mensaje)
-
-        return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos=datos)
-
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        return ValidaUrlResponse(codigo_error=-1, mensaje=str(e), datos={})
-    
-    except HTTPException as http_ex:
-        print(f"HTTPException: {http_ex.detail}")
-        return ValidaUrlResponse(codigo_error=-1, mensaje=http_ex.detail, datos={})
-
-    except Exception as e:
-        print(f"Error : {e}")
-        print("porque sale por aquí?")
-        return ValidaUrlResponse(codigo_error=-1, mensaje=str(e), datos={})
         
 
 #----------------------------------------------------------------------------------

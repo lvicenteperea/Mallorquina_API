@@ -2,6 +2,9 @@ import mysql.connector
 from mysql.connector import Error
 from app.config.settings import settings
 import json
+from fastapi import HTTPException
+import logging # es necesar porque lo trata HTTPException
+
 
 def get_db_connection():
     try:
@@ -18,6 +21,7 @@ def get_db_connection():
         return None
 
 def valida_url_db(ret_code, ret_txt:str, url:str, datos_str:str):
+
     connection = get_db_connection()
     if not connection:
         return {"ret_code": -1,
@@ -28,9 +32,6 @@ def valida_url_db(ret_code, ret_txt:str, url:str, datos_str:str):
     try:
         cursor = connection.cursor()
         response = cursor.callproc('Valida_url', [ret_code, ret_txt, url, datos_str])
-        # connection.commit()  # Confirma la transacción manualmente
-
-        print("Response BBDD: ", type(response), response, " - ", response[3])
 
         # si esperamos varios resultados
         # for result in cursor.stored_results():
@@ -43,11 +44,12 @@ def valida_url_db(ret_code, ret_txt:str, url:str, datos_str:str):
                }
 
     except Exception as e:
-        print(f"Error executing stored procedure: {e}")
-        return {"ret_code": -1,
-                "ret_txt": str(e),
-                "datos": {}
-               }
+        raise HTTPException(status_code=400, detail=str(e))
+        # print(f"Error executing stored procedure: {e}")
+        # return {"ret_code": -1,
+        #         "ret_txt": str(e),
+        #         "datos": {}
+        #        }
         
     finally:
         if connection.is_connected():

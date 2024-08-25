@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 import json
 import logging
 
+from app.utils.mis_excepciones import MadreException
+
 # -----------------------------------------------------------------------------------------------
 # LOGGING
 
@@ -47,28 +49,67 @@ logger.info("Inicio de la ejecución")
 # -----------------------------------------------------------------------------------------------
 # EXCEPTION HANDLERS
 # -----------------------------------------------------------------------------------------------
-async def http_exception_handler(request: Request, exc: HTTPException):
+async def madre_exception_handler(request: Request, exc: MadreException):
+# -----------------------------------------------------------------------------------------------
+    print("madre_exception_handler")
+    logger.error(f"MadreException: (status: {exc.status_code} {exc.mi_mensaje})")
     
-    # if isinstance(exc.detail, dict):
-    #     pass
-    # else:
-        logger.error(f"HTTPException: {exc.detail} (status: {exc.status_code})")
+    if isinstance(exc.mi_mensaje, dict):
+        mi_mensaje = exc.mi_mensaje
+    else:
+        mi_mensaje = {"ret_code": -1,
+                      "ret_txt": exc.mi_mensaje,
+                     }
 
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={"codigo_error": exc.status_code, "mensaje": exc.detail},
-        )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"codigo_error": exc.status_code, "mensaje": mi_mensaje},
+    )
 
+# -----------------------------------------------------------------------------------------------
+async def http_exception_handler(request: Request, exc: HTTPException):
+# -----------------------------------------------------------------------------------------------
+    print("http_exception_handler")
+    if isinstance(exc.detail, dict):
+        mi_mensaje = exc.detail
+    else:
+        mi_mensaje = {"ret_code": -1,
+                      "ret_txt": exc.detail,
+                     }
+
+    logger.error(f"HTTPException: {exc.detail} (status: {mi_mensaje})")
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"codigo_error": exc.status_code, "mensaje": mi_mensaje},
+    )
+
+# -----------------------------------------------------------------------------------------------
 async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError):
+# -----------------------------------------------------------------------------------------------
+    print("json_decode_error_handler")
     logger.error(f"JSONDecodeError: {exc.msg} (line: {exc.lineno}, col: {exc.colno})")
     return JSONResponse(
         status_code=400,
         content={"codigo_error": -1, "mensaje": "Error decoding JSON", "datos": {}},
     )
 
+# -----------------------------------------------------------------------------------------------
 async def generic_exception_handler(request: Request, exc: Exception):
+# -----------------------------------------------------------------------------------------------
+    print("generic_exception_handler")
     logger.error(f"Unhandled Exception: {str(exc)}")
     return JSONResponse(
         status_code=500,
         content={"codigo_error": -1, "mensaje": str(exc), "datos": {}},
+    )
+
+
+# -----------------------------------------------------------------------------------------------
+async def type_error_handler(request: Request, exc: TypeError):
+# -----------------------------------------------------------------------------------------------
+    print("type_error_handler")
+    return JSONResponse(
+        status_code=400,
+        content={"codigo_error": -1, "mensaje": "Type error in processing JSON data", "datos": {}},
     )

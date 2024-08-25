@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException, Query
 from app.api.schemas.precodigo import PrecodigoRequest 
-import json
+
 from app.api.schemas.url import ValidaUrlResponse
-from app.services.db.mysql import valida_url_db
+from app.services.db.mysql import valida_url_db, obtener_lista_centros
+from app.api.schemas.centro import ListaCentrosResponse
+from app.utils.mis_excepciones import MadreException
+
 
 # Definimos el router
 router = APIRouter()
@@ -22,11 +25,10 @@ def valida_url(url: str = Query(...)):
         # raise HTTPException(status_code=400, detail="URL no válida.")
         return ValidaUrlResponse(codigo_error=-1, mensaje="URL no válida.", datos={})
 
-    ret_code: int = 0
-    ret_txt: str = ""
     datos_str = "" # si llevara información sería en formato json
     
-    resultado = valida_url_db(ret_code, ret_txt, url, datos_str)
+    # resultado = valida_url_db(ret_code, ret_txt, url, datos_str)
+    resultado = valida_url_db(url=url, datos_str=datos_str)
     codigo_error = resultado['ret_code']
     mensaje      = resultado['ret_txt']
     datos        = resultado['datos']
@@ -39,9 +41,7 @@ def valida_url(url: str = Query(...)):
                            )
 
     return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos=datos)
-
-
-        
+    
 
 #----------------------------------------------------------------------------------
 '''
@@ -65,6 +65,27 @@ def valida_precodigo(request: PrecodigoRequest):
 
     return {"message": f"Código {request.codigo} es válido para el usuario {request.usuario_id}."}
 
+
+#----------------------------------------------------------------------------------
+@router.get("/lista_centros", response_model=ListaCentrosResponse)
+#----------------------------------------------------------------------------------
+async def lista_centros():
+    try:
+        resultado = obtener_lista_centros()
+        print("Vamos a ver que tiene resultado", resultado)
+        if resultado['ret_code'] != 0:
+            raise MadreException({"ret_code": resultado['ret_code'],"ret_txt": resultado['ret_txt']}, 400)
+
+        return ListaCentrosResponse(codigo_error=resultado['ret_code'], mensaje=resultado['ret_txt'], lista=resultado['datos'])
+    
+
+    # except MadreException as e:
+    #     print(e)
+    #     raise MadreException(status_code=400, detail=e)
+
+    except Exception as e:
+        print("Erro: ", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 #----------------------------------------------------------------------------------
 @router.get("/seleccionar_centro")

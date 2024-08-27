@@ -2,18 +2,24 @@ from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 import json
 import logging
+import logging.config
 
 from app.utils.mis_excepciones import MadreException
 
 # -----------------------------------------------------------------------------------------------
 # LOGGING
 
-# # esto sería con fichero de inicialización
-# try:
-#     logging.config.fileConfig('app/logging.ini')
-# except Exception as e:
-#     print(f"Error configuring logging: {e}")
-# 
+# # esto sería con basicConfig
+# logging.basicConfig(
+#     level=logging.DEBUG,  # Configura el nivel de logging
+#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Formato del log
+#     handlers=[
+#         logging.FileHandler("app/logs/app.log"),  # Guarda los logs en un archivo
+#         logging.StreamHandler()  # También muestra los logs en la consola
+#     ]
+# )
+ 
+
 # Configuración manual
 # logger.setLevel(logging.DEBUG)
 
@@ -31,18 +37,14 @@ from app.utils.mis_excepciones import MadreException
 # logger.addHandler(console_handler)
 # -----------------------------------------------------------------------------------------------
 
+# esto sería con fichero de inicialización
+try:
+    logging.config.fileConfig('app/logging.ini')
+except Exception as e:
+    print(f"Error configuring logging: {e}")
+
 logger = logging.getLogger('app_logger')
- 
-# esto sería con basicConfig
-logging.basicConfig(
-    level=logging.DEBUG,  # Configura el nivel de logging
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Formato del log
-    handlers=[
-        logging.FileHandler("app/logs/app.log"),  # Guarda los logs en un archivo
-        logging.StreamHandler()  # También muestra los logs en la consola
-    ]
-)
- 
+
 logger.info("Inicio de la ejecución")
 
 
@@ -70,6 +72,7 @@ async def madre_exception_handler(request: Request, exc: MadreException):
 async def http_exception_handler(request: Request, exc: HTTPException):
 # -----------------------------------------------------------------------------------------------
     print("http_exception_handler")
+    
     if isinstance(exc.detail, dict):
         mi_mensaje = exc.detail
     else:

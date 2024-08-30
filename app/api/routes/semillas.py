@@ -3,7 +3,7 @@ from datetime import datetime
 
 # mias
 from app.api.schemas.url import ValidaUrlResponse
-from app.services.db.mysql import db_valida_url, db_obtener_contenidos, obtener_lista_centros
+from app.services.db.mysql import db_valida_url, db_obtener_contenidos
 from app.api.schemas.contenido import ListaContenidosResponse
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
@@ -17,25 +17,60 @@ from app.api.schemas.centro import ListaCentrosResponse
 router = APIRouter()
 
 #----------------------------------------------------------------------------------
-'''
-    Ejemplos de llamada:
-        Thunder Client: http://localhost:8000/valida_url?url=https://ejemplo.com
-        curl -X GET "http://localhost:8000/valida_url?url=https://ejemplo.com"
-    la llamada a BBDD es:
-        Call  w_exp_valida_url( @v_idApp	, @v_user	, @v_retNum	, @v_retTxt	, @v_url	, @v_fecha	, @v_id_frontal	, @v_id_cat	);
-        
-'''
-@router.get("/valida_url")
 #----------------------------------------------------------------------------------
-def valida_url(id_App: int = Query(...),
-               user: str = Query(...),
-               ret_code: int = Query(...), 
-               ret_txt: str = Query(...), 
-               url: str = Query(...), 
-               fecha: str = Query(...),         # 'YYYY-MM-DD HH:MI:SS
-               id_frontal: int = Query(None), 
-               id_cat: int = Query(None)  
+@router.get("/valida_url")
+def valida_url(id_App: int = Query(..., description="Identificador de la aplicación"),
+               user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+               ret_code: int = Query(..., description="Código de retorno inicial"),
+               ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+               url: str = Query(..., description="URL a validar"),
+               fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS'"),
+               id_frontal: int = Query(None, description="OUT. Retorna ID del frontal"),
+               id_cat: int = Query(None, description="OUT. Retorna ID de la categoría")
                ):
+    """DOCUMENTACION
+        Valida una URL específica contra ciertos parámetros y devuelve un resultado.
+
+        Esta función recibe varios parámetros relacionados con la aplicación y el usuario, 
+        junto con una URL para validar. Realiza una llamada a la base de datos para ejecutar 
+        el procedimiento `db_valida_url` y devuelve el resultado de la validación.
+
+        Parámetros:
+        -----------
+        id_App : int
+            Identificador de la aplicación.
+        user : str
+            Nombre del usuario que realiza la solicitud.
+        ret_code : int
+            Código de retorno inicial.
+        ret_txt : str
+            Texto descriptivo del estado inicial.
+        url : str
+            URL a validar.
+        fecha : str
+            Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS'.
+        id_frontal : Optional[int], opcional
+            ID del frontal, si aplica.
+        id_cat : Optional[int], opcional
+            ID de la categoría, si aplica.
+
+        Retorna:
+        --------
+        ValidaUrlResponse
+            - Si ret_code = 0 Ok
+                - id_frontal
+                - id_cat, si fuera el caso 
+            - ret_code < 0 Ko. 
+                - ret_txt: Mensaje de error
+        Excepciones:
+        ------------
+        HTTPException
+            Se lanza si la validación falla con un código de error negativo.
+    """
+
+    if not fecha:
+        # Si la variable es None o está vacía, asignar la fecha y hora actuales
+        fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
     
@@ -56,16 +91,72 @@ def valida_url(id_App: int = Query(...),
 #----------------------------------------------------------------------------------
 @router.get("/cnt_contenidos", response_model=ListaContenidosResponse)
 #----------------------------------------------------------------------------------
-async def cnt_contenidos(id_App: int = Query(...),
-                         user: str = Query(...),
-                         ret_code: int = Query(...), 
-                         ret_txt: str = Query(...), 
-                         id_idioma: int = Query(0), 
-                         id_dispositivo: int = Query(0), 
-                         fecha: str = Query(None),         # 'YYYY-MM-DD HH:MI:SS
-                         id_cnt: int = Query(...), 
-                         vacios: str = Query('S')  
-               ):
+async def cnt_contenidos(id_App: int = Query(..., description="Identificador de la aplicación"),
+                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                         ret_code: int = Query(..., description="Código de retorno inicial"),
+                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                         id_idioma: int = Query(0, description="Identificador del idioma (opcional, por defecto 0)"),
+                         id_dispositivo: int = Query(0, description="Identificador del dispositivo (opcional, por defecto 0)"),
+                         fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS' (opcional)"),
+                         id_cnt: int = Query(..., description="Identificador del contenido a obtener"),
+                         vacios: str = Query('N', description="Indica si se deben incluir contenidos vacíos (S --> sacar vacios también, cualquier otro valor no los saca)")
+                         ):
+    """ DOCUMENTACION
+        Obtiene una lista de contenidos basados en los parámetros proporcionados.
+
+        Este endpoint permite obtener una lista de contenidos según los parámetros especificados, 
+        como el idioma, el dispositivo, la fecha, y el identificador del contenido. La función llama 
+        a un procedimiento almacenado en la base de datos para recuperar los contenidos solicitados.
+
+        Parámetros:
+        -----------
+        id_App : int
+            Identificador de la aplicación.
+        user : str
+            Nombre del usuario que realiza la solicitud.
+        ret_code : int
+            Código de retorno inicial.
+        ret_txt : str
+            Texto descriptivo del estado inicial.
+        id_idioma : int, opcional
+            Identificador del idioma (opcional, por defecto 0: Todos los coge para el primer idioma que exista o si hay un contenido que valga para todos los idiomas).
+        id_dispositivo : int, opcional
+            Identificador del dispositivo (opcional, por defecto 0: Para el primer dispositivo que encuentre contenido o el que valga para todos).
+        fecha : str, opcional
+            Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS' (opcional).
+            Si no se proporciona, se utiliza la fecha y hora actuales.
+        id_cnt : int
+            Identificador del contenido a obtener.
+        vacios : str
+            Indica si se deben incluir contenidos vacíos (S --> sacar vacios también, cualquier otro valor no los saca).
+
+        Retorna:
+        --------
+        ListaContenidosResponse
+            - Si ret_code = 0 Ok
+                - lista con el json de los contenidos
+            - ret_code < 0 Ko. 
+                - ret_txt: Mensaje de error
+
+        Excepciones:
+        ------------
+        MadreException
+            Se lanza si ocurre un error de aplicación específico con un código de error negativo.
+        HTTPException
+            Se lanza si ocurre cualquier otro tipo de error no controlado durante la ejecución.
+
+        Ejemplo de Uso:
+        ---------------
+        ```
+        response = cnt_contenidos(id_App=1, user="usuario", ret_code=0, ret_txt="Inicio", id_idioma=1, id_dispositivo=2, fecha="2024-08-21 12:00:00", id_cnt=123, vacios="N")
+        print(response.lista)
+        ```
+
+        Notas:
+        ------
+        - Si no se proporciona la fecha, se utilizará la fecha y hora actuales.
+        - La función maneja excepciones específicas y genéricas, devolviendo los códigos de error adecuados.
+    """
     try:
         if not fecha:
             # Si la variable es None o está vacía, asignar la fecha y hora actuales
@@ -129,43 +220,6 @@ async def cnt_contenidos(id_App: int = Query(...),
 
 
 
-
-
-
-
-
-#----------------------------------------------------------------------------------
-'''
-    Ejemplos de llamada:
-        Thunder Client: http://localhost:8000/valida_url?url=https://ejemplo.com
-        curl -X GET "http://localhost:8000/valida_url?url=https://ejemplo.com"
-'''
-@router.get("/valida_url_prueba")
-#----------------------------------------------------------------------------------
-def valida_url(url: str = Query(...)):
-    is_valid = url.startswith("http")
-    
-    if not (is_valid):
-        # raise HTTPException(status_code=400, detail="URL no válida.")
-        return ValidaUrlResponse(codigo_error=-1, mensaje="URL no válida.", datos={})
-
-    datos_str = "" # si llevara información sería en formato json
-    
-    # resultado = valida_url_db(ret_code, ret_txt, url, datos_str)
-    resultado = valida_url_db(url=url, datos_str=datos_str)
-    codigo_error = resultado['ret_code']
-    mensaje      = resultado['ret_txt']
-    datos        = resultado['datos']
-
-    if codigo_error < 0:
-        raise HTTPException(status_code=500, detail= {"ret_code": codigo_error,
-                                                      "ret_txt": mensaje,
-                                                      "datos": datos
-                                                     }
-                           )
-
-    return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos=datos)
-    
 
 
 #----------------------------------------------------------------------------------

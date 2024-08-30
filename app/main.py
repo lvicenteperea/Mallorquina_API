@@ -1,9 +1,6 @@
 # Lo siguiente:
-#     mirar si podemos empaquetar en las llamadas de los errores el código y mensaje
+#     comentarios para documentación
 #     utilizar los middleware
-
-
-
 
 
 # uvicorn app.main:app --reload

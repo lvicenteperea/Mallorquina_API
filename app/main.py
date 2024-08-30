@@ -1,5 +1,4 @@
 # Lo siguiente:
-#     comentarios para documentación
 #     utilizar los middleware
 
 
@@ -11,6 +10,7 @@ from app.exceptions import http_exception_handler, json_decode_error_handler, ge
 from app.api.routes import router as api_router
 from app.config.settings import settings
 from app.utils.mis_excepciones import MadreException
+from app.middleware.log_tiempos_respuesta import log_tiempos_respuesta
 
 '''
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,11 +21,25 @@ from app.middleware.auth import AuthMiddleware
 '''
 
 
+
 # -----------------------------------------------------------------------------------------------
 # FASTAPI
 # -----------------------------------------------------------------------------------------------
 app = FastAPI(title=settings.PROJECT_NAME)
 
+
+
+
+# -----------------------------------------------------------------------------------------------
+# MIDDLEWARES
+# -----------------------------------------------------------------------------------------------
+# Importar y registrar el middleware
+app.middleware("http")(log_tiempos_respuesta)
+
+
+# -----------------------------------------------------------------------------------------------
+# RUTAS
+# -----------------------------------------------------------------------------------------------
 app.include_router(api_router)
 
 @app.get("/")
@@ -50,10 +64,6 @@ app.add_exception_handler(TypeError, type_error_handler)
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(ExceptionMiddleware)
 app.add_middleware(AuthMiddleware)
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 
 

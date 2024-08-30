@@ -121,18 +121,18 @@ async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError)
 async def generic_exception_handler(request: Request, exc: Exception):
 # -----------------------------------------------------------------------------------------------
     print("generic_exception_handler")
-    
-    if isinstance(exc.detail, dict):
+
+    if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],
                       "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
                      }
-
         graba_log(mi_mensaje, "GenericException", exc.detail["excepcion"])
     else:
         mi_mensaje = {"ret_code": -1,
-                      "ret_txt": exc.detail,
+                      "ret_txt": str(exc),
+                    #   "ret_txt": exc.detail,
                      }
-
+        graba_log(mi_mensaje, "GenericException", exc)
 
     return JSONResponse(
         status_code=500,

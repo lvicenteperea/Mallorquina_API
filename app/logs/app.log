@@ -755,3 +755,7 @@ mensaje
 2024-08-30 10:19:06,606 - app_logger - INFO - Inicio de la ejecución
 2024-08-30 10:36:28,181 - app_logger - INFO - Inicio de la ejecución
 2024-08-30 10:38:03,002 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 20:25:16,946 - time_logger - INFO - Tiempo de entrada: 1725042316.9210 ms, Tiempo de salida: 1725042316.9470 ms, Duración total: 26.01 ms - Estado: 200
+2024-08-30 20:26:17,496 - time_logger - INFO - Tiempo de entrada: 1725042377.4718 ms, Tiempo de salida: 1725042377.4968 ms, Duración total: 25.01 ms - Estado: 200
+2024-08-30 20:46:17,016 - app_logger - INFO - Tiempo de entrada: 1725043576.9918 ms, Tiempo de salida: 1725043577.0168 ms, Duración total: 25.01 ms - Estado: 200
+2024-08-30 20:48:51,455 - app_logger - ERROR - GenericException: {'ret_code': -1, 'ret_txt': 'division by zero'} - x = 1/0 - D:\Nube\GitHub\Madre_API\app\api\routes\semillas.py - 71 - valida_url

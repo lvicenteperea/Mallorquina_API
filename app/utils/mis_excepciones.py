@@ -11,7 +11,7 @@ class MadreException(Exception):
             self.mi_mensaje = {"ret_code": -1,
                                "ret_txt": detail,
                               }
-        print("Madre / Excptn: ", self.mi_mensaje)
+        print("Madre / Excptn: ", self.mi_mensaje, self.status_code)
         super().__init__(self.mi_mensaje['ret_txt'])
 
     def to_dict(self):

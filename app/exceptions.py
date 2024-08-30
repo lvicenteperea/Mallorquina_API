@@ -3,8 +3,10 @@ from fastapi.responses import JSONResponse
 import json
 import logging
 import logging.config
+import traceback
 
 from app.utils.mis_excepciones import MadreException
+from app.utils.functions import graba_log
 
 # -----------------------------------------------------------------------------------------------
 # LOGGING
@@ -37,15 +39,15 @@ from app.utils.mis_excepciones import MadreException
 # logger.addHandler(console_handler)
 # -----------------------------------------------------------------------------------------------
 
-# esto sería con fichero de inicialización
-try:
-    logging.config.fileConfig('app/logging.ini')
-except Exception as e:
-    print(f"Error configuring logging: {e}")
+# # esto sería con fichero de inicialización
+# try:
+#     logging.config.fileConfig('app/logging.ini')
+# except Exception as e:
+#     print(f"Error configuring logging: {e}")
 
-logger = logging.getLogger('app_logger')
+# logger = logging.getLogger('app_logger')
 
-logger.info("Inicio de la ejecución")
+# logger.info("Inicio de la ejecución")
 
 
 # -----------------------------------------------------------------------------------------------
@@ -74,13 +76,15 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     print("http_exception_handler")
     
     if isinstance(exc.detail, dict):
-        mi_mensaje = exc.detail
+        mi_mensaje = {"ret_code": exc.detail['ret_code'],
+                      "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
+                     }
+
+        graba_log(mi_mensaje, "HTTPException", exc.detail["excepcion"])
     else:
         mi_mensaje = {"ret_code": -1,
                       "ret_txt": exc.detail,
                      }
-
-    logger.error(f"HTTPException: {exc.detail} (status: {mi_mensaje})")
 
     return JSONResponse(
         status_code=exc.status_code,
@@ -91,20 +95,48 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError):
 # -----------------------------------------------------------------------------------------------
     print("json_decode_error_handler")
-    logger.error(f"JSONDecodeError: {exc.msg} (line: {exc.lineno}, col: {exc.colno})")
+
+    # YA PROBAREMOS IS ESTO ES ASÍ
+    if isinstance(exc.detail, dict):
+        mi_mensaje = {"ret_code": exc.detail['ret_code'],
+                      "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
+                     }
+
+        graba_log(mi_mensaje, "JSONDecodeErrorException", exc.detail["excepcion"])
+    else:
+        mi_mensaje = {"ret_code": -1,
+                      "ret_txt": exc.detail,
+                     }
+        
+    mi_mensaje["ret_txt"] = mi_mensaje["ret_txt"].join(f"JSONDecodeError: {exc.msg} (line: {exc.lineno}, col: {exc.colno})")
+    graba_log(mi_mensaje, "JSONDecodeErrorException", exc.detail["excepcion"])
+
+
     return JSONResponse(
         status_code=400,
-        content={"codigo_error": -1, "mensaje": "Error decoding JSON", "datos": {}},
+        content={"codigo_error": -1, "mensaje": "Error decoding JSON"},
     )
 
 # -----------------------------------------------------------------------------------------------
 async def generic_exception_handler(request: Request, exc: Exception):
 # -----------------------------------------------------------------------------------------------
     print("generic_exception_handler")
-    logger.error(f"Unhandled Exception: {str(exc)}")
+    
+    if isinstance(exc.detail, dict):
+        mi_mensaje = {"ret_code": exc.detail['ret_code'],
+                      "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
+                     }
+
+        graba_log(mi_mensaje, "GenericException", exc.detail["excepcion"])
+    else:
+        mi_mensaje = {"ret_code": -1,
+                      "ret_txt": exc.detail,
+                     }
+
+
     return JSONResponse(
         status_code=500,
-        content={"codigo_error": -1, "mensaje": str(exc), "datos": {}},
+        content={"codigo_error": -1, "mensaje": str(exc)},
     )
 
 

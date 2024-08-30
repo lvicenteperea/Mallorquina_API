@@ -1,3 +1,11 @@
+# Lo siguiente:
+#     mirar si podemos empaquetar en las llamadas de los errores el código y mensaje
+#     utilizar los middleware
+
+
+
+
+
 # uvicorn app.main:app --reload
 from fastapi import FastAPI, HTTPException
 import json

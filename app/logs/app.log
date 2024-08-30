@@ -506,3 +506,237 @@ mensaje
   none is not an allowed value (type=type_error.none.not_allowed) (status: {'ret_code': -1, 'ret_txt': '1 validation error for ListaContenidosResponse\nmensaje\n  none is not an allowed value (type=type_error.none.not_allowed)'})
 2024-08-27 14:47:19,129 - app_logger - INFO - Inicio de la ejecución
 2024-08-27 14:47:54,725 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:06:27,668 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:06:36,056 - app_logger - ERROR - HTTPException:  (status: {'ret_code': -1, 'ret_txt': ''})
+2024-08-29 15:09:14,057 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:09:58,031 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:09:58,941 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:13:26,729 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:13:27,777 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:17:52,279 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:18:40,176 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:22:30,543 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:23:17,993 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:07:44,983 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:08:13,600 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:13:43,297 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:13:44,343 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:13:45,442 - app_logger - ERROR - HTTPException: __init__() takes exactly 1 positional argument (5 given) (status: {'ret_code': -1, 'ret_txt': '__init__() takes exactly 1 positional argument (5 given)'})
+2024-08-29 18:16:43,320 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:17:25,675 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:19:36,044 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:22:55,545 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:24:00,317 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:24:11,732 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:26:08,358 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:26:10,168 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:30:15,682 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:35:34,848 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:37:38,882 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:38:14,898 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:38:15,689 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:40:47,285 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:40:48,060 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:40:49,434 - app_logger - ERROR - HTTPException: 'InfoTransaccion' object is not subscriptable (status: {'ret_code': -1, 'ret_txt': "'InfoTransaccion' object is not subscriptable"})
+2024-08-29 18:43:10,053 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:43:10,552 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:43:12,049 - app_logger - ERROR - HTTPException: 'InfoTransaccion' object is not subscriptable (status: {'ret_code': -1, 'ret_txt': "'InfoTransaccion' object is not subscriptable"})
+2024-08-29 18:43:58,331 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:44:33,439 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:45:52,907 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:47:05,564 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:47:06,336 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:47:29,016 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:53:00,719 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:53:49,367 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:53:52,719 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:54:09,259 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:54:41,236 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:54:42,033 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 22:15:03,547 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 22:15:40,571 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 22:16:49,623 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 22:16:57,073 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
+2024-08-29 22:52:00,185 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:03:38,748 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:18:18,966 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:21:13,886 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:21:13,989 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
+2024-08-29 23:21:15,394 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
+2024-08-29 23:23:16,901 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:23:19,440 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
+2024-08-29 23:24:45,965 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:24:47,873 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
+2024-08-29 23:25:58,094 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:26:18,952 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:26:21,233 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
+2024-08-29 23:27:07,179 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:27:07,940 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:27:08,904 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
+2024-08-29 23:27:59,323 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:29:45,567 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:29:46,006 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:30:28,669 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:30:29,170 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:31:49,176 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:32:25,997 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:32:56,973 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:33:39,900 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:33:40,330 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:34:05,245 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:34:17,390 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:34:41,083 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:35:05,900 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:35:06,379 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:36:27,883 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:36:28,641 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:36:41,758 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:39:10,221 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:40:21,021 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:40:21,807 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:40:48,644 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:40:50,950 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:40:51,479 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:40:52,027 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:40:54,985 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}} (status: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}})
+2024-08-29 23:42:35,363 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:42:38,287 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada'}} (status: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada'}})
+2024-08-29 23:44:00,468 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:44:05,780 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
+2024-08-29 23:45:35,604 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:45:43,890 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
+2024-08-29 23:48:00,590 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:48:10,031 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:48:12,760 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
+2024-08-29 23:50:18,684 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:50:20,824 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
+2024-08-29 23:55:19,966 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:58:28,757 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:58:42,578 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': '[<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': '[<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
+2024-08-30 00:03:09,282 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 00:03:10,085 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 00:03:17,330 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>]} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>]}) (Adic: [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
+2024-08-30 00:06:24,636 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 00:06:30,041 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'})
+2024-08-30 00:08:19,491 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:03:08,373 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:03:08,842 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:03:38,388 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:04:30,398 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:04:31,441 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:04:54,398 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:06:02,787 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:06:03,261 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:09:13,695 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:09:14,106 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:09:15,484 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'raise InterfaceError(f"Failed calling stored routine; {err}") from None'}) 
+                                      (Failed calling stored routine; Python type InfoTransaccion cannot be converted) 
+                                      (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:12:51,244 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:14:31,169 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:15:03,649 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:15:04,141 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:15:09,256 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'raise InterfaceError(f"Failed calling stored routine; {err}") from None'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:17:10,899 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:17:11,324 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:17:15,636 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:04,051 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:18:04,602 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:18:09,987 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:11,861 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:13,438 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:14,413 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:14,976 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:15,415 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:15,757 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:15,950 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:16,132 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:16,317 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:16,494 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:16,669 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:16,877 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:17,045 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:17,228 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:17,413 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:17,588 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:17,773 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:17,949 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:18,141 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:18,325 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:18,517 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:18,702 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:18:18,878 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
+                                    (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
+                                    (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
+2024-08-30 09:22:30,042 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:22:30,462 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:26:53,013 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:27:30,299 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:27:30,741 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:28:02,393 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:29:00,736 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:32:25,493 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:32:27,460 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'} - raise InterfaceError(f"Failed calling stored routine; {err}") from None - C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site_packages\mysql\connector\cursor_cext.py - 615 - callproc
+2024-08-30 09:32:54,005 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:32:54,447 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:44:18,923 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:44:19,976 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:44:53,293 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'} - raise InterfaceError(f"Failed calling stored routine; {err}") from None - C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site_packages\mysql\connector\cursor_cext.py - 615 - callproc
+2024-08-30 09:46:27,345 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:47:32,676 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:48:44,861 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:48:45,647 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:48:46,726 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'division by zero'} - x = 1/0 - D:\Nube\GitHub\Madre_API\app\services\db\mysql.py - 50 - call_proc_bbdd_param
+2024-08-30 09:49:42,492 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:49:43,278 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:51:58,557 - app_logger - INFO - Inicio de la ejecución

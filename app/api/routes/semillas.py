@@ -3,10 +3,10 @@ from datetime import datetime
 
 # mias
 from app.api.schemas.url import ValidaUrlResponse
-from app.services.db.mysql import valida_url_db, obtener_contenidos_db, obtener_lista_centros
+from app.services.db.mysql import db_valida_url, db_obtener_contenidos, obtener_lista_centros
 from app.api.schemas.contenido import ListaContenidosResponse
 from app.utils.mis_excepciones import MadreException
-
+from app.utils.InfoTransaccion import InfoTransaccion
 
 # PRUEBAS
 from app.api.schemas.precodigo import PrecodigoRequest 
@@ -37,33 +37,20 @@ def valida_url(id_App: int = Query(...),
                id_cat: int = Query(None)  
                ):
 
-    param = [id_App, user, ret_code, ret_txt, url, fecha, id_frontal, id_cat]
+    infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
     
-    resultado = valida_url_db(param = param)
-
-    codigo_error = resultado[2]
-    mensaje      = resultado[3]
-    id_frontal   = resultado[6]
-    datos        = {"id_App":  resultado[0],
-                    "user":  resultado[1],
-                    "ret_code":  codigo_error,
-                    "ret_txt":  mensaje,
-                    "url":  resultado[4],
-                    "fecha":  resultado[5],         # 'YYYY-MM-DD HH:MI:SS
-                    "id_frontal":  id_frontal, 
-                    "id_cat":  resultado[7]
-                    }
+    param = [infoTrans, url, fecha, id_frontal, id_cat]
     
+    resultado = db_valida_url(param = param)
 
-
-    if codigo_error < 0:
-        raise HTTPException(status_code=500, detail= {"ret_code": codigo_error,
-                                                      "ret_txt": mensaje,
-                                                      "datos": datos
+    if resultado.ret_code < 0:
+        raise HTTPException(status_code=500, detail= {"ret_code": resultado.ret_code,
+                                                      "ret_txt": resultado.ret_txt,
+                                                      "datos": resultado.resultados
                                                      }
                            )
 
-    return ValidaUrlResponse(codigo_error=codigo_error, mensaje=mensaje, datos=datos)
+    return ValidaUrlResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos=resultado.resultados)
     
 
 #----------------------------------------------------------------------------------
@@ -87,14 +74,17 @@ async def cnt_contenidos(id_App: int = Query(...),
             # Si la variable ya tiene un valor, mantenerlo
             fecha_hora_actual = fecha
 
-        param = [id_App, user, ret_code, ret_txt, id_idioma, id_dispositivo, fecha_hora_actual, id_cnt, vacios]
+        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
+
+        param = [infoTrans, id_idioma, id_dispositivo, fecha_hora_actual, id_cnt, vacios]
                  
-        resultado = obtener_contenidos_db(param)
+        resultado = db_obtener_contenidos(param = param)
 
-        if resultado['ret_code'] != 0:
-            raise MadreException({"ret_code": resultado['ret_code'],"ret_txt": resultado['ret_txt']}, 400)
+        # if resultado['ret_code'] != 0:
+        if resultado.ret_code < 0:
+            raise MadreException({"ret_code": resultado.ret_code,"ret_txt": resultado.ret_txt}, 400)
 
-        return ListaContenidosResponse(codigo_error=resultado['ret_code'], mensaje=resultado['ret_txt'], lista=resultado['datos'])
+        return ListaContenidosResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, lista=resultado.resultados)
     
 
     except MadreException as e:

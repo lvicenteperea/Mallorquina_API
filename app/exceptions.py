@@ -73,14 +73,17 @@ async def madre_exception_handler(request: Request, exc: MadreException):
 # -----------------------------------------------------------------------------------------------
 async def http_exception_handler(request: Request, exc: HTTPException):
 # -----------------------------------------------------------------------------------------------
-    print("http_exception_handler")
+    print("http_exception_handler", type(exc))
     
-    if isinstance(exc.detail, dict):
+    if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],
-                      "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
+                      "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),
                      }
 
-        graba_log(mi_mensaje, "HTTPException", exc.detail["excepcion"])
+        graba_log(mi_mensaje, 
+                  "HTTPException", 
+                  exc # str(exc.detail.get("excepcion", exc.detail.get('ret_txt',"Sin texto asociado")))
+                 )
     else:
         mi_mensaje = {"ret_code": -1,
                       "ret_txt": exc.detail,
@@ -120,13 +123,13 @@ async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError)
 # -----------------------------------------------------------------------------------------------
 async def generic_exception_handler(request: Request, exc: Exception):
 # -----------------------------------------------------------------------------------------------
-    print("generic_exception_handler")
+    print("generic_exception_handler", exc)
 
     if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],
-                      "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
+                      "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),
                      }
-        graba_log(mi_mensaje, "GenericException", exc.detail["excepcion"])
+        graba_log(mi_mensaje, "GenericException", exc.detail.get("excepcion", "Sin texto asociado"))
     else:
         mi_mensaje = {"ret_code": -1,
                       "ret_txt": str(exc),

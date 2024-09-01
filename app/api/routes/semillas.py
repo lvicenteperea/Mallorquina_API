@@ -80,8 +80,7 @@ def valida_url(id_App: int = Query(..., description="Identificador de la aplicac
 
     if resultado.ret_code < 0:
         raise HTTPException(status_code=500, detail= {"ret_code": resultado.ret_code,
-                                                      "ret_txt": resultado.ret_txt,
-                                                      "datos": resultado.resultados
+                                                      "ret_txt": resultado.ret_txt
                                                      }
                            )
 

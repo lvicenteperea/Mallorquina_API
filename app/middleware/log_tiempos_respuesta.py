@@ -4,9 +4,9 @@ import logging
 from app.utils.functions import graba_log_info
 
 # Configuración básica de logging
-print("inciando loger tiempos respuesa: logger = logging.getLogger('tiempo_respuesta')")
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("tiempo_respuesta")
+# print("inciando loger tiempos respuesa: logger = logging.getLogger('tiempo_respuesta')")
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger("tiempo_respuesta")
 
 app = FastAPI()
 

@@ -37,45 +37,45 @@
 2024-08-25 22:29:17,531 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 0, 'ret_txt': 'Todo Ok'})
 2024-08-25 22:29:17,722 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 0, 'ret_txt': 'Todo Ok'})
 2024-08-25 22:29:17,901 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 0, 'ret_txt': 'Todo Ok'})
-2024-08-25 22:30:18,219 - app_logger - INFO - Inicio de la ejecución
-2024-08-25 22:53:09,455 - app_logger - INFO - Inicio de la ejecución
-2024-08-25 22:53:10,084 - app_logger - INFO - Inicio de la ejecución
+2024-08-25 22:30:18,219 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-25 22:53:09,455 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-25 22:53:10,084 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-25 22:53:13,914 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 0, 'ret_txt': 'Todo Ok'})
-2024-08-25 22:53:46,547 - app_logger - INFO - Inicio de la ejecución
-2024-08-25 23:04:56,815 - app_logger - INFO - Inicio de la ejecución
-2024-08-25 23:04:57,837 - app_logger - INFO - Inicio de la ejecución
-2024-08-26 20:56:51,627 - app_logger - INFO - Inicio de la ejecución
-2024-08-26 21:24:56,355 - app_logger - INFO - Inicio de la ejecución
-2024-08-26 21:28:47,054 - app_logger - INFO - Inicio de la ejecución
-2024-08-26 23:46:08,117 - app_logger - INFO - Inicio de la ejecución
+2024-08-25 22:53:46,547 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-25 23:04:56,815 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-25 23:04:57,837 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-26 20:56:51,627 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-26 21:24:56,355 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-26 21:28:47,054 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-26 23:46:08,117 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-26 23:46:10,133 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': '1318 (42000): Incorrect number of arguments for PROCEDURE test.Valida_url; expected 4, got 8'} (status: {'ret_code': -3, 'ret_txt': '1318 (42000): Incorrect number of arguments for PROCEDURE test.Valida_url; expected 4, got 8'})
-2024-08-26 23:48:45,335 - app_logger - INFO - Inicio de la ejecución
+2024-08-26 23:48:45,335 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-26 23:50:03,041 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Expecting value: line 1 column 1 (char 0)'} (status: {'ret_code': -3, 'ret_txt': 'Expecting value: line 1 column 1 (char 0)'})
-2024-08-27 00:14:15,607 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 00:14:16,366 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 00:14:15,607 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 00:14:16,366 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 00:14:17,549 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': '03 - Expecting value: line 1 column 1 (char 0)'} (status: {'ret_code': -3, 'ret_txt': '03 - Expecting value: line 1 column 1 (char 0)'})
-2024-08-27 00:14:56,057 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 00:14:56,057 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 00:14:58,547 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': "(63, 'PRUEBAS', 0, 'OK', 'semillas.somosimaginales.com', '2024-08-26 21:31:00', 5, None) - Expecting value: line 1 column 1 (char 0)"} (status: {'ret_code': -3, 'ret_txt': "(63, 'PRUEBAS', 0, 'OK', 'semillas.somosimaginales.com', '2024-08-26 21:31:00', 5, None) - Expecting value: line 1 column 1 (char 0)"})
-2024-08-27 00:40:12,721 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 00:40:12,721 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 00:40:25,442 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': "<class 'tuple'> - Expecting value: line 1 column 1 (char 0)"} (status: {'ret_code': -3, 'ret_txt': "<class 'tuple'> - Expecting value: line 1 column 1 (char 0)"})
-2024-08-27 00:45:53,222 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 01:16:00,909 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 00:45:53,222 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 01:16:00,909 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 01:16:02,994 - app_logger - ERROR - Unhandled Exception: list index out of range
-2024-08-27 01:16:42,800 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 01:17:34,727 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 01:18:29,150 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 01:19:14,164 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 01:19:39,154 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 02:36:50,521 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 13:39:02,868 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 01:16:42,800 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 01:17:34,727 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 01:18:29,150 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 01:19:14,164 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 01:19:39,154 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 02:36:50,521 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 13:39:02,868 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 13:41:00,018 - app_logger - ERROR - HTTPException: obtener_contenidos_db() missing 1 required positional argument: 'param' (status: {'ret_code': -1, 'ret_txt': "obtener_contenidos_db() missing 1 required positional argument: 'param'"})
-2024-08-27 13:50:44,922 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 13:58:33,729 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 13:50:44,922 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 13:58:33,729 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 13:58:50,073 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 63, 'ret_txt': 'PRUEBAS'})
 2024-08-27 14:07:06,742 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 63, 'ret_txt': 'PRUEBAS'})
 2024-08-27 14:10:13,268 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 63, 'ret_txt': 'PRUEBAS'})
 2024-08-27 14:14:42,899 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': 63, 'ret_txt': 'PRUEBAS'})
-2024-08-27 14:18:46,313 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 14:18:46,313 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 14:18:48,566 - app_logger - ERROR - MadreException: (status: 400 {'ret_code': None, 'ret_txt': None})
 2024-08-27 14:22:04,530 - app_logger - ERROR - HTTPException: 34 validation errors for ListaContenidosResponse
 mensaje
@@ -146,9 +146,9 @@ lista -> 31 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed)
 lista -> 32 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed) (status: {'ret_code': -1, 'ret_txt': '34 validation errors for ListaContenidosResponse\nmensaje\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 0 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 1 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 2 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 3 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 4 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 5 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 6 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 7 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 8 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 9 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 10 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 11 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 12 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 13 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 14 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 15 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 16 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 17 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 18 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 19 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 20 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 21 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 22 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 23 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 24 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 25 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 26 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 27 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 28 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 29 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 30 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 31 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 32 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)'})
-2024-08-27 14:23:37,379 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 14:23:38,167 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 14:23:47,537 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 14:23:37,379 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 14:23:38,167 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 14:23:47,537 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 14:23:51,463 - app_logger - ERROR - HTTPException: 34 validation errors for ListaContenidosResponse
 mensaje
   none is not an allowed value (type=type_error.none.not_allowed)
@@ -287,8 +287,8 @@ lista -> 31 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed)
 lista -> 32 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed) (status: {'ret_code': -1, 'ret_txt': '34 validation errors for ListaContenidosResponse\nmensaje\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 0 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 1 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 2 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 3 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 4 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 5 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 6 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 7 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 8 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 9 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 10 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 11 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 12 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 13 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 14 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 15 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 16 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 17 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 18 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 19 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 20 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 21 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 22 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 23 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 24 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 25 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 26 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 27 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 28 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 29 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 30 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 31 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 32 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)'})
-2024-08-27 14:39:08,959 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 14:39:12,569 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 14:39:08,959 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 14:39:12,569 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 14:39:15,144 - app_logger - ERROR - HTTPException: 34 validation errors for ListaContenidosResponse
 mensaje
   none is not an allowed value (type=type_error.none.not_allowed)
@@ -358,8 +358,8 @@ lista -> 31 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed)
 lista -> 32 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed) (status: {'ret_code': -1, 'ret_txt': '34 validation errors for ListaContenidosResponse\nmensaje\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 0 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 1 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 2 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 3 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 4 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 5 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 6 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 7 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 8 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 9 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 10 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 11 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 12 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 13 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 14 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 15 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 16 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 17 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 18 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 19 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 20 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 21 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 22 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 23 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 24 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 25 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 26 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 27 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 28 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 29 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 30 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 31 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 32 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)'})
-2024-08-27 14:42:46,314 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 14:42:47,335 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 14:42:46,314 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 14:42:47,335 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 14:42:47,714 - app_logger - ERROR - HTTPException: 34 validation errors for ListaContenidosResponse
 mensaje
   none is not an allowed value (type=type_error.none.not_allowed)
@@ -429,7 +429,7 @@ lista -> 31 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed)
 lista -> 32 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed) (status: {'ret_code': -1, 'ret_txt': '34 validation errors for ListaContenidosResponse\nmensaje\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 0 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 1 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 2 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 3 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 4 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 5 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 6 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 7 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 8 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 9 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 10 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 11 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 12 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 13 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 14 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 15 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 16 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 17 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 18 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 19 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 20 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 21 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 22 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 23 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 24 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 25 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 26 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 27 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 28 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 29 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 30 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 31 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 32 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)'})
-2024-08-27 14:43:38,963 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 14:43:38,963 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 14:43:41,711 - app_logger - ERROR - HTTPException: 34 validation errors for ListaContenidosResponse
 mensaje
   none is not an allowed value (type=type_error.none.not_allowed)
@@ -499,153 +499,153 @@ lista -> 31 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed)
 lista -> 32 -> valor2
   none is not an allowed value (type=type_error.none.not_allowed) (status: {'ret_code': -1, 'ret_txt': '34 validation errors for ListaContenidosResponse\nmensaje\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 0 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 1 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 2 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 3 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 4 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 5 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 6 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 7 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 8 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 9 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 10 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 11 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 12 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 13 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 14 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 15 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 16 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 17 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 18 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 19 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 20 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 21 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 22 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 23 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 24 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 25 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 26 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 27 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 28 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 29 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 30 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 31 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)\nlista -> 32 -> valor2\n  none is not an allowed value (type=type_error.none.not_allowed)'})
-2024-08-27 14:46:04,235 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 14:46:12,392 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 14:46:04,235 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 14:46:12,392 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-27 14:46:21,561 - app_logger - ERROR - HTTPException: 1 validation error for ListaContenidosResponse
 mensaje
   none is not an allowed value (type=type_error.none.not_allowed) (status: {'ret_code': -1, 'ret_txt': '1 validation error for ListaContenidosResponse\nmensaje\n  none is not an allowed value (type=type_error.none.not_allowed)'})
-2024-08-27 14:47:19,129 - app_logger - INFO - Inicio de la ejecución
-2024-08-27 14:47:54,725 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:06:27,668 - app_logger - INFO - Inicio de la ejecución
+2024-08-27 14:47:19,129 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-27 14:47:54,725 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:06:27,668 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 15:06:36,056 - app_logger - ERROR - HTTPException:  (status: {'ret_code': -1, 'ret_txt': ''})
-2024-08-29 15:09:14,057 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:09:58,031 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:09:58,941 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:13:26,729 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:13:27,777 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:17:52,279 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:18:40,176 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:22:30,543 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 15:23:17,993 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:07:44,983 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:08:13,600 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:13:43,297 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:13:44,343 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 15:09:14,057 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:09:58,031 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:09:58,941 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:13:26,729 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:13:27,777 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:17:52,279 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:18:40,176 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:22:30,543 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 15:23:17,993 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:07:44,983 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:08:13,600 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:13:43,297 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:13:44,343 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 18:13:45,442 - app_logger - ERROR - HTTPException: __init__() takes exactly 1 positional argument (5 given) (status: {'ret_code': -1, 'ret_txt': '__init__() takes exactly 1 positional argument (5 given)'})
-2024-08-29 18:16:43,320 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:17:25,675 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:19:36,044 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:22:55,545 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:24:00,317 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:24:11,732 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:26:08,358 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:26:10,168 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:30:15,682 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:35:34,848 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:37:38,882 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:38:14,898 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:38:15,689 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:40:47,285 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:40:48,060 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:16:43,320 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:17:25,675 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:19:36,044 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:22:55,545 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:24:00,317 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:24:11,732 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:26:08,358 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:26:10,168 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:30:15,682 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:35:34,848 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:37:38,882 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:38:14,898 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:38:15,689 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:40:47,285 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:40:48,060 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 18:40:49,434 - app_logger - ERROR - HTTPException: 'InfoTransaccion' object is not subscriptable (status: {'ret_code': -1, 'ret_txt': "'InfoTransaccion' object is not subscriptable"})
-2024-08-29 18:43:10,053 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:43:10,552 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:43:10,053 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:43:10,552 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 18:43:12,049 - app_logger - ERROR - HTTPException: 'InfoTransaccion' object is not subscriptable (status: {'ret_code': -1, 'ret_txt': "'InfoTransaccion' object is not subscriptable"})
-2024-08-29 18:43:58,331 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:44:33,439 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:45:52,907 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:47:05,564 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:47:06,336 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:47:29,016 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:53:00,719 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:53:49,367 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:53:52,719 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:54:09,259 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:54:41,236 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 18:54:42,033 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 22:15:03,547 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 22:15:40,571 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 22:16:49,623 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 18:43:58,331 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:44:33,439 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:45:52,907 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:47:05,564 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:47:06,336 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:47:29,016 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:53:00,719 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:53:49,367 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:53:52,719 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:54:09,259 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:54:41,236 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 18:54:42,033 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 22:15:03,547 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 22:15:40,571 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 22:16:49,623 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 22:16:57,073 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
-2024-08-29 22:52:00,185 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:03:38,748 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:18:18,966 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:21:13,886 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 22:52:00,185 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:03:38,748 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:18:18,966 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:21:13,886 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:21:13,989 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
 2024-08-29 23:21:15,394 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
-2024-08-29 23:23:16,901 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:23:16,901 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:23:19,440 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
-2024-08-29 23:24:45,965 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:24:45,965 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:24:47,873 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
-2024-08-29 23:25:58,094 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:26:18,952 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:25:58,094 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:26:18,952 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:26:21,233 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
-2024-08-29 23:27:07,179 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:27:07,940 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:27:07,179 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:27:07,940 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:27:08,904 - app_logger - ERROR - Unhandled Exception: cannot access local variable 'donde' where it is not associated with a value
-2024-08-29 23:27:59,323 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:29:45,567 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:29:46,006 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:30:28,669 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:30:29,170 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:31:49,176 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:32:25,997 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:32:56,973 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:33:39,900 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:33:40,330 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:34:05,245 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:34:17,390 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:34:41,083 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:35:05,900 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:35:06,379 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:36:27,883 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:36:28,641 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:36:41,758 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:39:10,221 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:40:21,021 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:40:21,807 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:40:48,644 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:40:50,950 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:40:51,479 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:40:52,027 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:27:59,323 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:29:45,567 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:29:46,006 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:30:28,669 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:30:29,170 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:31:49,176 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:32:25,997 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:32:56,973 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:33:39,900 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:33:40,330 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:34:05,245 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:34:17,390 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:34:41,083 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:35:05,900 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:35:06,379 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:36:27,883 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:36:28,641 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:36:41,758 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:39:10,221 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:40:21,021 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:40:21,807 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:40:48,644 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:40:50,950 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:40:51,479 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:40:52,027 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:40:54,985 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}} (status: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}})
-2024-08-29 23:42:35,363 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:42:35,363 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:42:38,287 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada'}} (status: {'ret_code': -3, 'ret_txt': {'error': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada'}})
-2024-08-29 23:44:00,468 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:44:00,468 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:44:05,780 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
-2024-08-29 23:45:35,604 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:45:35,604 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:45:43,890 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
-2024-08-29 23:48:00,590 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:48:10,031 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:48:00,590 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:48:10,031 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:48:12,760 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
-2024-08-29 23:50:18,684 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:50:18,684 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:50:20,824 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'donde': 'Nada - [<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: Nada - [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 47 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
-2024-08-29 23:55:19,966 - app_logger - INFO - Inicio de la ejecución
-2024-08-29 23:58:28,757 - app_logger - INFO - Inicio de la ejecución
+2024-08-29 23:55:19,966 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-29 23:58:28,757 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-29 23:58:42,578 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': '[<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': '[<FrameSummary file D:\\Nube\\GitHub\\Madre_API\\app\\services\\db\\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\\Users\\lvicente\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py, line 615 in callproc>]'}) (Adic: [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
-2024-08-30 00:03:09,282 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 00:03:10,085 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 00:03:09,282 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 00:03:10,085 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 00:03:17,330 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>]} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted', 'traza': [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>]}) (Adic: [<FrameSummary file D:\Nube\GitHub\Madre_API\app\services\db\mysql.py, line 46 in call_proc_bbdd_param>, <FrameSummary file C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py, line 615 in callproc>])
-2024-08-30 00:06:24,636 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 00:06:24,636 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 00:06:30,041 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'} (status: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'})
-2024-08-30 00:08:19,491 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:03:08,373 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:03:08,842 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:03:38,388 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:04:30,398 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:04:31,441 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:04:54,398 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:06:02,787 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:06:03,261 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:09:13,695 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:09:14,106 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 00:08:19,491 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:03:08,373 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:03:08,842 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:03:38,388 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:04:30,398 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:04:31,441 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:04:54,398 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:06:02,787 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:06:03,261 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:09:13,695 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:09:14,106 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 09:09:15,484 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'raise InterfaceError(f"Failed calling stored routine; {err}") from None'}) 
                                       (Failed calling stored routine; Python type InfoTransaccion cannot be converted) 
                                       (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
-2024-08-30 09:12:51,244 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:14:31,169 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:15:03,649 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:15:04,141 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:12:51,244 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:14:31,169 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:15:03,649 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:15:04,141 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 09:15:09,256 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'raise InterfaceError(f"Failed calling stored routine; {err}") from None'}) 
                                     (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
                                     (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
-2024-08-30 09:17:10,899 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:17:11,324 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:17:10,899 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:17:11,324 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 09:17:15,636 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
                                     (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
                                     (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
-2024-08-30 09:18:04,051 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:18:04,602 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:18:04,051 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:18:04,602 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 09:18:09,987 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
                                     (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
                                     (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
@@ -718,44 +718,75 @@ mensaje
 2024-08-30 09:18:18,878 - app_logger - ERROR - HTTPException: ({'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'}) 
                                     (raise InterfaceError(f"Failed calling stored routine; {err}") from None) 
                                     (C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site-packages\mysql\connector\cursor_cext.py - 615 - callproc)
-2024-08-30 09:22:30,042 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:22:30,462 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:26:53,013 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:27:30,299 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:27:30,741 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:28:02,393 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:29:00,736 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:32:25,493 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:22:30,042 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:22:30,462 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:26:53,013 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:27:30,299 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:27:30,741 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:28:02,393 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:29:00,736 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:32:25,493 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 09:32:27,460 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'} - raise InterfaceError(f"Failed calling stored routine; {err}") from None - C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site_packages\mysql\connector\cursor_cext.py - 615 - callproc
-2024-08-30 09:32:54,005 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:32:54,447 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:44:18,923 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:44:19,976 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:32:54,005 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:32:54,447 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:44:18,923 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:44:19,976 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 09:44:53,293 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'Failed calling stored routine; Python type InfoTransaccion cannot be converted'} - raise InterfaceError(f"Failed calling stored routine; {err}") from None - C:\Users\lvicente\AppData\Local\Programs\Python\Python311\Lib\site_packages\mysql\connector\cursor_cext.py - 615 - callproc
-2024-08-30 09:46:27,345 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:47:32,676 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:48:44,861 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:48:45,647 - app_logger - INFO - Inicio de la ejecución
+2024-08-30 09:46:27,345 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:47:32,676 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:48:44,861 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:48:45,647 - app_logger - INFO - Inicio de la ejecuciï¿½n
 2024-08-30 09:48:46,726 - app_logger - ERROR - HTTPException: {'ret_code': -3, 'ret_txt': 'division by zero'} - x = 1/0 - D:\Nube\GitHub\Madre_API\app\services\db\mysql.py - 50 - call_proc_bbdd_param
-2024-08-30 09:49:42,492 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:49:43,278 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:51:58,557 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:52:46,122 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:54:37,811 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:54:57,132 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:55:50,580 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:56:21,762 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:57:12,735 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:57:13,522 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 09:57:46,540 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 10:10:50,754 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 10:13:03,304 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 10:13:04,111 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 10:13:14,981 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 10:19:06,606 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 10:36:28,181 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 10:38:03,002 - app_logger - INFO - Inicio de la ejecución
-2024-08-30 20:25:16,946 - time_logger - INFO - Tiempo de entrada: 1725042316.9210 ms, Tiempo de salida: 1725042316.9470 ms, Duración total: 26.01 ms - Estado: 200
-2024-08-30 20:26:17,496 - time_logger - INFO - Tiempo de entrada: 1725042377.4718 ms, Tiempo de salida: 1725042377.4968 ms, Duración total: 25.01 ms - Estado: 200
-2024-08-30 20:46:17,016 - app_logger - INFO - Tiempo de entrada: 1725043576.9918 ms, Tiempo de salida: 1725043577.0168 ms, Duración total: 25.01 ms - Estado: 200
+2024-08-30 09:49:42,492 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:49:43,278 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:51:58,557 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:52:46,122 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:54:37,811 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:54:57,132 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:55:50,580 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:56:21,762 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:57:12,735 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:57:13,522 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 09:57:46,540 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 10:10:50,754 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 10:13:03,304 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 10:13:04,111 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 10:13:14,981 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 10:19:06,606 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 10:36:28,181 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 10:38:03,002 - app_logger - INFO - Inicio de la ejecuciï¿½n
+2024-08-30 20:25:16,946 - time_logger - INFO - Tiempo de entrada: 1725042316.9210 ms, Tiempo de salida: 1725042316.9470 ms, Duraciï¿½n total: 26.01 ms - Estado: 200
+2024-08-30 20:26:17,496 - time_logger - INFO - Tiempo de entrada: 1725042377.4718 ms, Tiempo de salida: 1725042377.4968 ms, Duraciï¿½n total: 25.01 ms - Estado: 200
+2024-08-30 20:46:17,016 - app_logger - INFO - Tiempo de entrada: 1725043576.9918 ms, Tiempo de salida: 1725043577.0168 ms, Duraciï¿½n total: 25.01 ms - Estado: 200
 2024-08-30 20:48:51,455 - app_logger - ERROR - GenericException: {'ret_code': -1, 'ret_txt': 'division by zero'} - x = 1/0 - D:\Nube\GitHub\Madre_API\app\api\routes\semillas.py - 71 - valida_url
+2024-09-01 21:48:49,378 - app_logger - ERROR - GenericException: {'ret_code': -1, 'ret_txt': 'division by zero'} - x = 1/0 - D:\Nube\GitHub\Madre_API\app\api\routes\semillas.py - 71 - valida_url
+
+
+
+
+2024-09-01 21:49:18,164 - app_logger - ERROR - GenericException: {'ret_code': -1, 'ret_txt': 'division by zero'} - x = 1/0 - D:\Nube\GitHub\Madre_API\app\api\routes\semillas.py - 71 - valida_url
+2024-09-01 21:49:46,549 - APP - app_logger - ERROR - GenericException: {'ret_code': -1, 'ret_txt': "'excepcion'"} - "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])), - D:\Nube\GitHub\Madre_API\app\exceptions.py - 80 - http_exception_handler
+2024-09-01 21:52:51,776 - APP - app_logger - ERROR - GenericException: {'ret_code': -1, 'ret_txt': "'excepcion'"} - "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])), - D:\Nube\GitHub\Madre_API\app\exceptions.py - 80 - http_exception_handler
+2024-09-01 21:53:00,580 - APP - app_logger - ERROR - GenericException: {'ret_code': -1, 'ret_txt': "'excepcion'"} - "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])), - D:\Nube\GitHub\Madre_API\app\exceptions.py - 80 - http_exception_handler
+
+
+
+
+
+2024-09-01 22:01:56,841 - APP - app_logger - ERROR - de tiempos GenericException: {'ret_code': -1, 'ret_txt': "'excepcion'"} - graba_log(mi_mensaje, "HTTPException", exc.detail["excepcion"]) - D:\Nube\GitHub\Madre_API\app\exceptions.py - 83 - http_exception_handler
+
+
+
+2024-09-01 22:04:07,024 - APP - app_logger - ERROR - de tiempos GenericException: {'ret_code': -1, 'ret_txt': "'str' object has no attribute '__traceback__'"} - tb = traceback.extract_tb(e.__traceback__) - D:\Nube\GitHub\Madre_API\app\utils\functions.py - 49 - graba_log
+
+
+
+
+2024-09-01 22:15:12,114 - APP - app_logger - ERROR - de tiempos GenericException: {'ret_code': -1, 'ret_txt': "'str' object has no attribute '__traceback__'"} - tb = traceback.extract_tb(e.__traceback__) - D:\Nube\GitHub\Madre_API\app\utils\functions.py - 49 - graba_log
+
+
+
+2024-09-01 22:19:58,819 - APP - app_logger - ERROR - de tiempos HTTPException: {'ret_code': -1, 'ret_txt': "2003 (HY000): Can't connect to MySQL server on '127.0.0.1:3306' (10061)"} - raise HTTPException(status_code=400, detail= {"ret_code": _1, - D:\Nube\GitHub\Madre_API\app\services\db\mysql.py - 23 - get_db_connection
+
+
+2024-09-01 22:21:41,766 - APP - app_logger - ERROR - de tiempos GenericException: {'ret_code': -1, 'ret_txt': 'division by zero'} - x = 1/0 - D:\Nube\GitHub\Madre_API\app\api\routes\semillas.py - 71 - valida_url

@@ -6,9 +6,16 @@ class InfoTransaccion(BaseModel):
     user: str
     ret_code: int = None
     ret_txt: str = None
-    # lista de datos cuando las funciones de BBDD retornar un valor Ok, 
-    # retornarán una lista de valores asociada, cada una será de un tipo
+
+    # Datos cuando las funciones de BBDD retornar un valor Ok, Dos listas diferentes
+    # En "parametros" retorna la lista de parametros que son de salida o entrada/salida
+    parametros: list = None
+    # En "resultados" es para procedimientos que retornar un listado de registros "una select"
     resultados: list = None
+    
+
+    def set_parametros(self, datos):
+        self.parametros = datos
 
     def set_resultados(self, datos):
         self.resultados = datos
@@ -25,7 +32,7 @@ class InfoTransaccion(BaseModel):
         return [self.id_App, self.user, self.ret_code, self.ret_txt]
 
     def __str__(self):
-        return f"App: {self.id_App}, Usuario: {self.user}, Error: {self.ret_code}, Descripción: {self.ret_txt}"
+        return f"App: {self.id_App}, Usuario: {self.user}, Error: {self.ret_code} - {self.ret_txt}, parametros: {self.parametros}"
 
 
 '''

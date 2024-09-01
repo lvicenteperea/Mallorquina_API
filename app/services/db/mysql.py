@@ -33,8 +33,8 @@ def get_db_close_connection(conn, cursor):
             cursor.close()
         conn.close()
 
-'''
-#----------------------------------------------------------------------------------------
+
+'''#----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def call_proc_bbdd_param(procedimiento:str, param) -> InfoTransaccion:
     """
@@ -88,7 +88,7 @@ def call_proc_bbdd_param(procedimiento:str, param) -> InfoTransaccion:
 
         cursor = connection.cursor()
         response = cursor.callproc(procedimiento, param_expanded)
-
+        print("A ver que saca call_proc_bbdd_param", response)
         return InfoTransaccion(id_App=response[0], user=response[1], ret_code=response[2], ret_txt=response[3])
 
     except Exception as e:
@@ -103,7 +103,7 @@ def call_proc_bbdd_param(procedimiento:str, param) -> InfoTransaccion:
 '''
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def call_proc_bbdd_records(procedimiento:str, param) -> InfoTransaccion:
+def call_proc_bbdd(procedimiento:str, param) -> InfoTransaccion:
     """
         Este método ejecuta un procedimiento almacenado en la base de datos, toma los parámetros 
         necesarios, y devuelve una instancia de `InfoTransaccion` que contiene 
@@ -161,13 +161,18 @@ def call_proc_bbdd_records(procedimiento:str, param) -> InfoTransaccion:
         cursor = connection.cursor()
         response = cursor.callproc(procedimiento, param_expanded)
 
-        infoTrans = InfoTransaccion(id_App=response[0], user=response[1], ret_code=response[2], ret_txt=response[3])
-
+        infoTrans = InfoTransaccion(id_App=response[0], 
+                                    user=response[1], 
+                                    ret_code=response[2], 
+                                    ret_txt=response[3])
 
         if infoTrans.ret_code < 0:
             return infoTrans
+    
+        # Asignamos la lista de parametros que son del salida
+        infoTrans.set_parametros(response[4:])
 
-        # para convertirlo a JSON
+        # para convertirlo a JSON el posible record set retornado
         rows = []
         for result in cursor.stored_results():
             columns = [col[0] for col in result.description]  # Obtener nombres de las columnas
@@ -184,19 +189,45 @@ def call_proc_bbdd_records(procedimiento:str, param) -> InfoTransaccion:
 
     except Exception as e:
         raise HTTPException(status_code=400, detail={"ret_code": -3,
+                                                     "ret_txt": str(e),
                                                      "excepcion": e
                                                     }
                            )
     finally:
         get_db_close_connection(connection, cursor)
 
+
+
+
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def db_valida_url(param: list) -> InfoTransaccion:
-    return call_proc_bbdd_records('w_exp_valida_url', param)
+    return call_proc_bbdd('w_exp_valida_url', param)
+
+
+'''----------------------------------------------------------------------------------------
+w_exp_valida_precodigo( IN v_idApp 				BIGINT  
+                      , IN v_user 				VARCHAR(45)         -- Usuario que lanza el procedimiento
+                      , INOUT v_retNum 			INT            -- 0 --> OK; <0 --> error;  >0 --> Ok, con algún significado; 2 --> El precodigo ya ha sido canjeado
+                      , INOUT v_retTxt 			VARCHAR(4000)  -- Texto en caso de error (v_retNum < 0)
+                      , IN	  v_precodigo		VARCHAR(30)
+                      , IN  v_fecha 			VARCHAR(19)     -- '%Y-%m-%d %H:%i:%s'
+                      , IN  v_url				VARCHAR(400) 	-- LLeva URL o ....
+                      , INOUT v_idFrontal		BIGINT			-- ... lleva IdFrontal
+                      , OUT v_idCatalogo		BIGINT
+                      , OUT v_idCampaign		BIGINT
+                      , OUT v_idCanje			BIGINT
+                      , OUT v_idParticipante	BIGINT
+                      , OUT v_idPrecodigo		BIGINT
+                      )
+----------------------------------------------------------------------------------------'''
+def db_valida_precodigo(param: list) -> InfoTransaccion:
+    return call_proc_bbdd('w_exp_valida_precodigo', param)
 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def db_obtener_contenidos(param: list) -> InfoTransaccion:
-    return call_proc_bbdd_records('w_cnt_contenidos', param)
+    return call_proc_bbdd('w_cnt_contenidos', param)
+
+

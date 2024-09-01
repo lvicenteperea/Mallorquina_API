@@ -3,9 +3,6 @@ import logging
 import logging.config
 import traceback
 
-
-
-
 # ------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------
 '''
@@ -35,9 +32,8 @@ try:
 except Exception as e:
     print(f"Error configuring logging: {e}")
 
-# logger = logging.getLogger('app_logger')
-
 # Obtén los loggers
+# logger = logging.getLogger('app_logger')
 app_logger = logging.getLogger('app_logger')
 time_logger = logging.getLogger('time_logger')
 
@@ -56,14 +52,13 @@ def graba_log(mi_mensaje:dict, origen, e, logger = app_logger):
 
     logger.error(f"de tiempos {origen}: {mi_mensaje} - {texto_err} - {archivo} - {linea} - {funcion}")
 
-    print("04")
-
 
 # ------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------
 def graba_log_info(mensaje, logger = time_logger):
+
     logger.info(mensaje)
-    print("ha debido escribir el mensaje", type(logger))
+
     for handler in logger.handlers:
         print(f"Handler: {handler}")
         handler.flush()

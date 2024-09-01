@@ -3,13 +3,13 @@ from datetime import datetime
 
 # mias
 from app.api.schemas.url import ValidaUrlResponse
-from app.services.db.mysql import db_valida_url, db_obtener_contenidos
+from app.api.schemas.precodigo import ValidaPrecodigoRequest
+from app.services.db.mysql import db_valida_url, db_obtener_contenidos, db_valida_precodigo
 from app.api.schemas.contenido import ListaContenidosResponse
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 
 # PRUEBAS
-from app.api.schemas.precodigo import PrecodigoRequest 
 from app.api.schemas.centro import ListaCentrosResponse
 
 
@@ -24,7 +24,7 @@ def valida_url(id_App: int = Query(..., description="Identificador de la aplicac
                ret_code: int = Query(..., description="Código de retorno inicial"),
                ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                url: str = Query(..., description="URL a validar"),
-               fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS'"),
+               fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS', por defecto la actual"),
                id_frontal: int = Query(None, description="OUT. Retorna ID del frontal"),
                id_cat: int = Query(None, description="OUT. Retorna ID de la categoría")
                ):
@@ -84,7 +84,10 @@ def valida_url(id_App: int = Query(..., description="Identificador de la aplicac
                                                      }
                            )
 
-    return ValidaUrlResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos=resultado.resultados)
+    url_validada = ValidaUrlResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt)
+    url_validada.asigna_salida(resultado.parametros)
+    return url_validada
+    
     
 
 #----------------------------------------------------------------------------------
@@ -184,64 +187,88 @@ async def cnt_contenidos(id_App: int = Query(..., description="Identificador de 
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #----------------------------------------------------------------------------------
-'''
-    Ejemplos de llamada:
-        curl -X POST "http://localhost:8000/valida_precodigo" -H "Content-Type: application/json" -d '{"codigo": "abc123", "usuario_id": 42}'
-        Thunder Client: http://localhost:8000/valida_precodigo
-            En el Body, formato JSON: 
-                {"codigo": "abc123",
-                "usuario_id": 42
-                }
+@router.get("/valida_precodigo")
+#----------------------------------------------------------------------------------
+def valida_precodigo(id_App: int = Query(..., description="Identificador de la aplicación"),
+                     user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                     ret_code: int = Query(..., description="Código de retorno inicial"),
+                     ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+
+                     precodigo: str = Query(..., description="Es el precodigo a validar"),
+                     fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS', por defecto la actual"),
+                     url: str = Query(None, description="Envia URL o id_frontal"),
+                     id_frontal: int = Query(None, description="Envia URL o id_frontal"),
+
+                     id_cat: int = Query(None, description="OUT. Retorna ID de la categoría"),
+                     id_Campaign: int = Query(None, description="OUT. Retorna ID de la campaña"),
+                     id_Canje: int = Query(None, description="OUT. Retorna ID del canje"),
+                     id_Participante: int = Query(None, description="OUT. Retorna ID del participante"),
+                     id_Precodigo: int = Query(None, description="OUT. Retorna ID del précodigo"),
+                    ):
+
+
+    if not fecha:
+        # Si la variable es None o está vacía, asignar la fecha y hora actuales
+        fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    if not url and not id_frontal:
+        return ValidaUrlResponse(codigo_error=-1, mensaje="Debe llegar url o frontal", datos = [])
         
-    Se implementa como post porque así adminte datos en el body
-'''
-@router.post("/valida_precodigo")
-#----------------------------------------------------------------------------------
-def valida_precodigo(request: PrecodigoRequest):
 
-    # Lógica para validar el precódigo
-    if len(request.codigo) < 3:
-        raise HTTPException(status_code=400, detail="El código es demasiado corto.")
+    infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
+    
+    param = [infoTrans, precodigo, fecha, url, id_frontal, id_cat, id_Campaign, id_Canje, id_Participante, id_Precodigo]
+    
+    resultado = db_valida_precodigo(param = param)
 
-    return {"message": f"Código {request.codigo} es válido para el usuario {request.usuario_id}."}
+    if resultado.ret_code < 0:
+        raise HTTPException(status_code=500, detail= {"ret_code": resultado.ret_code,
+                                                      "ret_txt": resultado.ret_txt
+                                                     }
+                           )
+    
+    url_validada = ValidaPrecodigoRequest(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt)
+    url_validada.asigna_salida(resultado.parametros)
+    return url_validada
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #----------------------------------------------------------------------------------

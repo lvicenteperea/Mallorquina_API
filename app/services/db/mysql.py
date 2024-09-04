@@ -154,7 +154,6 @@ def call_proc_bbdd(procedimiento:str, param) -> InfoTransaccion:
     connection = get_db_connection()
     
     try:
-
         # Crear una nueva lista para almacenar los elementos expandidos, ya que param debe trar un tipo InfoTransaccion
         param_expanded = expande_lista(param)
 
@@ -201,7 +200,7 @@ def call_proc_bbdd(procedimiento:str, param) -> InfoTransaccion:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def db_valida_url(param: list) -> InfoTransaccion:
+def valida_url(param: list) -> InfoTransaccion:
     return call_proc_bbdd('w_exp_valida_url', param)
 
 
@@ -221,13 +220,30 @@ w_exp_valida_precodigo( IN v_idApp 				BIGINT
                       , OUT v_idPrecodigo		BIGINT
                       )
 ----------------------------------------------------------------------------------------'''
-def db_valida_precodigo(param: list) -> InfoTransaccion:
+def valida_precodigo(param: list) -> InfoTransaccion:
     return call_proc_bbdd('w_exp_valida_precodigo', param)
 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def db_obtener_contenidos(param: list) -> InfoTransaccion:
+def obtener_contenidos(param: list) -> InfoTransaccion:
     return call_proc_bbdd('w_cnt_contenidos', param)
 
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def obtener_cnt_exp_por_cat(param: list) -> InfoTransaccion:
+    return call_proc_bbdd('w_cnt_exp_por_cat', param)
+
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def obtener_cnt_categorias(param: list) -> InfoTransaccion:
+    return call_proc_bbdd('w_cnt_categorias', param)
+
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def obtener_cnt_exp_centros(param: list) -> InfoTransaccion:
+    return call_proc_bbdd('w_cnt_exp_centros', param)
 

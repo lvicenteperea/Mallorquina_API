@@ -17,8 +17,8 @@ class ValidaPrecodigoRequest(BaseModel):
 
     def asigna_salida(self, param: list):
         self.id_Frontal = param[0]
-        self.id_Catalogo = param[1]
-        self.id_Campaign = param[2]
-        self.id_Canje = param[3]
-        self.id_Participante = param[4]
-        self.id_Precodigo = param[5]
+        self.id_Catalogo = param[1] if len(param) > 1 else None
+        self.id_Campaign = param[2] if len(param) > 4 else None
+        self.id_Canje = param[3] if len(param) > 3 else None
+        self.id_Participante = param[4] if len(param) > 4 else None
+        self.id_Precodigo = param[5] if len(param) > 5 else None

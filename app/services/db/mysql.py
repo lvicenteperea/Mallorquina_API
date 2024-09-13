@@ -2,6 +2,7 @@ from fastapi import HTTPException
 import mysql.connector
 from mysql.connector import Error
 import json
+from collections import defaultdict
 
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.functions import expande_lista
@@ -198,6 +199,63 @@ def call_proc_bbdd(procedimiento:str, param) -> InfoTransaccion:
 
 
 
+
+
+# Función para procesar los resultados en formato JSON
+def procesar_a_json(resultados):
+    comunidades_dict = defaultdict(lambda: {"id": None, "nombre": "", "provincias": []})
+
+    for row in resultados:
+        id_comunidad = row["id_comunidad"]
+        if comunidades_dict[id_comunidad]["id"] is None:
+            comunidades_dict[id_comunidad]["id"] = id_comunidad
+            comunidades_dict[id_comunidad]["nombre"] = row["nombre_comunidad"]
+        
+        provincia = {
+            "id": row["id_provincia"],
+            "nombre": row["nombre_provincia"]
+        }
+        comunidades_dict[id_comunidad]["provincias"].append(provincia)
+
+    # Convertir el diccionario a la estructura JSON final
+    comunidades_list = list(comunidades_dict.values())
+    output_json = {"comunidades": comunidades_list}
+    
+    # Convertir a formato JSON y devolverlo
+    return json.dumps(output_json, indent=4, ensure_ascii=False)
+
+
+
+
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def ejec_select(query:str):
+ 
+    connection = get_db_connection()
+    
+
+    try:
+        cursor = connection.cursor(dictionary=True)  # Para obtener los resultados como diccionarios
+        cursor.execute(query)
+        resultado = cursor.fetchall()  # Obtener los resultados como lista de diccionarios
+
+        return resultado
+  
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"ret_code": -3,
+                                                     "ret_txt": str(e),
+                                                     "excepcion": e
+                                                    }
+                           )
+    finally:
+        get_db_close_connection(connection, cursor)
+
+
+
+
+
+
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def valida_url(param: list) -> InfoTransaccion:
@@ -247,3 +305,32 @@ def obtener_cnt_categorias(param: list) -> InfoTransaccion:
 def obtener_cnt_exp_centros(param: list) -> InfoTransaccion:
     return call_proc_bbdd('w_cnt_exp_centros', param)
 
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def comunidades_provincias_centros(param: list) -> InfoTransaccion:
+
+
+
+    query = """
+            SELECT 
+                exp_centros.id_contenido,
+                dir_provincias.id AS id_provincia,
+                dir_provincias.nombre AS nombre_provincia,
+                dir_comunidades.id AS id_comunidad,
+                dir_comunidades.nombre AS nombre_comunidad
+            FROM 
+                exp_centros
+            INNER JOIN 
+                dir_provincias ON exp_centros.id_provincia = dir_provincias.id
+                                AND dir_provincias.id_pais = 1
+            INNER JOIN 
+                dir_comunidades ON dir_provincias.id_comunidad = dir_comunidades.id;
+            """
+    resultados = ejec_select(query)
+
+    json_resultado = procesar_a_json(resultados)
+    
+    print(type(resultados))
+    print(type(json_resultado))
+    print(json_resultado)

@@ -76,3 +76,12 @@
 2024-09-04 01:11:41,923 - TIME - Tiempo de entrada: 1725405101.9159 ms, Tiempo de salida: 1725405101.9239 ms, Duración total: 8.00 ms - Estado: 200 - Duration: 1871784 ms
 2024-09-04 01:11:49,663 - TIME - Tiempo de entrada: 1725405109.6546 ms, Tiempo de salida: 1725405109.6636 ms, Duración total: 9.00 ms - Estado: 200 - Duration: 1879524 ms
 2024-09-04 01:32:10,332 - TIME - Tiempo de entrada: 1725406330.3316 ms, Tiempo de salida: 1725406330.3326 ms, Duración total: 1.00 ms - Estado: 500 - Duration: 938885 ms
+2024-09-12 22:43:46,224 - TIME - Tiempo de entrada: 1726173824.1447 ms, Tiempo de salida: 1726173826.2247 ms, Duración total: 2079.99 ms - Estado: 500 - Duration: 15263 ms
+2024-09-12 22:44:10,473 - TIME - Tiempo de entrada: 1726173850.4084 ms, Tiempo de salida: 1726173850.4738 ms, Duración total: 65.45 ms - Estado: 200 - Duration: 39512 ms
+2024-09-12 22:45:51,102 - TIME - Tiempo de entrada: 1726173950.9044 ms, Tiempo de salida: 1726173951.1022 ms, Duración total: 197.80 ms - Estado: 200 - Duration: 140140 ms
+2024-09-12 23:02:22,432 - TIME - Tiempo de entrada: 1726174942.4323 ms, Tiempo de salida: 1726174942.4323 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 1131470 ms
+2024-09-12 23:07:37,033 - TIME - Tiempo de entrada: 1726175257.0329 ms, Tiempo de salida: 1726175257.0339 ms, Duración total: 1.00 ms - Estado: 422 - Duration: 1446072 ms
+2024-09-12 23:08:02,281 - TIME - Tiempo de entrada: 1726175282.1989 ms, Tiempo de salida: 1726175282.2819 ms, Duración total: 83.02 ms - Estado: 200 - Duration: 1471320 ms
+2024-09-12 23:08:25,648 - TIME - Tiempo de entrada: 1726175305.6482 ms, Tiempo de salida: 1726175305.6482 ms, Duración total: 0.00 ms - Estado: 422 - Duration: 1494686 ms
+2024-09-12 23:08:54,925 - TIME - Tiempo de entrada: 1726175334.9199 ms, Tiempo de salida: 1726175334.9259 ms, Duración total: 6.00 ms - Estado: 500 - Duration: 1523964 ms
+2024-09-13 16:58:10,957 - TIME - Tiempo de entrada: 1726239490.9246 ms, Tiempo de salida: 1726239490.9576 ms, Duración total: 33.01 ms - Estado: 500 - Duration: 6402 ms

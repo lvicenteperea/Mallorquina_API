@@ -109,7 +109,7 @@ def valida_precodigo(id_App: int = Query(..., description="Identificador de la a
                      url: str = Query(None, description="Envia URL o id_frontal"),
                      id_frontal: int = Query(None, description="Envia URL o id_frontal"),
 
-                     id_cat: int = Query(None, description="OUT. Retorna ID de la categoría"),
+                     id_cat: int = Query(None, description="OUT. Retorna ID del catálogo"),
                      id_Campaign: int = Query(None, description="OUT. Retorna ID de la campaña"),
                      id_Canje: int = Query(None, description="OUT. Retorna ID del canje"),
                      id_Participante: int = Query(None, description="OUT. Retorna ID del participante"),
@@ -144,7 +144,7 @@ def valida_precodigo(id_App: int = Query(..., description="Identificador de la a
         id_frontal : int, opcional
             El ID del frontal relacionado con la solicitud o la URL. Al menos uno de estos campos debe ser proporcionado.
         id_cat : int, opcional
-            OUT. Retorna ID de la categoría tras la validación.
+            OUT. Retorna ID del catálogo tras la validación.
         id_Campaign : int, opcional
             OUT. Retorna ID de la campaña tras la validación.
         id_Canje : int, opcional
@@ -602,6 +602,47 @@ async def cnt_exp_centros(id_App: int = Query(..., description="Identificador de
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.get("/comunidades_provincias_centros", response_model=ListaContenidosResponse)
+async def comunidades_provincias_centros(id_App: int = Query(..., description="Identificador de la aplicación"),
+                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                         ret_code: int = Query(..., description="Código de retorno inicial"),
+                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                         id_idioma: int = Query(0, description="Identificador del idioma (opcional, por defecto 0)"),
+                         id_dispositivo: int = Query(0, description="Identificador del dispositivo (opcional, por defecto 0)"),
+                         fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS' (opcional)"),
+                         id_semilla: int = Query(..., description="Semilla de la que queremos sacar los centros"),
+                         vacios: str = Query('N', description="Indica si se deben incluir contenidos vacíos (S --> sacar vacios también, cualquier otro valor no los saca)")
+                         ):
+    try:
+        if not fecha:
+            # Si la variable es None o está vacía, asignar la fecha y hora actuales
+            fecha_hora_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            # Si la variable ya tiene un valor, mantenerlo
+            fecha_hora_actual = fecha
+
+        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
+
+        param = [infoTrans, id_idioma, id_dispositivo, fecha_hora_actual, id_semilla, vacios]
+
+        resultado = db.obtener_cnt_exp_centros(param = param)
+
+        # if resultado['ret_code'] != 0:
+        if resultado.ret_code < 0:
+            raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
+
+        # return ListaContenidosResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, lista=resultado.resultados)
+    
+    except MadreException as e:
+        raise e
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 

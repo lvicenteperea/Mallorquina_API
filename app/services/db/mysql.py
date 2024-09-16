@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-import mysql.connector
+import mysql.connector 
 from mysql.connector import Error
 import json
 from collections import defaultdict

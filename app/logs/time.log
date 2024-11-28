@@ -85,3 +85,8 @@
 2024-09-12 23:08:25,648 - TIME - Tiempo de entrada: 1726175305.6482 ms, Tiempo de salida: 1726175305.6482 ms, Duración total: 0.00 ms - Estado: 422 - Duration: 1494686 ms
 2024-09-12 23:08:54,925 - TIME - Tiempo de entrada: 1726175334.9199 ms, Tiempo de salida: 1726175334.9259 ms, Duración total: 6.00 ms - Estado: 500 - Duration: 1523964 ms
 2024-09-13 16:58:10,957 - TIME - Tiempo de entrada: 1726239490.9246 ms, Tiempo de salida: 1726239490.9576 ms, Duración total: 33.01 ms - Estado: 500 - Duration: 6402 ms
+2024-09-16 00:07:03,687 - TIME - Tiempo de entrada: 1726438023.6462 ms, Tiempo de salida: 1726438023.6873 ms, Duración total: 41.07 ms - Estado: 500 - Duration: 40820 ms
+2024-09-16 00:10:57,610 - TIME - Tiempo de entrada: 1726438257.5857 ms, Tiempo de salida: 1726438257.6107 ms, Duración total: 25.01 ms - Estado: 500 - Duration: 1623 ms
+2024-09-16 00:20:31,545 - TIME - Tiempo de entrada: 1726438831.5206 ms, Tiempo de salida: 1726438831.5456 ms, Duración total: 25.01 ms - Estado: 500 - Duration: 6861 ms
+2024-09-16 00:22:26,137 - TIME - Tiempo de entrada: 1726438946.1124 ms, Tiempo de salida: 1726438946.1374 ms, Duración total: 25.01 ms - Estado: 500 - Duration: 3018 ms
+2024-09-16 00:23:16,905 - TIME - Tiempo de entrada: 1726438996.8809 ms, Tiempo de salida: 1726438996.9059 ms, Duración total: 25.01 ms - Estado: 500 - Duration: 2671 ms

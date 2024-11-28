@@ -630,8 +630,9 @@ async def comunidades_provincias_centros(id_App: int = Query(..., description="I
 
         param = [infoTrans, id_idioma, id_dispositivo, fecha_hora_actual, id_semilla, vacios]
 
-        resultado = db.obtener_cnt_exp_centros(param = param)
+        resultado = db.comunidades_provincias_centros(param = param)
 
+        print(".04", resultado)
         # if resultado['ret_code'] != 0:
         if resultado.ret_code < 0:
             raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
@@ -642,7 +643,7 @@ async def comunidades_provincias_centros(id_App: int = Query(..., description="I
         raise e
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=e)
 
 
 

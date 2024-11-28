@@ -73,8 +73,10 @@ async def madre_exception_handler(request: Request, exc: MadreException):
 # -----------------------------------------------------------------------------------------------
 async def http_exception_handler(request: Request, exc: HTTPException):
 # -----------------------------------------------------------------------------------------------
-    print("http_exception_handler", type(exc))
+    print("_http_exception_handler", type(exc))
     
+    print(type(exc))
+
     if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],
                       "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),

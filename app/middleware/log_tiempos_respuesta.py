@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 import time
-import logging
+# import logging
 from app.utils.functions import graba_log_info
 
 # Configuración básica de logging

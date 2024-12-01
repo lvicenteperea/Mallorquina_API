@@ -3,7 +3,7 @@ from datetime import datetime
 
 # mias
 from app.api.schemas.mallorquina import MallorquinaResponse
-import app.services.mallorquina.sync_data as carga
+import app.services.mallorquina.sync_data as sync_data
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 
@@ -24,7 +24,7 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
 
         param = [infoTrans]
 
-        resultado = carga.recorre_BBDD(param = param)
+        resultado = sync_data.recorre_tiendas(param = param)
 
         if resultado.ret_code < 0:
             raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)

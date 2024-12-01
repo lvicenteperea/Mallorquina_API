@@ -1,38 +1,18 @@
 from fastapi import HTTPException
-import mysql.connector
-from mysql.connector import Error
 import json
 from collections import defaultdict
+
+
+from datetime import datetime
+from config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
+from models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
+from services.mallorquina.sendgrid_service import enviar_email
+from services.sync_una_BBDD import procesar_BBDD
+
 
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.functions import expande_lista
 from app.config.settings import settings
-
-#----------------------------------------------------------------------------------------
-def get_db_connection():
-#----------------------------------------------------------------------------------------
-    try:
-        connection = mysql.connector.connect(
-            host=settings.MYSQL_DB_URL,
-            user=settings.MYSQL_DB_USER,
-            password=settings.MYSQL_DB_PWD,
-            database=settings.MYSQL_DB_DATABASE
-        )
-        return connection
-    
-    except Error as e:
-        raise HTTPException(status_code=400, detail= {"ret_code": -1,
-                                                      "ret_txt": str(e),
-                                                     }
-                           )
-
-#----------------------------------------------------------------------------------------
-def get_db_close_connection(conn, cursor):
-#----------------------------------------------------------------------------------------
-    if conn.is_connected():
-        if isinstance(cursor, mysql.connector.cursor_cext.CMySQLCursor):
-            cursor.close()
-        conn.close()
 
 #----------------------------------------------------------------------------------------
 def call_proc_bbdd(procedimiento:str, param) -> InfoTransaccion:
@@ -82,10 +62,6 @@ def call_proc_bbdd(procedimiento:str, param) -> InfoTransaccion:
         get_db_close_connection(connection, cursor)
 
 
-
-
-
-
 # Función para procesar los resultados en formato JSON
 def procesar_a_json(resultados):
     comunidades_dict = defaultdict(lambda: {"id": None, "nombre": "", "provincias": []})
@@ -108,9 +84,6 @@ def procesar_a_json(resultados):
     
     # Convertir a formato JSON y devolverlo
     return json.dumps(output_json, indent=4, ensure_ascii=False)
-
-
-
 
 
 #----------------------------------------------------------------------------------------
@@ -137,59 +110,61 @@ def ejec_select(query:str):
         get_db_close_connection(connection, cursor)
 
 
-
-
-
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def valida_url(param: list) -> InfoTransaccion:
-    return call_proc_bbdd('w_exp_valida_url', param)
+def recorre_BBDD(param: list) -> InfoTransaccion:
+    # return call_proc_bbdd('w_exp_valida_url', param)
+    config = obtener_configuracion_general()
 
 
-'''----------------------------------------------------------------------------------------
-w_exp_valida_precodigo( IN v_idApp 				BIGINT  
-                      , IN v_user 				VARCHAR(45)         -- Usuario que lanza el procedimiento
-                      , INOUT v_retNum 			INT            -- 0 --> OK; <0 --> error;  >0 --> Ok, con algún significado; 2 --> El precodigo ya ha sido canjeado
-                      , INOUT v_retTxt 			VARCHAR(4000)  -- Texto en caso de error (v_retNum < 0)
-                      , IN	  v_precodigo		VARCHAR(30)
-                      , IN  v_fecha 			VARCHAR(19)     -- '%Y-%m-%d %H:%i:%s'
-                      , IN  v_url				VARCHAR(400) 	-- LLeva URL o ....
-                      , INOUT v_idFrontal		BIGINT			-- ... lleva IdFrontal
-                      , OUT v_idCatalogo		BIGINT
-                      , OUT v_idCampaign		BIGINT
-                      , OUT v_idCanje			BIGINT
-                      , OUT v_idParticipante	BIGINT
-                      , OUT v_idPrecodigo		BIGINT
-                      )
-----------------------------------------------------------------------------------------'''
-def valida_precodigo(param: list) -> InfoTransaccion:
-    return call_proc_bbdd('w_exp_valida_precodigo', param)
+    if not config.get("ID", False):
+        print("No se han encontrado datos de configuración", config["En_Ejecucion"])
+        return
+    
+    if config["En_Ejecucion"]:
+        print("El proceso ya está en ejecución.")
+        return
 
+    actualizar_en_ejecucion(1)
 
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def obtener_contenidos(param: list) -> InfoTransaccion:
-    return call_proc_bbdd('w_cnt_contenidos', param)
+    try:
+        conn_mysql = get_db_connection_mysql()
+        cursor_mysql = conn_mysql.cursor(dictionary=True)
 
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd")
+        lista_bbdd = cursor_mysql.fetchall()
 
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def obtener_cnt_exp_por_cat(param: list) -> InfoTransaccion:
-    return call_proc_bbdd('w_cnt_exp_por_cat', param)
+        for bbdd in lista_bbdd:
+                print("")
+                print("---------------------------------------------------------------------------------------")
+                print(f"Procesando TIENDA: {bbdd}")
+                print("---------------------------------------------------------------------------------------")
+                print("")
 
+                # Aquí va la lógica específica para cada bbdd
+                procesar_BBDD(bbdd, conn_mysql)
 
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def obtener_cnt_categorias(param: list) -> InfoTransaccion:
-    return call_proc_bbdd('w_cnt_categorias', param)
+                cursor_mysql.execute(
+                    "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
+                    (datetime.now(), bbdd["ID"])
+                )
+                conn_mysql.commit()
 
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"ret_code": -3,
+                                                     "ret_txt": str(e),
+                                                     "excepcion": e
+                                                    }
+                           )        
 
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def obtener_cnt_exp_centros(param: list) -> InfoTransaccion:
-    return call_proc_bbdd('w_cnt_exp_centros', param)
+    finally:
+        close_connection_mysql(conn_mysql, cursor_mysql)
 
+        actualizar_en_ejecucion(0)
+        enviar_email(config["Lista_emails"],
+                     "Proceso finalizado",
+                     "El proceso de sincronización ha terminado."
+        )
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------

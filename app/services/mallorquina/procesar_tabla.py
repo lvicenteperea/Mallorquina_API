@@ -1,6 +1,6 @@
-from models.mll_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
-from models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
-from config.db_mallorquina import get_db_connection_sqlserver
+from app.models.mll_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
+from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
+from app.config.db_mallorquina import get_db_connection_sqlserver
 
 def procesar_tabla(tabla, conn_mysql):
     # Obtener configuración y campos necesarios

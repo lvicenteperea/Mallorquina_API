@@ -1,13 +1,12 @@
 from fastapi import HTTPException
 import json
 from collections import defaultdict
-
-
 from datetime import datetime
-from config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
-from models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
-from services.mallorquina.sendgrid_service import enviar_email
-from services.mallorquina.procesar_tabla import procesar_tabla
+
+from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
+from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
+from app.services.mallorquina.sendgrid_service import enviar_email
+from app.services.mallorquina.procesar_tabla import procesar_tabla
 
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.functions import expande_lista

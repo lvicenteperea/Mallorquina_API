@@ -110,3 +110,10 @@
 2024-09-16 21:14:30,278 - TIME - Tiempo de entrada: 1726521270.2774 ms, Tiempo de salida: 1726521270.2782 ms, DuraciÃ³n total: 0.81 ms - Estado: 500 - Duration: 2248651 ms
 2024-09-16 21:15:10,494 - TIME - Tiempo de entrada: 1726521310.4940 ms, Tiempo de salida: 1726521310.4948 ms, DuraciÃ³n total: 0.82 ms - Estado: 500 - Duration: 2288867 ms
 >>>>>>> 7b405e02e89bbd69b690e466896a5ce165166a76
+2024-12-01 22:57:10,108 - TIME - Tiempo de entrada: 1733090230.1076 ms, Tiempo de salida: 1733090230.1086 ms, Duración total: 1.00 ms - Estado: 404 - Duration: 90981 ms
+2024-12-01 23:02:39,215 - TIME - Tiempo de entrada: 1733090559.2149 ms, Tiempo de salida: 1733090559.2159 ms, Duración total: 1.00 ms - Estado: 405 - Duration: 420088 ms
+2024-12-01 23:06:20,088 - TIME - Tiempo de entrada: 1733090780.0886 ms, Tiempo de salida: 1733090780.0886 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 640961 ms
+2024-12-01 23:06:22,961 - TIME - Tiempo de entrada: 1733090782.9602 ms, Tiempo de salida: 1733090782.9612 ms, Duración total: 1.00 ms - Estado: 404 - Duration: 643834 ms
+2024-12-01 23:06:23,490 - TIME - Tiempo de entrada: 1733090783.4894 ms, Tiempo de salida: 1733090783.4903 ms, Duración total: 0.99 ms - Estado: 404 - Duration: 644363 ms
+2024-12-01 23:06:23,705 - TIME - Tiempo de entrada: 1733090783.7055 ms, Tiempo de salida: 1733090783.7055 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 644578 ms
+2024-12-01 23:14:58,322 - TIME - Tiempo de entrada: 1733091298.3228 ms, Tiempo de salida: 1733091298.3228 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 1091 ms

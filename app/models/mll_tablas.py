@@ -1,5 +1,3 @@
-from config.database import conexion_mysql
-
 
 def obtener_campos_tabla(conn, id_tabla):
 

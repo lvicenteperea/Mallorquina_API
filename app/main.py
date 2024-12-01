@@ -4,7 +4,7 @@
 
 # uvicorn app.main:app --reload
 from fastapi import FastAPI, HTTPException
-import json
+import json 
 
 from app.exceptions import http_exception_handler, json_decode_error_handler, generic_exception_handler, madre_exception_handler, type_error_handler
 from app.api.routes import router as api_router

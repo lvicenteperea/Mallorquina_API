@@ -1,4 +1,4 @@
-from models.mll_cfg import get_db_connection_mysql, close_connection_mysql
+from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 
 #----------------------------------------------------------------------------------------
 def obtener_configuracion_general():

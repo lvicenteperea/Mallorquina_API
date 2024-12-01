@@ -20,16 +20,19 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
                        ):
 
     try:
-        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
+        # infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
 
-        param = [infoTrans]
+        # param = [infoTrans]
 
-        resultado = sync_data.recorre_tiendas(param = param)
+        # resultado = sync_data.recorre_tiendas(param = param)
 
-        if resultado.ret_code < 0:
-            raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
+        # if resultado.ret_code < 0:
+        #     raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
 
-        return MallorquinaResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos="")
+        # return MallorquinaResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos="")
+        print("")
+        print("Lo estoy ejecutando")
+        print("")
     
 
     except MadreException as e:

@@ -95,6 +95,28 @@ def valida_url(id_App: int = Query(..., description="Identificador de la aplicac
     url_validada.asigna_salida(resultado.parametros)
     return url_validada
     
+""" 
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.get("/mll_sync_todo", response_model=ListaContenidosResponse)
+async def mll_sync_todo(id_App: int = Query(..., description="Identificador de la aplicación"),
+                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                        ret_code: int = Query(..., description="Código de retorno inicial"),
+                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                       ):
+
+    try:
+  c
+        # return ListaContenidosResponse(codigo_error=151, mensaje="Mensaje de texto", lista="Lista de resultados")
+
+
+    except MadreException as e:
+        raise e
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+ """
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------

@@ -13,10 +13,10 @@ import pyodbc
 def get_db_connection_mysql():
     try:
         connection = mysql.connector.connect(
-            host=settings.MYSQL_DB_URL,
-            user=settings.MYSQL_DB_USER,
-            password=settings.MYSQL_DB_PWD,
-            database=settings.MYSQL_DB_DATABASE
+            host=settings.MYSQL_DB_URL_MLL,
+            user=settings.MYSQL_DB_USER_MLL,
+            password=settings.MYSQL_DB_PWD_MLL,
+            database=settings.MYSQL_DB_DATABASE_MLL
         )
         return connection
     

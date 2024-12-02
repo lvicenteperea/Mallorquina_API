@@ -170,7 +170,7 @@ def recorre_tiendas(param: list) -> InfoTransaccion:
                 print("")
 
                 # Aquí va la lógica específica para cada bbdd
-                recorre_tablas(bbdd, conn_mysql)
+                recorre_tablas(bbdd, conn_mysql,[])
 
                 cursor_mysql.execute(
                     "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",

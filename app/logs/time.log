@@ -117,3 +117,7 @@
 2024-12-01 23:06:23,490 - TIME - Tiempo de entrada: 1733090783.4894 ms, Tiempo de salida: 1733090783.4903 ms, Duración total: 0.99 ms - Estado: 404 - Duration: 644363 ms
 2024-12-01 23:06:23,705 - TIME - Tiempo de entrada: 1733090783.7055 ms, Tiempo de salida: 1733090783.7055 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 644578 ms
 2024-12-01 23:14:58,322 - TIME - Tiempo de entrada: 1733091298.3228 ms, Tiempo de salida: 1733091298.3228 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 1091 ms
+2024-12-01 23:29:42,483 - TIME - Tiempo de entrada: 1733092182.4544 ms, Tiempo de salida: 1733092182.4834 ms, Duración total: 29.01 ms - Estado: 500 - Duration: 2589 ms
+2024-12-02 08:55:27,867 - TIME - Tiempo de entrada: 1733126127.7566 ms, Tiempo de salida: 1733126127.8673 ms, Duración total: 110.77 ms - Estado: 500 - Duration: 32295 ms
+2024-12-02 09:21:16,762 - TIME - Tiempo de entrada: 1733127676.7194 ms, Tiempo de salida: 1733127676.7621 ms, Duración total: 42.66 ms - Estado: 500 - Duration: 1641 ms
+2024-12-02 09:23:25,769 - TIME - Tiempo de entrada: 1733127785.3825 ms, Tiempo de salida: 1733127805.7693 ms, Duración total: 20386.80 ms - Estado: 500 - Duration: 23976 ms

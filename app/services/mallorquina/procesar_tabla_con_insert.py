@@ -41,57 +41,22 @@ def procesar_tabla(tabla, conn_mysql):
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
 
-        # Preparar los cursores para MySQL
+        # Preparar e insertar los registros en BD_Mallorquina
+        # conn_mysql = conexion_mysql()
         cursor_mysql = conn_mysql.cursor()
         columnas_mysql = [campo["Nombre_Destino"] for campo in campos] + ["Origen_BBDD"]
-
-        # Identificar el campo PK basado en mll_campos
-        pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
-        if not pk_campos:
-            raise ValueError("No se encontró ningún campo PK en mll_campos.")
-
-        # Usamos el primer campo PK encontrado
-        pk_campo = pk_campos[0]["Nombre_Destino"]
-
-        # Generar consultas dinámicas
         insert_query = f"""
             INSERT INTO {nombre_tabla_destino} ({', '.join(columnas_mysql)})
             VALUES ({', '.join(['%s'] * len(columnas_mysql))})
         """
-        update_query = f"""
-            UPDATE {nombre_tabla_destino}
-            SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos])}, Origen_BBDD = %s
-            WHERE {pk_campo} = %s
-        """
 
         for registro in registros:
-            # Obtener el valor del campo PK desde el registro
-            pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
-            pk_value = registro[pk_index]
-
-            select = f"""SELECT COUNT(*) 
-                                       FROM {nombre_tabla_destino} 
-                                      WHERE {pk_campo} = %s
-                                        AND Origen_BBDD = {tabla["ID_BBDD"]}"""
-            print("SELECT", select)
-
-            # Comprobar si el registro ya existe en la tabla destino
-            cursor_mysql.execute(select, (pk_value,))
-            existe = cursor_mysql.fetchone()[0] > 0  # Si existe, devuelve True
-
-            if existe:
-                # Realizar un UPDATE
-                valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
-                print("UPDATE", valores_update)
-                cursor_mysql.execute(update_query, valores_update)
-            else:
-                # Realizar un INSERT
-                registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
-                print("INSERT", registro_destino)
-                cursor_mysql.execute(insert_query, registro_destino)
+            registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Añadimos el origen
+            cursor_mysql.execute(insert_query, registro_destino)
 
         conn_mysql.commit()
         cursor_mysql.close()
 
     finally:
         conn_sqlserver.close()
+

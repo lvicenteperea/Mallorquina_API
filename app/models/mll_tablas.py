@@ -13,7 +13,11 @@ def crear_tabla_destino(conn_mysql, nombre_tabla, campos):
 
     columnas = ", ".join([f"{campo['Nombre_Destino']} {campo['Tipo']}" for campo in campos])
     columnas += ", Origen_BBDD VARCHAR(100)"
-    query = f"CREATE TABLE IF NOT EXISTS {nombre_tabla} ({columnas})"
+    query = f"""CREATE TABLE IF NOT EXISTS {nombre_tabla} ({columnas},
+            created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+            modified_by varchar(45) DEFAULT NULL )
+            ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4"""
 
     cursor.execute(query)
     conn_mysql.commit()

@@ -230,9 +230,7 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
 
             if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
                 # print(f"Procesando tabla: {tabla['ID_Tabla']}")
-                print("---------------------------------------------------------------------------------------")
                 print(f"Procesando tabla: {tabla}")
-                print("---------------------------------------------------------------------------------------")
 
                 # Aquí va la lógica específica para cada tabla
                 procesar_tabla(tabla, conn_mysql)

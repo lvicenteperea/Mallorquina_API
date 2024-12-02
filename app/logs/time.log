@@ -121,3 +121,10 @@
 2024-12-02 08:55:27,867 - TIME - Tiempo de entrada: 1733126127.7566 ms, Tiempo de salida: 1733126127.8673 ms, Duración total: 110.77 ms - Estado: 500 - Duration: 32295 ms
 2024-12-02 09:21:16,762 - TIME - Tiempo de entrada: 1733127676.7194 ms, Tiempo de salida: 1733127676.7621 ms, Duración total: 42.66 ms - Estado: 500 - Duration: 1641 ms
 2024-12-02 09:23:25,769 - TIME - Tiempo de entrada: 1733127785.3825 ms, Tiempo de salida: 1733127805.7693 ms, Duración total: 20386.80 ms - Estado: 500 - Duration: 23976 ms
+2024-12-02 17:12:36,036 - TIME - Tiempo de entrada: 1733155934.4203 ms, Tiempo de salida: 1733155956.0361 ms, Duración total: 21615.80 ms - Estado: 500 - Duration: 24841 ms
+2024-12-02 17:49:25,944 - TIME - Tiempo de entrada: 1733158157.0402 ms, Tiempo de salida: 1733158165.9449 ms, Duración total: 8904.67 ms - Estado: 500 - Duration: 51784 ms
+2024-12-02 18:41:24,214 - TIME - Tiempo de entrada: 1733161282.9949 ms, Tiempo de salida: 1733161284.2144 ms, Duración total: 1219.48 ms - Estado: 500 - Duration: 72959 ms
+2024-12-02 18:55:58,879 - TIME - Tiempo de entrada: 1733162157.6718 ms, Tiempo de salida: 1733162158.8796 ms, Duración total: 1207.76 ms - Estado: 500 - Duration: 15620 ms
+2024-12-02 19:08:04,506 - TIME - Tiempo de entrada: 1733162872.7079 ms, Tiempo de salida: 1733162884.5057 ms, Duración total: 11797.83 ms - Estado: 500 - Duration: 21057 ms
+2024-12-02 19:12:50,591 - TIME - Tiempo de entrada: 1733163163.8289 ms, Tiempo de salida: 1733163170.5920 ms, Duración total: 6763.05 ms - Estado: 500 - Duration: 307142 ms
+2024-12-02 19:51:53,253 - TIME - Tiempo de entrada: 1733165503.9497 ms, Tiempo de salida: 1733165513.2536 ms, Duración total: 9303.87 ms - Estado: 500 - Duration: 37884 ms

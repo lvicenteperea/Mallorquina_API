@@ -58,12 +58,17 @@ def procesar_tabla(tabla, conn_mysql):
             INSERT INTO {nombre_tabla_destino} ({', '.join(columnas_mysql)})
             VALUES ({', '.join(['%s'] * len(columnas_mysql))})
         """
+        # update_query = f"""
+        #     UPDATE {nombre_tabla_destino}
+        #     SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos])}
+        #     WHERE {pk_campo} = %s AND Origen_BBDD = %s
+        # """
+        campos_update = [campo for campo in campos if campo["Nombre_Destino"] != pk_campo]
         update_query = f"""
             UPDATE {nombre_tabla_destino}
-            SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos])}, Origen_BBDD = %s
-            WHERE {pk_campo} = %s
+            SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos_update])}
+            WHERE {pk_campo} = %s AND Origen_BBDD = %s
         """
-
         for registro in registros:
             # Obtener el valor del campo PK desde el registro
             pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
@@ -73,7 +78,9 @@ def procesar_tabla(tabla, conn_mysql):
                                        FROM {nombre_tabla_destino} 
                                       WHERE {pk_campo} = %s
                                         AND Origen_BBDD = {tabla["ID_BBDD"]}"""
-            print("SELECT", select)
+            print("-------------------------------------", )
+            print("SELECT:", select, pk_value)
+            print(campos_update)
 
             # Comprobar si el registro ya existe en la tabla destino
             cursor_mysql.execute(select, (pk_value,))
@@ -82,12 +89,16 @@ def procesar_tabla(tabla, conn_mysql):
             if existe:
                 # Realizar un UPDATE
                 valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
-                print("UPDATE", valores_update)
+                print("Valores update: ", valores_update)
+                valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
+                  for campo in campos_update] + [pk_value, tabla["ID_BBDD"]]
+                print("UPDATE:", update_query, valores_update)
+                print("Valores: ", list(registro), tabla["ID_BBDD"], pk_value)
                 cursor_mysql.execute(update_query, valores_update)
             else:
                 # Realizar un INSERT
                 registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
-                print("INSERT", registro_destino)
+                print("INSERT:", insert_query, registro_destino)
                 cursor_mysql.execute(insert_query, registro_destino)
 
         conn_mysql.commit()

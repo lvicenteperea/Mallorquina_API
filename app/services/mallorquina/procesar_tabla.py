@@ -78,9 +78,6 @@ def procesar_tabla(tabla, conn_mysql):
                                        FROM {nombre_tabla_destino} 
                                       WHERE {pk_campo} = %s
                                         AND Origen_BBDD = {tabla["ID_BBDD"]}"""
-            print("-------------------------------------", )
-            print("SELECT:", select, pk_value)
-            print(campos_update)
 
             # Comprobar si el registro ya existe en la tabla destino
             cursor_mysql.execute(select, (pk_value,))
@@ -89,16 +86,12 @@ def procesar_tabla(tabla, conn_mysql):
             if existe:
                 # Realizar un UPDATE
                 valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
-                print("Valores update: ", valores_update)
                 valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
-                  for campo in campos_update] + [pk_value, tabla["ID_BBDD"]]
-                print("UPDATE:", update_query, valores_update)
-                print("Valores: ", list(registro), tabla["ID_BBDD"], pk_value)
+                                            for campo in campos_update] + [pk_value, tabla["ID_BBDD"]]
                 cursor_mysql.execute(update_query, valores_update)
             else:
                 # Realizar un INSERT
                 registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
-                print("INSERT:", insert_query, registro_destino)
                 cursor_mysql.execute(insert_query, registro_destino)
 
         conn_mysql.commit()

@@ -3,10 +3,13 @@ import json
 from collections import defaultdict
 from datetime import datetime
 
-from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
+
+from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
+from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
 from app.services.mallorquina.sendgrid_service import enviar_email
 from app.services.mallorquina.procesar_tabla import procesar_tabla
+from app.services.mallorquina.procesar_consulta import procesar_consulta
 
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.functions import expande_lista
@@ -88,7 +91,7 @@ def procesar_a_json(resultados):
 #----------------------------------------------------------------------------------------
 def ejec_select(query:str):
  
-    connection = get_db_connection()
+    connection = get_db_connection_mysql()
     
 
     try:
@@ -105,7 +108,35 @@ def ejec_select(query:str):
                                                     }
                            )
     finally:
-        get_db_close_connection(connection, cursor)
+        close_connection_mysql(connection, cursor)
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def ejec_select_sql_server(query:str):
+ 
+    # Buscamos la conexión que necesitamos para esta bbdd origen
+    bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, tabla["ID_BBDD"])
+
+    # conextamos con esta bbdd origen
+    conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+
+    try:
+        cursor_sqlserver = conn_sqlserver.cursor()
+        cursor_sqlserver.execute(query)
+        resultado = cursor_sqlserver.fetchall()  # Obtener los resultados como lista de diccionarios
+
+        return resultado
+  
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"ret_code": -3,
+                                                     "ret_txt": str(e),
+                                                     "excepcion": e
+                                                    }
+                           )
+    finally:
+        conn_sqlserver.close()
+
+
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -216,7 +247,7 @@ def recorre_tiendas(param: list) -> InfoTransaccion:
 
 #----------------------------------------------------------------------------------------
 def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
-#def procesar_BBDD():
+
     try:
         # conn_mysql = conexion_mysql("General")
         cursor_mysql = conn_mysql.cursor(dictionary=True)
@@ -249,3 +280,116 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
                            )            
     finally:
         cursor_mysql.close()
+
+
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def recorre_consultas_tiendas(param: list) -> InfoTransaccion:
+    config = obtener_configuracion_general()
+
+    if not config.get("ID", False):
+        print("No se han encontrado datos de configuración", config["En_Ejecucion"])
+        return
+    
+    if config["En_Ejecucion"]:
+        print("El proceso ya está en ejecución.")
+        return
+
+    actualizar_en_ejecucion(1)
+
+    try:
+        conn_mysql = get_db_connection_mysql()
+        cursor_mysql = conn_mysql.cursor(dictionary=True)
+
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd")
+        lista_bbdd = cursor_mysql.fetchall()
+
+        for bbdd in lista_bbdd:
+                print("")
+                print("---------------------------------------------------------------------------------------")
+                print(f"Procesando TIENDA: {bbdd}")
+                print("---------------------------------------------------------------------------------------")
+                print("")
+
+                # Aquí va la lógica específica para cada bbdd
+                recorrer_consultas(bbdd, conn_mysql,[])
+
+                cursor_mysql.execute(
+                    "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
+                    (datetime.now(), bbdd["ID"])
+                )
+                conn_mysql.commit()
+
+
+        """ 
+            resultados = ejec_select(query)
+            print("05")
+            json_resultado = procesar_a_json(resultados)
+
+            print("06")    
+            print(type(resultados))
+            print(type(json_resultado))
+            return json_resultado
+        """
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"ret_code": -3,
+                                                     "ret_txt": str(e),
+                                                     "excepcion": e
+                                                    }
+                           )        
+
+    finally:
+        close_connection_mysql(conn_mysql, cursor_mysql)
+
+        actualizar_en_ejecucion(0)
+        enviar_email(config["Lista_emails"],
+                     "Proceso finalizado",
+                     "El proceso de sincronización ha terminado."
+        )
+
+def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
+
+    try:
+        cursor_mysql = conn_mysql.cursor(dictionary=True)
+
+        # cursor_mysql.execute("SELECT * FROM mll_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
+        # tablas_bbdd = cursor_mysql.fetchall()
+
+        # for tabla in tablas_bbdd:
+        tabla={'ID': 11, 'ID_BBDD': reg_cfg_bbdd["ID"], 'ID_Tabla': 1, 'TABLA': "arqueo_caja"}
+        # ultima_actualizacion = tabla["Fecha_Ultima_Actualizacion"]
+        # intervalo = tabla["Cada_Cuanto_Ejecutar"]
+
+        # if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
+        print(f"Procesando Consulta: {tabla}")
+
+        # Aquí va la lógica específica para cada tabla
+        resultados = procesar_consulta(tabla, conn_mysql)
+
+        # cursor_mysql.execute(
+        #     "UPDATE mll_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
+        #     (datetime.now(), tabla["ID"])
+        # )
+        # conn_mysql.commit()
+        # FIN IF comentado
+        # FIN FOR comentado
+
+        json_resultado = procesar_a_json(resultados)
+
+        print("06")    
+        print(type(resultados))
+        print(type(json_resultado))
+        print (json_resultado) # return json_resultado
+        
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"ret_code": -3,
+                                                     "ret_txt": str(e),
+                                                     "excepcion": e
+                                                    }
+                           )            
+    finally:
+        cursor_mysql.close()
+

@@ -44,17 +44,20 @@ def procesar_consulta(tabla, conn_mysql):
 
     # conextamos con esta bbdd origen
     conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-    print("Coenxión realizada: ", bbdd_config)
+    print("Conexión realizada: ", bbdd_config)
 
     try:
         # Leer datos desde SQL Server
         cursor_sqlserver = conn_sqlserver.cursor()
-        select_query = f"""SELECT * FROM `Arqueo Ciego`
-                            WHERE `Id Apertura` IN ({', '.join(map(str, [8285,8286,8287,8288]))})
+        apertura_ids = [8285, 8286, 8287, 8288]
+        placeholders = ", ".join(["?"] * len(apertura_ids))
+        select_query = f"""SELECT * FROM [Arqueo Ciego]
+                            WHERE [Id Apertura] IN ({placeholders})
                             ORDER BY Descripcion
                  """
-        cursor_sqlserver.execute(select_query)
-        print("cursor ejecutado: ", select_query)
+        print("Select creada: ", select_query)
+        cursor_sqlserver.execute(select_query, apertura_ids)
+        print("cursor ejecutado: ")
 
         registros = cursor_sqlserver.fetchall()
         print("Registros: ", registros)

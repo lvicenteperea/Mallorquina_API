@@ -20,7 +20,7 @@ from app.config.db_mallorquina import get_db_connection_sqlserver
 #----------------------------------------------------------------------------------
 def procesar_consulta(tabla, conn_mysql):
 
-    print(f"Procesando Consultas de: {tabla}")
+    # print(f"Procesando Consultas de: {tabla}")
     # Obtener configuración y campos necesarios
     # cursor_mysql = conn_mysql.cursor(dictionary=True)
     
@@ -44,7 +44,7 @@ def procesar_consulta(tabla, conn_mysql):
 
     # conextamos con esta bbdd origen
     conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-    print("Conexión realizada: ", bbdd_config)
+    # print("Conexión realizada: ", bbdd_config)
 
     try:
         # Leer datos desde SQL Server
@@ -55,12 +55,12 @@ def procesar_consulta(tabla, conn_mysql):
                             WHERE [Id Apertura] IN ({placeholders})
                             ORDER BY Descripcion
                  """
-        print("Select creada: ", select_query)
+        # print("Select creada: ", select_query)
         cursor_sqlserver.execute(select_query, apertura_ids)
-        print("cursor ejecutado: ")
+        # print("cursor ejecutado: ")
 
         registros = cursor_sqlserver.fetchall()
-        print("Registros: ", registros)
+        # print("Registros: ", registros)
 
         # Preparar los cursores para MySQL
         # cursor_mysql = conn_mysql.cursor()

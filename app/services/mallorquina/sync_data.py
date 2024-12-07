@@ -2,7 +2,7 @@ from fastapi import HTTPException
 import json
 from collections import defaultdict
 from datetime import datetime
-
+from decimal import Decimal
 
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
@@ -62,30 +62,34 @@ def call_proc_bbdd(procedimiento:str, param) -> InfoTransaccion:
     finally:
         get_db_close_connection(connection, cursor)
 
-
+#----------------------------------------------------------------------------------------
 # Función para procesar los resultados en formato JSON
-def procesar_a_json(resultados):
-    comunidades_dict = defaultdict(lambda: {"id": None, "nombre": "", "provincias": []})
+#     data = [
+#         (8285, datetime(2024, 10, 5, 14, 7, 20), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39151),
+#         (8286, datetime(2024, 10, 5, 13, 48, 40), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39142),
+#         (8287, datetime(2024, 10, 5, 21, 21, 6), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39169),
+#         (8288, datetime(2024, 10, 5, 21, 9, 13), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39160),
+#     ]
+#----------------------------------------------------------------------------------------
+def lista_arqueo_caja_a_json(data):
+    # Claves descriptivas para los campos de las tuplas
+    keys = ["Id", "Fecha", "Tipo", "Descripcion", "Monto", "Activo", "Codigo"]
 
-    for row in resultados:
-        id_comunidad = row["id_comunidad"]
-        if comunidades_dict[id_comunidad]["id"] is None:
-            comunidades_dict[id_comunidad]["id"] = id_comunidad
-            comunidades_dict[id_comunidad]["nombre"] = row["nombre_comunidad"]
-        
-        provincia = {
-            "id": row["id_provincia"],
-            "nombre": row["nombre_provincia"]
-        }
-        comunidades_dict[id_comunidad]["provincias"].append(provincia)
+    # Función personalizada para serializar Decimal y datetime
+    def custom_serializer(obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        elif isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, bool):
+            return obj
+        raise TypeError(f"Tipo no serializable: {type(obj)}")
 
-    # Convertir el diccionario a la estructura JSON final
-    comunidades_list = list(comunidades_dict.values())
-    output_json = {"comunidades": comunidades_list}
-    
-    # Convertir a formato JSON y devolverlo
-    return json.dumps(output_json, indent=4, ensure_ascii=False)
+    # Convertir la lista de tuplas a una lista de diccionarios
+    dict_data = [dict(zip(keys, row)) for row in data]
 
+    # Convertir a JSON
+    return json.dumps(dict_data, default=custom_serializer, indent=4)
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -349,6 +353,8 @@ def recorre_consultas_tiendas(param: list) -> InfoTransaccion:
                      "El proceso de sincronización ha terminado."
         )
 
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
 
     try:
@@ -376,11 +382,13 @@ def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion
         # FIN IF comentado
         # FIN FOR comentado
 
-        json_resultado = procesar_a_json(resultados)
 
-        print("06")    
-        print(type(resultados))
-        print(type(json_resultado))
+        print("tipo resultados: ", type(resultados))
+        print (resultados) # return json_resultado
+        
+        json_resultado = lista_arqueo_caja_a_json(resultados)
+
+        print("tipo json_resultado: ", type(json_resultado))
         print (json_resultado) # return json_resultado
         
     

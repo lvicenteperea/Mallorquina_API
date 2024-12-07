@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from app.models.mll_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver
@@ -18,6 +19,8 @@ from app.config.db_mallorquina import get_db_connection_sqlserver
 '''
 #----------------------------------------------------------------------------------
 def procesar_consulta(tabla, conn_mysql):
+
+    print(f"Procesando Consultas de: {tabla}")
     # Obtener configuración y campos necesarios
     # cursor_mysql = conn_mysql.cursor(dictionary=True)
     
@@ -41,6 +44,7 @@ def procesar_consulta(tabla, conn_mysql):
 
     # conextamos con esta bbdd origen
     conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+    print("Coenxión realizada: ", bbdd_config)
 
     try:
         # Leer datos desde SQL Server
@@ -50,8 +54,10 @@ def procesar_consulta(tabla, conn_mysql):
                             ORDER BY Descripcion
                  """
         cursor_sqlserver.execute(select_query)
-        registros = cursor_sqlserver.fetchall()
+        print("cursor ejecutado: ", select_query)
 
+        registros = cursor_sqlserver.fetchall()
+        print("Registros: ", registros)
 
         # Preparar los cursores para MySQL
         # cursor_mysql = conn_mysql.cursor()
@@ -109,11 +115,19 @@ def procesar_consulta(tabla, conn_mysql):
                 registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
                 cursor_mysql.execute(insert_query, registro_destino)
         '''
-        # conn_mysql.commit()
-        # cursor_mysql.close()
+
         return registros
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"ret_code": -3,
+                                                     "ret_txt": str(e),
+                                                     "excepcion": e
+                                                    }
+                           )   
     
     finally:
+        # conn_mysql.commit()
+        # cursor_mysql.close()
         conn_sqlserver.close()
 
     

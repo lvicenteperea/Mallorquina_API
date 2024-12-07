@@ -363,7 +363,7 @@ def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion
         # intervalo = tabla["Cada_Cuanto_Ejecutar"]
 
         # if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
-        print(f"Procesando Consulta: {tabla}")
+        print(f"Tratando tabla: {tabla}")
 
         # Aquí va la lógica específica para cada tabla
         resultados = procesar_consulta(tabla, conn_mysql)

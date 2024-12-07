@@ -153,3 +153,4 @@
 2024-12-06 21:13:37,379 - TIME - Tiempo de entrada: 1733516017.3785 ms, Tiempo de salida: 1733516017.3785 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 10618 ms
 2024-12-06 21:14:05,850 - TIME - Tiempo de entrada: 1733516045.8506 ms, Tiempo de salida: 1733516045.8506 ms, Duración total: 0.00 ms - Estado: 404 - Duration: 3438 ms
 2024-12-06 21:16:30,700 - TIME - Tiempo de entrada: 1733516164.1352 ms, Tiempo de salida: 1733516190.7009 ms, Duración total: 26565.67 ms - Estado: 500 - Duration: 37505 ms
+2024-12-07 08:20:03,106 - TIME - Tiempo de entrada: 1733556002.2567 ms, Tiempo de salida: 1733556003.1064 ms, Duración total: 849.69 ms - Estado: 500 - Duration: 25063 ms

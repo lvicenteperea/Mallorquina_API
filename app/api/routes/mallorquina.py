@@ -47,7 +47,7 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_sync_consultas", response_model=MallorquinaResponse)
+@router.get("/mll_sync_consultas", response_model=InfoTransaccion)
 async def mll_sync_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
                              user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                              ret_code: int = Query(..., description="Código de retorno inicial"),
@@ -64,20 +64,30 @@ async def mll_sync_consultas(id_App: int = Query(..., description="Identificador
             # Si la variable es None o está vacía, asignar la fecha y hora actuales
             fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
-
-        param = [infoTrans]
-
-        resultado = sync_data.recorre_consultas_tiendas(param = param)
+        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
+        resultado = sync_data.recorre_consultas_tiendas(param = infoTrans)
+        print('Saliendo 3')
+        print(type(resultado)," (en mll_sync_consultas): ", resultado)
 
         if resultado.ret_code < 0:
             raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
 
-        return MallorquinaResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos="")
+        # return MallorquinaResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos=resultado.resultados)
+        return InfoTransaccion( id_App=id_App, 
+                                user=user, 
+                                ret_code=resultado.ret_code, 
+                                ret_txt=resultado.ret_txt,
+                                parametros=resultado.resultados
+                              )
+
 
     except MadreException as e:
-        raise e
-
+        #raise e
+        raise HTTPException(status_code=400, detail={"ret_code": -2,
+                                                     "ret_txt": str(e),
+                                                     "excepcion": e
+                                                    }
+                           )  
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

@@ -14,5 +14,5 @@ def enviar_email(lista_emails, asunto, contenido):
     sg.send(message)
     '''    
     print("enviar_email.01", lista_emails)
-    print("enviar_email.01", asunto)
-    print("enviar_email.01", contenido)
+    print("enviar_email.asunto", asunto)
+    print("enviar_email.contenido", contenido)

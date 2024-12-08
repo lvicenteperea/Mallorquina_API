@@ -50,7 +50,7 @@ def graba_log(mi_mensaje:dict, origen, e, logger = app_logger):
     if "mensaje" in mi_mensaje and isinstance(mi_mensaje["mensaje"], str):
         mi_mensaje["mensaje"] = mi_mensaje["mensaje"].replace("-", "_")
 
-    logger.error(f"de tiempos {origen}: {mi_mensaje} - {texto_err} - {archivo} - {linea} - {funcion}")
+    # logger.error(f"de tiempos {origen}: {mi_mensaje} - {texto_err} - {archivo} - {linea} - {funcion}")
 
 
 # ------------------------------------------------------------------------------------------------

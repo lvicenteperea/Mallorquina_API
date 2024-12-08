@@ -118,7 +118,6 @@ def procesar_consulta(tabla, conn_mysql):
                 registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
                 cursor_mysql.execute(insert_query, registro_destino)
         '''
-
         return registros
 
     except Exception as e:

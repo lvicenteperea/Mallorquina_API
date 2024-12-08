@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Query
-from typing import List
 from datetime import datetime
 
 # mias
@@ -66,29 +65,42 @@ async def mll_sync_consultas(id_App: int = Query(..., description="Identificador
 
         infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         resultado = sync_data.recorre_consultas_tiendas(param = infoTrans)
-        print('Saliendo 3')
-        print(type(resultado)," (en mll_sync_consultas): ", resultado)
 
         if resultado.ret_code < 0:
             raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
 
         # return MallorquinaResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos=resultado.resultados)
-        return InfoTransaccion( id_App=id_App, 
-                                user=user, 
-                                ret_code=resultado.ret_code, 
-                                ret_txt=resultado.ret_txt,
-                                parametros=resultado.resultados
-                              )
+        print("---------------------------------------------------------------")
+        print(resultado)
+        print("Resultado: ", type(resultado))
+        print("Resultado.id_App: ", type(resultado.id_App))
+        print("Resultado.user: ", type(resultado.user))
+        print("Resultado.ret_code: ", type(resultado.ret_code))
+        print("Resultado.ret_txt: ", type(resultado.ret_txt))
+        print("Resultado.parametros: ", type(resultado.parametros))
+        print("Resultado.Resultados: ", type(resultado.resultados))
+        print("---------------------------------------------------------------")
+
+        resultado.resultados = resultado.resultados or []
+        return resultado # InfoTransaccion( id_App=id_App, 
+                         #        user=user, 
+                         #        ret_code=resultado.ret_code, 
+                         #        ret_txt=resultado.ret_txt,
+                         #        parametros=resultado.resultados
+                         #      )
 
 
     except MadreException as e:
-        #raise e
-        raise HTTPException(status_code=400, detail={"ret_code": -2,
-                                                     "ret_txt": str(e),
-                                                     "excepcion": e
-                                                    }
-                           )  
+        raise e
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail={"ret_code": -111,
+                                                     "ret_txt": "A ver porque ha dado error....",
+                                                     "error": str(e)
+                                                    }
+            )
     
+
+  
+
 

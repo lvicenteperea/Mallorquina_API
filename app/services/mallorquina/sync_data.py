@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 import json
-from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
+import pyodbc
 
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
@@ -287,6 +287,20 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
 
 
 
+
+def row_to_dict(row, cursor):
+    print("Obtener los nombres de las columnas")
+    columns = [column[0] for column in cursor.description]
+    print("columnas ", columns)
+
+    # Combinar los nombres de las columnas con los valores del row
+    datos = dict(zip(columns, row))
+    print("datos ", datos)
+    return datos
+    
+
+
+
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
@@ -318,24 +332,6 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
 
             # Aquí va la lógica específica para cada bbdd
             resultado = recorrer_consultas(bbdd, conn_mysql,[])
-            print(type(resultado)," (en recorre_consultas_tiendas): ", resultado)
-            '''
-            # Convertir las cadenas JSON a listas de Python
-            list1 = json.loads(json1)
-            list2 = json.loads(json2)
-
-            # Concatenar las listas
-            concatenated_list = list1 + list2
-
-            # Convertir la lista concatenada de nuevo a JSON
-            result_json = json.dumps(concatenated_list, indent=4)
-
-            # Imprimir el JSON resultante
-            print(result_json)
-            
-            print("que es resultado: ", type(resultado))
-            print("valor: ", resultado)
-            '''
 
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
@@ -343,29 +339,32 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
             )
             conn_mysql.commit()
 
-        '''
-        json_parts = resultado.strip().split(']\n[')
 
-        # Ajustar las partes para que sean JSON válidos
-        json_parts = [f'[{part}]' if i == 0 else f'[{part[:-1]}]' if i == len(json_parts) - 1 else f'[{part}]'
-                    for i, part in enumerate(json_parts)]
+        if isinstance(resultado, pyodbc.Row):
+            if isinstance(row, pyodbc.Row):
+                # Convertir pyodbc.Row a diccionario
+                resultado[idx] = row_to_dict(row, cursor_mysql)  # Usa el cursor que generó la fila
+        elif isinstance(resultado, list):
+            for idx, row in enumerate(resultado):
+                print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
 
-        # Convertir cada parte a una lista de Python
-        all_lists = []
-        for part in json_parts:
-            all_lists.extend(json.loads(part))  # Añadir los elementos de cada lista al resultado final
+                if isinstance(row, pyodbc.Row):
+                    print("Convertir pyodbc.Row a diccionario")
+                    resultado[idx] = row_to_dict(row, cursor_mysql)  # Usa el cursor que generó la fila
 
-        # Convertir la lista combinada de nuevo a JSON
-        result_json = json.dumps(all_lists, indent=4)
+        print("----------------------------SIIIIIIIIIIIIIIIIIIIIIIIIII")
 
-        print("06")    
-        print(type(result_json)," (1):", result_json)
-        return result_json
-        '''
-        print('Saliendo 1')
-        return InfoTransaccion(parametros=resultado.resultados)                               
+
+        return InfoTransaccion( id_App=param.id_App, 
+                                user=param.user, 
+                                ret_code=0, 
+                                ret_txt="",
+                                parametros=[],
+                                resultados = resultado
+                              )
 
     except Exception as e:
+        print("------------ooooooooooooooo----------------", e)
         raise HTTPException(status_code=400, detail={"ret_code": -3,
                                                      "ret_txt": str(e),
                                                      "excepcion": e
@@ -380,7 +379,7 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
         )
-        print('Saliendo 2')
+
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -411,8 +410,6 @@ def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> list:
         # FIN IF comentado
         # FIN FOR comentado
 
-
-        print("tipo resultados (en recorrer_consultas): ", type(resultados))
         # print (resultados) # return json_resultado
         
         # json_resultado = lista_arqueo_caja_a_json(resultados)

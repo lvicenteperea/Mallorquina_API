@@ -11,7 +11,7 @@ class InfoTransaccion(BaseModel):
     # En "parametros" retorna la lista de parametros que son de salida o entrada/salida
     parametros: list = None
     # En "resultados" es para procedimientos que retornar un listado de registros "una select"
-    resultados: list = None
+    resultados: list = []
     
 
     def set_parametros(self, datos):

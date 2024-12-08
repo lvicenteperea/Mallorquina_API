@@ -12,9 +12,7 @@ app = FastAPI()
 
 @app.middleware("http")
 async def log_tiempos_respuesta(request: Request, call_next):
-    """
-    Middleware para registrar los tiempos de entrada, salida y duración total de cada solicitud.
-    """
+    # Middleware para registrar los tiempos de entrada, salida y duración total de cada solicitud.
 
     # Registrar el tiempo de entrada
     start_time = time.time()
@@ -31,12 +29,18 @@ async def log_tiempos_respuesta(request: Request, call_next):
     # Calcular la diferencia de tiempo en milisegundos
     duration = (end_time - start_time) * 1000
 
+    try:
+        body = await response.body() if hasattr(response, "body") else "No body available"
+        graba_log_info(
+            f"Tiempo de entrada: {start_time:.4f} ms, "
+            f"Tiempo de salida: {end_time:.4f} ms, "
+            f"Duración total: {duration:.2f} ms - "
+            f"Estado: {response.status_code} - "
+            f"Respuesta: {body}"
+        )
 
-    # Registrar los tiempos de entrada, salida y duración total
-    graba_log_info( f"Tiempo de entrada: {start_time:.4f} ms, "
-                    f"Tiempo de salida: {end_time:.4f} ms, "
-                    f"Duración total: {duration:.2f} ms - "
-                    f"Estado: {response.status_code}"
-                    )
-
+    except Exception as e:
+        # graba_log_error(f"Error al registrar los logs: {str(e)}")
+        print("graba_log_error(f'Error al registrar los logs: {str(e)}')")
+    
     return response

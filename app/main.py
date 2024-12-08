@@ -56,7 +56,6 @@ app.add_exception_handler(json.JSONDecodeError, json_decode_error_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 app.add_exception_handler(TypeError, type_error_handler)
 
-
 '''
 # -----------------------------------------------------------------------------------------------
 # MIDDLEWARES

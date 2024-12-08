@@ -55,8 +55,8 @@ from app.utils.functions import graba_log
 # -----------------------------------------------------------------------------------------------
 async def madre_exception_handler(request: Request, exc: MadreException):
 # -----------------------------------------------------------------------------------------------
-    print("madre_exception_handler")
-    logger.error(f"MadreException: (status: {exc.status_code} {exc.mi_mensaje})")
+    print(f"madre_exception_handler: (status: {exc.status_code} {exc.mi_mensaje})")
+    # logger.error(f"MadreException: (status: {exc.status_code} {exc.mi_mensaje})")
     
     if isinstance(exc.mi_mensaje, dict):
         mi_mensaje = exc.mi_mensaje
@@ -125,7 +125,10 @@ async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError)
 # -----------------------------------------------------------------------------------------------
 async def generic_exception_handler(request: Request, exc: Exception):
 # -----------------------------------------------------------------------------------------------
-    print("generic_exception_handler", exc)
+    print("generic_exception_handler: ", exc, request)
+    # print("Traceback completo:-------------------------------------------------------------")
+    # print(traceback.format_exc())
+    # print("FIN Traceback completo:-------------------------------------------------------------")
 
     if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],

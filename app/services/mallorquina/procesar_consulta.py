@@ -3,6 +3,29 @@ from app.models.mll_tablas import obtener_campos_tabla, crear_tabla_destino #, d
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver
 
+
+import pyodbc
+
+
+
+
+
+
+def row_to_dict(row, cursor):
+    print("Obtener los nombres de las columnas")
+    columns = [column[0] for column in cursor.description]
+    print("columnas ", columns)
+
+    # Combinar los nombres de las columnas con los valores del row
+    datos = dict(zip(columns, row))
+    print("datos ", datos)
+    return datos
+    
+
+
+
+
+
 #----------------------------------------------------------------------------------
 '''
     SELECT * FROM [Arqueo Ciego]   
@@ -59,7 +82,7 @@ def procesar_consulta(tabla, conn_mysql):
         cursor_sqlserver.execute(select_query, apertura_ids)
         # print("cursor ejecutado: ")
 
-        registros = cursor_sqlserver.fetchall()
+        resultado = cursor_sqlserver.fetchall()
         # print("Registros: ", registros)
 
         # Preparar los cursores para MySQL
@@ -118,9 +141,38 @@ def procesar_consulta(tabla, conn_mysql):
                 registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
                 cursor_mysql.execute(insert_query, registro_destino)
         '''
-        return registros
+
+
+
+
+
+        if isinstance(resultado, pyodbc.Row):
+            if isinstance(row, pyodbc.Row):
+                # Convertir pyodbc.Row a diccionario
+                resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
+        elif isinstance(resultado, list):
+            for idx, row in enumerate(resultado):
+                print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
+
+                if isinstance(row, pyodbc.Row):
+                    print("Convertir pyodbc.Row a diccionario")
+                    resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
+
+        print("----------------------------SIIIIIIIIIIIIIIIIIIIIIIIIII")
+
+
+
+
+
+
+
+
+
+
+        return resultado
 
     except Exception as e:
+        print("------------ooooooooooooooo----------------", e)
         raise HTTPException(status_code=400, detail={"ret_code": -3,
                                                      "ret_txt": str(e),
                                                      "excepcion": e

@@ -286,21 +286,6 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
         cursor_mysql.close()
 
 
-
-
-def row_to_dict(row, cursor):
-    print("Obtener los nombres de las columnas")
-    columns = [column[0] for column in cursor.description]
-    print("columnas ", columns)
-
-    # Combinar los nombres de las columnas con los valores del row
-    datos = dict(zip(columns, row))
-    print("datos ", datos)
-    return datos
-    
-
-
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
@@ -338,22 +323,6 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
                 (datetime.now(), bbdd["ID"])
             )
             conn_mysql.commit()
-
-
-        if isinstance(resultado, pyodbc.Row):
-            if isinstance(row, pyodbc.Row):
-                # Convertir pyodbc.Row a diccionario
-                resultado[idx] = row_to_dict(row, cursor_mysql)  # Usa el cursor que generó la fila
-        elif isinstance(resultado, list):
-            for idx, row in enumerate(resultado):
-                print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
-
-                if isinstance(row, pyodbc.Row):
-                    print("Convertir pyodbc.Row a diccionario")
-                    resultado[idx] = row_to_dict(row, cursor_mysql)  # Usa el cursor que generó la fila
-
-        print("----------------------------SIIIIIIIIIIIIIIIIIIIIIIIIII")
-
 
         return InfoTransaccion( id_App=param.id_App, 
                                 user=param.user, 
@@ -416,7 +385,9 @@ def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> list:
 
         # print("tipo json_resultado: ", type(json_resultado))
         # print (type(json_resultado), " y su valor: ", json_resultado) 
+
         return resultados
+
         
     
     except Exception as e:

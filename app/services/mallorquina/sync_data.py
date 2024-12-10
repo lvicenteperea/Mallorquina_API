@@ -2,7 +2,10 @@ from fastapi import HTTPException
 import json
 from datetime import datetime
 from decimal import Decimal
-import pyodbc
+
+from app.utils.mis_excepciones import MadreException
+
+from app.utils.functions import graba_log
 
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
@@ -256,7 +259,7 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
         # conn_mysql = conexion_mysql("General")
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        cursor_mysql.execute("SELECT * FROM mll_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
+        cursor_mysql.execute("SELECT * FROM mll_cfg_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
         tablas_bbdd = cursor_mysql.fetchall()
 
         for tabla in tablas_bbdd:
@@ -271,7 +274,7 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
                 procesar_tabla(tabla, conn_mysql)
 
                 cursor_mysql.execute(
-                    "UPDATE mll_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
+                    "UPDATE mll_cfg_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
                     (datetime.now(), tabla["ID"])
                 )
                 conn_mysql.commit()
@@ -289,6 +292,7 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
+    donde="Inicio"
     config = obtener_configuracion_general()
 
     if not config.get("ID", False):
@@ -299,14 +303,18 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
         print("El proceso ya está en ejecución.")
         return
 
+    donde="actualizar_en_ejecucion"
     actualizar_en_ejecucion(1)
 
     try:
+        donde = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where id=1")
+        donde = "Select"
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd") # where id=1")
         lista_bbdd = cursor_mysql.fetchall()
+        resultado = []
 
         for bbdd in lista_bbdd:
             print("")
@@ -316,8 +324,9 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
             print("")
 
             # Aquí va la lógica específica para cada bbdd
-            resultado = recorrer_consultas(bbdd, conn_mysql,[])
+            resultado.extend(recorrer_consultas(bbdd, conn_mysql, param))
 
+            donde = "update"
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
                 (datetime.now(), bbdd["ID"])
@@ -328,12 +337,13 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
                                 user=param.user, 
                                 ret_code=0, 
                                 ret_txt="",
-                                parametros=[],
+                                parametros=param.parametros,
                                 resultados = resultado
                               )
 
     except Exception as e:
-        print("------------ooooooooooooooo----------------", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"},
+                   "Excepción recorre_consultas_tiendas", e)
         raise HTTPException(status_code=400, detail={"ret_code": -3,
                                                      "ret_txt": str(e),
                                                      "excepcion": e
@@ -352,12 +362,12 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> list:
+def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: InfoTransaccion) -> list:
 
     try:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        # cursor_mysql.execute("SELECT * FROM mll_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
+        # cursor_mysql.execute("SELECT * FROM mll_cfg_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
         # tablas_bbdd = cursor_mysql.fetchall()
 
         # for tabla in tablas_bbdd:
@@ -369,10 +379,10 @@ def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> list:
         print(f"Tratando tabla: {tabla}")
 
         # Aquí va la lógica específica para cada tabla
-        resultados = procesar_consulta(tabla, conn_mysql)
+        resultados = procesar_consulta(tabla, conn_mysql, param)
 
         # cursor_mysql.execute(
-        #     "UPDATE mll_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
+        #     "UPDATE mll_cfg_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
         #     (datetime.now(), tabla["ID"])
         # )
         # conn_mysql.commit()
@@ -385,17 +395,12 @@ def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: list) -> list:
 
         # print("tipo json_resultado: ", type(json_resultado))
         # print (type(json_resultado), " y su valor: ", json_resultado) 
-
-        return resultados
-
-        
     
     except Exception as e:
-        raise HTTPException(status_code=400, detail={"ret_code": -3,
-                                                     "ret_txt": str(e),
-                                                     "excepcion": e
-                                                    }
-                           )            
+        graba_log({"ret_code": -3, "ret_txt": str(e)}, "Excepción", e)
+        resultados = []
+
     finally:
         cursor_mysql.close()
+        return resultados
 

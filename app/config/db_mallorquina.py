@@ -5,6 +5,8 @@ import mysql.connector
 from mysql.connector import Error
 from app.config.settings import settings
 
+from app.utils.functions import graba_log
+
 # Para SQL Server
 import pyodbc
 
@@ -15,12 +17,14 @@ def get_db_connection_mysql():
         connection = mysql.connector.connect(
             host=settings.MYSQL_DB_URL_MLL,
             user=settings.MYSQL_DB_USER_MLL,
-            password=settings.MYSQL_DB_PWD_MLL,
+            password= settings.MYSQL_DB_PWD_MLL,
             database=settings.MYSQL_DB_DATABASE_MLL
         )
         return connection
     
-    except Error as e:
+    except Exception as e:
+        graba_log({"ret_code": -1, "ret_txt": f"Error al conectar: {settings.MYSQL_DB_URL_MLL}/{settings.MYSQL_DB_USER_MLL}/{settings.MYSQL_DB_DATABASE_MLL}/"},
+                   "Excepción get_db_connection_mysql", e)
         raise HTTPException(status_code=400, detail= {"ret_code": -1,
                                                       "ret_txt": str(e),
                                                      }
@@ -48,8 +52,10 @@ def get_db_connection_sqlserver(conexion_json):
                                     )
         return connection
     
-    except Error as e:
-        raise HTTPException(status_code=400, detail= {"ret_code": -1,
-                                                      "ret_txt": str(e),
-                                                     }
-                           )
+    except Exception as e:
+        print("Por excepción")
+        return False
+        # raise HTTPException(status_code=400, detail= {"ret_code": -1,
+        #                                               "ret_txt": str(e),
+        #                                              }
+        #                   )

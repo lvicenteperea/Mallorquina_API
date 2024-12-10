@@ -50,7 +50,15 @@ def graba_log(mi_mensaje:dict, origen, e, logger = app_logger):
     if "mensaje" in mi_mensaje and isinstance(mi_mensaje["mensaje"], str):
         mi_mensaje["mensaje"] = mi_mensaje["mensaje"].replace("-", "_")
 
-    # logger.error(f"de tiempos {origen}: {mi_mensaje} - {texto_err} - {archivo} - {linea} - {funcion}")
+    # Intentar obtener un código de error
+    if hasattr(e, 'errno'):  # Excepciones del sistema
+        err_num = e.errno
+    elif hasattr(e, 'args') and len(e.args) > 0:  # Excepciones genéricas con args
+        err_num = e.args[0]
+    else:
+        err_num = 0
+
+    logger.error(f"MI ERROR: {origen}: {mi_mensaje} - ERROR: {err_num} - {str(e)} - LOCALIZACION: {texto_err} - {archivo} - {linea} - {funcion})")
 
 
 # ------------------------------------------------------------------------------------------------

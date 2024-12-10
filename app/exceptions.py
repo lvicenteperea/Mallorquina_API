@@ -56,8 +56,13 @@ from app.utils.functions import graba_log
 async def madre_exception_handler(request: Request, exc: MadreException):
 # -----------------------------------------------------------------------------------------------
     print(f"madre_exception_handler: (status: {exc.status_code} {exc.mi_mensaje})")
-    # logger.error(f"MadreException: (status: {exc.status_code} {exc.mi_mensaje})")
-    
+    graba_log(mi_mensaje, 
+                "HTTPException", 
+                exc # str(exc.detail.get("excepcion", exc.detail.get('ret_txt',"Sin texto asociado")))
+                )
+
+
+
     if isinstance(exc.mi_mensaje, dict):
         mi_mensaje = exc.mi_mensaje
     else:
@@ -74,23 +79,21 @@ async def madre_exception_handler(request: Request, exc: MadreException):
 async def http_exception_handler(request: Request, exc: HTTPException):
 # -----------------------------------------------------------------------------------------------
     print("_http_exception_handler", type(exc))
-    
-    print(type(exc))
 
     if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],
                       "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),
                      }
-
-        graba_log(mi_mensaje, 
-                  "HTTPException", 
-                  exc # str(exc.detail.get("excepcion", exc.detail.get('ret_txt',"Sin texto asociado")))
-                 )
     else:
         mi_mensaje = {"ret_code": -1,
                       "ret_txt": exc.detail,
                      }
 
+    graba_log(mi_mensaje, 
+                "HTTPException", 
+                exc # str(exc.detail.get("excepcion", exc.detail.get('ret_txt',"Sin texto asociado")))
+                )
+    
     return JSONResponse(
         status_code=exc.status_code,
         content={"codigo_error": exc.status_code, "mensaje": mi_mensaje},
@@ -101,18 +104,16 @@ async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError)
 # -----------------------------------------------------------------------------------------------
     print("json_decode_error_handler")
 
-    # YA PROBAREMOS IS ESTO ES ASÍ
+    # Ya probaremos si esto es así
     if isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],
                       "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
                      }
-
-        graba_log(mi_mensaje, "JSONDecodeErrorException", exc.detail["excepcion"])
     else:
         mi_mensaje = {"ret_code": -1,
                       "ret_txt": exc.detail,
                      }
-        
+
     mi_mensaje["ret_txt"] = mi_mensaje["ret_txt"].join(f"JSONDecodeError: {exc.msg} (line: {exc.lineno}, col: {exc.colno})")
     graba_log(mi_mensaje, "JSONDecodeErrorException", exc.detail["excepcion"])
 
@@ -126,9 +127,6 @@ async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError)
 async def generic_exception_handler(request: Request, exc: Exception):
 # -----------------------------------------------------------------------------------------------
     print("generic_exception_handler: ", exc, request)
-    # print("Traceback completo:-------------------------------------------------------------")
-    # print(traceback.format_exc())
-    # print("FIN Traceback completo:-------------------------------------------------------------")
 
     if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
         mi_mensaje = {"ret_code": exc.detail['ret_code'],

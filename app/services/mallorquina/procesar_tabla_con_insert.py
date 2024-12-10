@@ -1,4 +1,4 @@
-from app.models.mll_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
+from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver
 
@@ -7,7 +7,7 @@ def procesar_tabla(tabla, conn_mysql):
     cursor_mysql = conn_mysql.cursor(dictionary=True)
     
     # Obtener nombre de la tabla y si se debe borrar
-    cursor_mysql.execute("SELECT * FROM mll_tablas WHERE ID = %s", (tabla["ID_Tabla"],))
+    cursor_mysql.execute("SELECT * FROM mll_cfg_tablas WHERE ID = %s", (tabla["ID_Tabla"],))
 
     tabla_config = cursor_mysql.fetchone()
     nombre_tabla = tabla_config["Tabla_Origen"]

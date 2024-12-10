@@ -1,8 +1,9 @@
 from fastapi import HTTPException
-from app.models.mll_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
+from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver
 
+from app.utils.functions import graba_log
 
 import pyodbc
 
@@ -12,13 +13,13 @@ import pyodbc
 
 
 def row_to_dict(row, cursor):
-    print("Obtener los nombres de las columnas")
+    # print("Obtener los nombres de las columnas")
     columns = [column[0] for column in cursor.description]
-    print("columnas ", columns)
+    # print("columnas ", columns)
 
     # Combinar los nombres de las columnas con los valores del row
     datos = dict(zip(columns, row))
-    print("datos ", datos)
+    # print("datos ", datos)
     return datos
     
 
@@ -27,161 +28,75 @@ def row_to_dict(row, cursor):
 
 
 #----------------------------------------------------------------------------------
-'''
-    SELECT * FROM [Arqueo Ciego]   
-        where [Id Apertura] in (8285,8286, 8287, 8288)  
-        order by Descripcion;
-
-        
-        # resultado = sync_data.recorre_tiendas(param = param)
-        query = f"""SELECT * FROM `Arqueo Ciego`
-                     WHERE `Id Apertura` IN ({', '.join(map(str, apertura_ids))})
-                     ORDER BY Descripcion
-                 """
-        resultado = await sync_data.ejec_select_sql_server(query)        
-'''
 #----------------------------------------------------------------------------------
-def procesar_consulta(tabla, conn_mysql):
-
-    # print(f"Procesando Consultas de: {tabla}")
-    # Obtener configuración y campos necesarios
-    # cursor_mysql = conn_mysql.cursor(dictionary=True)
-    
-    # Obtener nombre de la tabla y si se debe borrar
-    # cursor_mysql.execute("SELECT * FROM mll_tablas WHERE ID = %s", (tabla["ID_Tabla"],))
-
-    # tabla_config = cursor_mysql.fetchone()
-    # nombre_tabla = tabla_config["Tabla_Origen"]
-    # nombre_tabla_destino = tabla_config["Tabla_Destino"]
-    # borrar_tabla = tabla_config["Borrar_Tabla"]
-    # cursor_mysql.close()
-
-    # Obtener campos de la tabla
-    # campos = obtener_campos_tabla(conn_mysql, tabla["ID_Tabla"])
-
-    # Crear tabla si no existe
-    # crear_tabla_destino(conn_mysql, nombre_tabla_destino, campos)
-
-    # Buscamos la conexión que necesitamos para esta bbdd origen
-    bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla["ID_BBDD"])
-
-    # conextamos con esta bbdd origen
-    conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-    # print("Conexión realizada: ", bbdd_config)
+def procesar_consulta(tabla, conn_mysql, param) -> list:
 
     try:
-        # Leer datos desde SQL Server
-        cursor_sqlserver = conn_sqlserver.cursor()
-        apertura_ids = [8285, 8286, 8287, 8288]
-        placeholders = ", ".join(["?"] * len(apertura_ids))
-        select_query = f"""SELECT * FROM [Arqueo Ciego]
-                            WHERE [Id Apertura] IN ({placeholders})
-                            ORDER BY Descripcion
-                 """
-        # print("Select creada: ", select_query)
-        cursor_sqlserver.execute(select_query, apertura_ids)
-        # print("cursor ejecutado: ")
+        # Buscamos la conexión que necesitamos para esta bbdd origen
+        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla["ID_BBDD"])
 
-        resultado = cursor_sqlserver.fetchall()
-        # print("Registros: ", registros)
+        # conextamos con esta bbdd origen
+        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
-        # Preparar los cursores para MySQL
-        # cursor_mysql = conn_mysql.cursor()
-        # columnas_mysql = [campo["Nombre_Destino"] for campo in campos] + ["Origen_BBDD"]
+        if conn_sqlserver:
+            # Leer datos desde SQL Server
+            cursor_sqlserver = conn_sqlserver.cursor()
 
-        # Identificar el campo PK basado en mll_campos
-        # pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
-        # if not pk_campos:
-        #     raise ValueError("No se encontró ningún campo PK en mll_campos.")
+            # Averiguamos los IDs de dia de cierre de caja:
+            placeholders = "?"
+            # en realidad parametros solo tiene un elemento que es la fecha y debe ser en formato aaaa-mm-dd
+            select_query = f"""SELECT [Id Cierre]
+                                FROM [Cierres de Caja] WHERE CAST(Fecha AS DATE) = ?
+                    """
+            cursor_sqlserver.execute(select_query, param.parametros)
 
-        # Usamos el primer campo PK encontrado
-        # pk_campo = pk_campos[0]["Nombre_Destino"]
+            apertura_ids_lista = cursor_sqlserver.fetchall()
+            # Convertir el resultado de fetchall a una lista de valores
+            apertura_ids = ",".join(str(row[0]) for row in apertura_ids_lista)
 
-        # Generar consultas dinámicas
-        # insert_query = f"""
-        #     INSERT INTO {nombre_tabla_destino} ({', '.join(columnas_mysql)})
-        #     VALUES ({', '.join(['%s'] * len(columnas_mysql))})
-        # """
-        
-        # # update_query = f"""
-        # #     UPDATE {nombre_tabla_destino}
-        # #     SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos])}
-        # #     WHERE {pk_campo} = %s AND Origen_BBDD = %s
-        # # """
-        
-        # campos_update = [campo for campo in campos if campo["Nombre_Destino"] != pk_campo]
-        # update_query = f"""
-        #     UPDATE {nombre_tabla_destino}
-        #     SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos_update])}
-        #     WHERE {pk_campo} = %s AND Origen_BBDD = %s
-        # """
-        '''
-        for registro in registros:
-            # Obtener el valor del campo PK desde el registro
-            pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
-            pk_value = registro[pk_index]
+            # buscamos los cierres de estos IDs
+            apertura_ids = [8285, 8286, 8287, 8288]
+            placeholders = ", ".join(["?"] * len(apertura_ids))
+            select_query = f"""SELECT [Id Apertura],
+                                    [Fecha Hora],
+                                    [Id Cobro],
+                                    [Descripcion],
+                                    [Importe],
+                                    [Realizado],
+                                    [Id Rel],
+                                    {tabla["ID_BBDD"]}
+                                FROM [Arqueo Ciego]
+                                WHERE [Id Apertura] IN ({placeholders})
+                                ORDER BY Descripcion
+                    """
+            cursor_sqlserver.execute(select_query, apertura_ids)
 
-            select = f"""SELECT COUNT(*) 
-                                       FROM {nombre_tabla_destino} 
-                                      WHERE {pk_campo} = %s
-                                        AND Origen_BBDD = {tabla["ID_BBDD"]}"""
+            resultado = cursor_sqlserver.fetchall()
 
-            # Comprobar si el registro ya existe en la tabla destino
-            cursor_mysql.execute(select, (pk_value,))
-            existe = cursor_mysql.fetchone()[0] > 0  # Si existe, devuelve True
-
-            if existe:
-                # Realizar un UPDATE
-                valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
-                valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
-                                            for campo in campos_update] + [pk_value, tabla["ID_BBDD"]]
-                cursor_mysql.execute(update_query, valores_update)
-            else:
-                # Realizar un INSERT
-                registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
-                cursor_mysql.execute(insert_query, registro_destino)
-        '''
-
-
-
-
-
-        if isinstance(resultado, pyodbc.Row):
-            if isinstance(row, pyodbc.Row):
-                # Convertir pyodbc.Row a diccionario
-                resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
-        elif isinstance(resultado, list):
-            for idx, row in enumerate(resultado):
-                print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
-
+            if isinstance(resultado, pyodbc.Row):
                 if isinstance(row, pyodbc.Row):
-                    print("Convertir pyodbc.Row a diccionario")
+                    # Convertir pyodbc.Row a diccionario
                     resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
+            elif isinstance(resultado, list):
+                for idx, row in enumerate(resultado):
+                    # print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
 
-        print("----------------------------SIIIIIIIIIIIIIIIIIIIIIIIIII")
-
-
-
-
-
-
-
-
-
+                    if isinstance(row, pyodbc.Row):
+                        # print("Convertir pyodbc.Row a diccionario")
+                        resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
+        else:
+            resultado = []
 
         return resultado
 
     except Exception as e:
-        print("------------ooooooooooooooo----------------", e)
-        raise HTTPException(status_code=400, detail={"ret_code": -3,
-                                                     "ret_txt": str(e),
-                                                     "excepcion": e
-                                                    }
-                           )   
-    
+        graba_log({"ret_code": -3, "ret_txt": str(e)}, "Excepción", e)
+        resultado = []
+
     finally:
-        # conn_mysql.commit()
-        # cursor_mysql.close()
-        conn_sqlserver.close()
+        if conn_sqlserver:
+            conn_sqlserver.close()
+
+        return resultado
 
     

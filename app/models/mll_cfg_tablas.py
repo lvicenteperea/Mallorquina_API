@@ -2,7 +2,7 @@
 def obtener_campos_tabla(conn, id_tabla):
 
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM mll_campos WHERE ID_Tabla = %s", (id_tabla,))
+    cursor.execute("SELECT * FROM mll_cfg_campos WHERE ID_Tabla = %s", (id_tabla,))
     campos = cursor.fetchall()
     cursor.close()
 

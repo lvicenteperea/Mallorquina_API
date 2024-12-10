@@ -1,4 +1,4 @@
-from app.models.mll_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
+from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino #, drop_tabla
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver
 
@@ -7,7 +7,7 @@ def procesar_tabla(tabla, conn_mysql):
     cursor_mysql = conn_mysql.cursor(dictionary=True)
     
     # Obtener nombre de la tabla y si se debe borrar
-    cursor_mysql.execute("SELECT * FROM mll_tablas WHERE ID = %s", (tabla["ID_Tabla"],))
+    cursor_mysql.execute("SELECT * FROM mll_cfg_tablas WHERE ID = %s", (tabla["ID_Tabla"],))
 
     tabla_config = cursor_mysql.fetchone()
     nombre_tabla = tabla_config["Tabla_Origen"]
@@ -45,10 +45,10 @@ def procesar_tabla(tabla, conn_mysql):
         cursor_mysql = conn_mysql.cursor()
         columnas_mysql = [campo["Nombre_Destino"] for campo in campos] + ["Origen_BBDD"]
 
-        # Identificar el campo PK basado en mll_campos
+        # Identificar el campo PK basado en mll_cfg_campos
         pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
         if not pk_campos:
-            raise ValueError("No se encontró ningún campo PK en mll_campos.")
+            raise ValueError(f"No se encontró ningún campo PK en {nombre_tabla}.")
 
         # Usamos el primer campo PK encontrado
         pk_campo = pk_campos[0]["Nombre_Destino"]

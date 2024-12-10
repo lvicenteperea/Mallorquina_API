@@ -63,7 +63,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
                                 ret_code=0, 
                                 ret_txt="",
                                 parametros=param.parametros,
-                                resultados = resultado
+                                resultados = []
                               )
 
     except Exception as e:

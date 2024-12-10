@@ -365,42 +365,12 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
 def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: InfoTransaccion) -> list:
 
     try:
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
-
-        # cursor_mysql.execute("SELECT * FROM mll_cfg_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
-        # tablas_bbdd = cursor_mysql.fetchall()
-
-        # for tabla in tablas_bbdd:
-        tabla={'ID': 11, 'ID_BBDD': reg_cfg_bbdd["ID"], 'ID_Tabla': 1, 'TABLA': "arqueo_caja"}
-        # ultima_actualizacion = tabla["Fecha_Ultima_Actualizacion"]
-        # intervalo = tabla["Cada_Cuanto_Ejecutar"]
-
-        # if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
-        print(f"Tratando tabla: {tabla}")
-
-        # Aquí va la lógica específica para cada tabla
-        resultados = procesar_consulta(tabla, conn_mysql, param)
-
-        # cursor_mysql.execute(
-        #     "UPDATE mll_cfg_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
-        #     (datetime.now(), tabla["ID"])
-        # )
-        # conn_mysql.commit()
-        # FIN IF comentado
-        # FIN FOR comentado
-
-        # print (resultados) # return json_resultado
-        
-        # json_resultado = lista_arqueo_caja_a_json(resultados)
-
-        # print("tipo json_resultado: ", type(json_resultado))
-        # print (type(json_resultado), " y su valor: ", json_resultado) 
+        resultados = procesar_consulta(reg_cfg_bbdd["ID"], conn_mysql, param)
     
     except Exception as e:
         graba_log({"ret_code": -3, "ret_txt": str(e)}, "Excepción", e)
         resultados = []
 
     finally:
-        cursor_mysql.close()
         return resultados
 

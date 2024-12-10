@@ -1,11 +1,16 @@
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime
 
+
+import pyodbc
+
 # mias
 from app.api.schemas.mallorquina import MallorquinaResponse
 import app.services.mallorquina.sync_data as sync_data
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
+
+import app.services.mallorquina.arqueo_caja as arqueo_caja
 
 # Definimos el router
 router = APIRouter()
@@ -47,16 +52,16 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/mll_sync_consultas", response_model=InfoTransaccion)
-async def mll_sync_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
-                             user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                             ret_code: int = Query(..., description="Código de retorno inicial"),
-                             ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                             fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
-                            ):
+async def mll_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
+                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                        ret_code: int = Query(..., description="Código de retorno inicial"),
+                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                        fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
+                       ):
 
     try:
         print("")
-        print("estoy ejecutando sync_consultas")
+        print("estoy ejecutando mll_consultas")
         print("")
 
         if not fecha:
@@ -86,45 +91,63 @@ async def mll_sync_consultas(id_App: int = Query(..., description="Identificador
     
 
   
-'''
+
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_arqueo_diario", response_model=InfoTransaccion)
-async def mll_arqueo_diario(id_App: int = Query(..., description="Identificador de la aplicación"),
-                             user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                             ret_code: int = Query(..., description="Código de retorno inicial"),
-                             ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                             fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD HH:MI:SS', por defecto la actual"),
-                            ):
+@router.get("/mll_arqueo_caja", response_model=InfoTransaccion)
+async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador de la aplicación"),
+                            user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                            ret_code: int = Query(..., description="Código de retorno inicial"),
+                            ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                            fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
+                         ):
 
     try:
         print("")
-        print("estoy ejecutando mll_arqueo_diario")
+        print("estoy ejecutando mll_arqueo_caja")
         print("")
 
         if not fecha:
             # Si la variable es None o está vacía, asignar la fecha y hora actuales
-            fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            fecha = datetime.now().strftime('%Y-%m-%d')
 
         infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
-        resultado = sync_data.recorre_consultas_tiendas(param = infoTrans)
+        resultado = arqueo_caja.proceso(param = infoTrans)
 
+        print('--------------------')
+        if isinstance(resultado, pyodbc.Row):
+            print('el principal')
+            resultado = dict(resultado)  # Convertir a diccionario
+        elif isinstance(resultado, list) and isinstance(resultado[0], pyodbc.Row):
+            print('es una lista y tiene uan instancia')
+            resultado = [dict(row) for row in resultado]  # Convertir cada fila a diccionario
         if resultado.ret_code < 0:
-            raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
+            print('resultado.ret_code', resultado.ret_code)
+
+        print(f"Resultado: {type(resultado)}")
+        print(f"Resultado.resultados: {type(resultado.resultados)}")
+        if resultado.resultados:
+            for idx, item in enumerate(resultado.resultados):
+                print(f"Item {idx}: {type(item)} - {item}")
+
+        print('--------------------')
+
+
 
         resultado.resultados = resultado.resultados or []
         return resultado 
-
+    
     except MadreException as e:
+        print("Madre --> ")
         raise e
         
     except Exception as e:
+        print("Excepción --> ")
         raise HTTPException(status_code=500, detail={"ret_code": -111,
                                                      "ret_txt": "A ver porque ha dado error....",
                                                      "error": str(e)
                                                     }
             )
-'''    
+    
 
   
-

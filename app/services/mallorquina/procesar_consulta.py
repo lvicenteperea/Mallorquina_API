@@ -30,10 +30,11 @@ def row_to_dict(row, cursor):
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 def procesar_consulta(tabla, conn_mysql, param) -> list:
+    resultado = []
 
     try:
         # Buscamos la conexión que necesitamos para esta bbdd origen
-        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla["ID_BBDD"])
+        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla)
 
         # conextamos con esta bbdd origen
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
@@ -51,41 +52,41 @@ def procesar_consulta(tabla, conn_mysql, param) -> list:
             cursor_sqlserver.execute(select_query, param.parametros)
 
             apertura_ids_lista = cursor_sqlserver.fetchall()
-            # Convertir el resultado de fetchall a una lista de valores
-            apertura_ids = ",".join(str(row[0]) for row in apertura_ids_lista)
+            ids_cierre = [item[0] for item in apertura_ids_lista]
 
-            # buscamos los cierres de estos IDs
-            apertura_ids = [8285, 8286, 8287, 8288]
-            placeholders = ", ".join(["?"] * len(apertura_ids))
-            select_query = f"""SELECT [Id Apertura],
-                                    [Fecha Hora],
-                                    [Id Cobro],
-                                    [Descripcion],
-                                    [Importe],
-                                    [Realizado],
-                                    [Id Rel],
-                                    {tabla["ID_BBDD"]}
-                                FROM [Arqueo Ciego]
-                                WHERE [Id Apertura] IN ({placeholders})
-                                ORDER BY Descripcion
-                    """
-            cursor_sqlserver.execute(select_query, apertura_ids)
+            if ids_cierre:
+                # buscamos los cierres de estos IDs
+                placeholders = ", ".join(["?"] * len(ids_cierre))
+                select_query = f"""SELECT AC.[Id Apertura] as ID_Apertura,
+                                        AC.[Fecha Hora] as Fecha_Hora,
+                                        AC.[Id Cobro] as ID_Cobro,
+                                        AC.[Descripcion] as Medio_Cobro,
+                                        AC.[Importe] as Importe,
+                                        AC.[Realizado] as Realizado,
+                                        AC.[Id Rel] as ID_Relacion,
+                                        CdC.[Id Puesto] as ID_Puesto,
+                                        PF.Descripcion as Puesto_Facturacion, 
+                                        {tabla}
+                                    FROM [Arqueo Ciego] AC
+                                    inner join [Cierres de Caja] CdC on CdC.[Id Cierre] = AC.[Id Apertura]
+                                    inner join [Puestos Facturacion] PF on PF.[Id Puesto] = CdC.[Id Puesto]
+                                    WHERE AC.[Id Apertura] IN ({placeholders})
+                                    ORDER BY CdC.[Id Puesto], AC.[Fecha Hora]
+                        """
+                cursor_sqlserver.execute(select_query, ids_cierre)
 
-            resultado = cursor_sqlserver.fetchall()
-
-            if isinstance(resultado, pyodbc.Row):
-                if isinstance(row, pyodbc.Row):
-                    # Convertir pyodbc.Row a diccionario
-                    resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
-            elif isinstance(resultado, list):
-                for idx, row in enumerate(resultado):
-                    # print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
-
+                resultado = cursor_sqlserver.fetchall()
+                if isinstance(resultado, pyodbc.Row):
                     if isinstance(row, pyodbc.Row):
-                        # print("Convertir pyodbc.Row a diccionario")
+                        # Convertir pyodbc.Row a diccionario
                         resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
-        else:
-            resultado = []
+                elif isinstance(resultado, list):
+                    for idx, row in enumerate(resultado):
+                        # print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
+
+                        if isinstance(row, pyodbc.Row):
+                            # print("Convertir pyodbc.Row a diccionario")
+                            resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
 
         return resultado
 

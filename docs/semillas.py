@@ -4,7 +4,7 @@ from datetime import datetime
 # mias
 from app.api.schemas.url import ValidaUrlResponse
 from app.api.schemas.precodigo import ValidaPrecodigoRequest
-import app.services.db.mysql as db
+import docs.mysql as db
 # from app.services.db.mysql import db_valida_url, db_obtener_contenidos, db_valida_precodigo, db_semillas_campaing
 from app.api.schemas.contenido import ListaContenidosResponse
 from app.utils.mis_excepciones import MadreException

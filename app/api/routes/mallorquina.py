@@ -7,17 +7,18 @@ import pyodbc
 # mias
 from app.api.schemas.mallorquina import MallorquinaResponse
 import app.services.mallorquina.sync_data as sync_data
+import app.services.mallorquina.consulta_caja as consulta_caja
+import app.services.mallorquina.arqueo_caja as arqueo_caja
+
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
-
-import app.services.mallorquina.arqueo_caja as arqueo_caja
 
 # Definimos el router
 router = APIRouter()
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_sync_todo", response_model=MallorquinaResponse)
+@router.get("/mll_sync_todo", response_model=InfoTransaccion)
 async def mll_sync_todo(id_App: int = Query(..., description="Identificador de la aplicación"),
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
@@ -28,30 +29,31 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
         print("")
         print("Lo estoy ejecutando")
         print("")
-        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
+        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
 
-        param = [infoTrans]
-
-        resultado = sync_data.recorre_tiendas(param = param)
+        resultado = sync_data.recorre_tiendas(param = infoTrans)
 
         if resultado.ret_code < 0:
             raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
 
-        return MallorquinaResponse(codigo_error=resultado.ret_code, mensaje=resultado.ret_txt, datos="")
-
+        resultado.resultados = resultado.resultados or []
+        return resultado 
     
-
     except MadreException as e:
         raise e
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail={"ret_code": -1,
+                                                "ret_txt": "A ver porque ha dado error....",
+                                                "error": str(e)
+                                            }
+                           )
     
 
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_sync_consultas", response_model=InfoTransaccion)
+@router.get("/mll_consultas", response_model=InfoTransaccion)
 async def mll_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
@@ -69,7 +71,7 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
             fecha = datetime.now().strftime('%Y-%m-%d')
 
         infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
-        resultado = sync_data.recorre_consultas_tiendas(param = infoTrans)
+        resultado = consulta_caja.recorre_consultas_tiendas(param = infoTrans)
 
         if resultado.ret_code < 0:
             raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
@@ -83,7 +85,7 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
         
     except Exception as e:
         print("Excepción --> ")
-        raise HTTPException(status_code=500, detail={"ret_code": -111,
+        raise HTTPException(status_code=500, detail={"ret_code": -1,
                                                      "ret_txt": "A ver porque ha dado error....",
                                                      "error": str(e)
                                                     }
@@ -143,7 +145,7 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
         
     except Exception as e:
         print("Excepción --> ")
-        raise HTTPException(status_code=500, detail={"ret_code": -111,
+        raise HTTPException(status_code=500, detail={"ret_code": -1,
                                                      "ret_txt": "A ver porque ha dado error....",
                                                      "error": str(e)
                                                     }

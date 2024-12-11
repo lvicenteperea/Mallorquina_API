@@ -11,3 +11,9 @@
 {"host": "81.145.36.133", "port": "1433", "user": "Informes", "database": "LMQUEVEDO", "p": ""}
 {"host": "2.36.29.91", "port": "1433", "user": "Informes", "database": "LAMALLORQUINANORTE", "p": ""}
 {"host": "2.36.127.87", "port": "1433", "user": "Informes", "database": "LMVELAZQUEZ", "p": ""}
+
+
+Servicios de prueba con Thunder Client
+http://localhost:8000/mll_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=""&fecha=2024-10-05
+http://localhost:8000/mll_consultas?id_App=63&user=Pruebas&ret_code=0&ret_txt=""&fecha=2024-10-05
+http://localhost:8000/mll_sync_todo?id_App=63&user=Pruebas&ret_code=0&ret_txt=""

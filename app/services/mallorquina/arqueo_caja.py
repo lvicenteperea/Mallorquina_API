@@ -8,11 +8,39 @@ from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejec
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
 from app.services.mallorquina.sendgrid_service import enviar_email
-from app.services.mallorquina.procesar_consulta import procesar_consulta
 
 from app.utils.InfoTransaccion import InfoTransaccion
 
+'''
+#----------------------------------------------------------------------------------------
+# Función para procesar los resultados en formato JSON
+#     data = [
+#         (8285, datetime(2024, 10, 5, 14, 7, 20), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39151),
+#         (8286, datetime(2024, 10, 5, 13, 48, 40), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39142),
+#         (8287, datetime(2024, 10, 5, 21, 21, 6), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39169),
+#         (8288, datetime(2024, 10, 5, 21, 9, 13), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39160),
+#     ]
+#----------------------------------------------------------------------------------------
+def lista_arqueo_caja_a_json(data):
+    # Claves descriptivas para los campos de las tuplas
+    keys = ["Id", "Fecha", "Tipo", "Descripcion", "Monto", "Activo", "Codigo"]
 
+    # Función personalizada para serializar Decimal y datetime
+    def custom_serializer(obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        elif isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, bool):
+            return obj
+        raise TypeError(f"Tipo no serializable: {type(obj)}")
+
+    # Convertir la lista de tuplas a una lista de diccionarios
+    dict_data = [dict(zip(keys, row)) for row in data]
+
+    # Convertir a JSON
+    return json.dumps(dict_data, default=custom_serializer, indent=4)
+'''
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> InfoTransaccion:

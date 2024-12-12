@@ -1,28 +1,15 @@
 from fastapi import HTTPException
 from datetime import datetime
 
+import json
 import pyodbc
 
-from app.utils.functions import graba_log
+from app.utils.functions import graba_log, row_to_dict
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
-from app.services.mallorquina.sendgrid_service import enviar_email
+from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.InfoTransaccion import InfoTransaccion
-
-
-def row_to_dict(row, cursor):
-    # print("Obtener los nombres de las columnas")
-    columns = [column[0] for column in cursor.description]
-    # print("columnas ", columns)
-
-    # Combinar los nombres de las columnas con los valores del row
-    datos = dict(zip(columns, row))
-    # print("datos ", datos)
-    return datos
-    
-
-
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -54,7 +41,7 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
         for bbdd in lista_bbdd:
             print("")
             print("---------------------------------------------------------------------------------------")
-            print(f"Procesando TIENDA: {bbdd}")
+            print(f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}")
             print("---------------------------------------------------------------------------------------")
             print("")
 

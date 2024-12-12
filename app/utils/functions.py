@@ -4,10 +4,8 @@ import logging.config
 import traceback
 
 # ------------------------------------------------------------------------------------------------
+# Expande una lista que tenga dentro un elemento InfoTransaccion
 # ------------------------------------------------------------------------------------------------
-'''
-Expande una lista que tenga dentro un elemento InfoTransaccion
-'''
 def expande_lista(lista:list):
         new_list = []
 
@@ -21,6 +19,21 @@ def expande_lista(lista:list):
 
         return new_list
 
+
+
+# ------------------------------------------------------------------------------------------------
+# Convierte una fila pyodbc en un diccionario
+# ------------------------------------------------------------------------------------------------
+def row_to_dict(row, cursor):
+    # print("Obtener los nombres de las columnas")
+    columns = [column[0] for column in cursor.description]
+    # print("columnas ", columns)
+
+    # Combinar los nombres de las columnas con los valores del row
+    datos = dict(zip(columns, row))
+    # print("datos ", datos)
+    return datos
+    
 
 
 # ------------------------------------------------------------------------------------------------

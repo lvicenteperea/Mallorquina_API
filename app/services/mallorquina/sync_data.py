@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from datetime import datetime
 from datetime import timedelta
+import json
 
 from app.utils.mis_excepciones import MadreException
 
@@ -10,7 +11,7 @@ from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
-from app.services.mallorquina.sendgrid_service import enviar_email
+from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.InfoTransaccion import InfoTransaccion
 
@@ -18,7 +19,6 @@ from app.utils.InfoTransaccion import InfoTransaccion
 #----------------------------------------------------------------------------------------
 def recorre_tiendas(param: list) -> InfoTransaccion:
     resultado = []
-    # return call_proc_bbdd('w_exp_valida_url', param)
     config = obtener_configuracion_general()
 
 
@@ -42,7 +42,7 @@ def recorre_tiendas(param: list) -> InfoTransaccion:
         for bbdd in lista_bbdd:
             print("")
             print("---------------------------------------------------------------------------------------")
-            print(f"Procesando TIENDA: {bbdd}")
+            print(f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}")
             print("---------------------------------------------------------------------------------------")
             print("")
 
@@ -58,7 +58,7 @@ def recorre_tiendas(param: list) -> InfoTransaccion:
         return InfoTransaccion( id_App=param.id_App, 
                             user=param.user, 
                             ret_code=0, 
-                            ret_txt="",
+                            ret_txt="Ok",
                             parametros=param.parametros,
                             resultados = resultado
                             )

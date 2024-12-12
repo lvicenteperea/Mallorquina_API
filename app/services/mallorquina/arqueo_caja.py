@@ -7,7 +7,7 @@ import json
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
-from app.services.mallorquina.sendgrid_service import enviar_email
+from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.InfoTransaccion import InfoTransaccion
 

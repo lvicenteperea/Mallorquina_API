@@ -1,9 +1,10 @@
 from fastapi import HTTPException
 from datetime import datetime
+from decimal import Decimal
 
-from app.utils.functions import graba_log
 import json
 
+from app.utils.functions import graba_log
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
@@ -64,7 +65,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         donde = "Select"
-        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd") # where id=1")
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") # where id=1")
         lista_bbdd = cursor_mysql.fetchall()
         resultado = []
 
@@ -115,7 +116,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def consultar_y_grabar(tabla, conn_mysql, param) -> list:
+def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
     resultado = []
 
     try:
@@ -136,10 +137,9 @@ def consultar_y_grabar(tabla, conn_mysql, param) -> list:
                                 FROM [Cierres de Caja] WHERE CAST(Fecha AS DATE) = ?
                     """
             cursor_sqlserver.execute(select_query, param.parametros)
-
             apertura_ids_lista = cursor_sqlserver.fetchall()
             ids_cierre = [item[0] for item in apertura_ids_lista]
-
+            
             if ids_cierre:
                 # buscamos los cierres de estos IDs
                 placeholders = ", ".join(["?"] * len(ids_cierre))
@@ -162,7 +162,10 @@ def consultar_y_grabar(tabla, conn_mysql, param) -> list:
                 cursor_sqlserver.execute(select_query, ids_cierre)
                 datos = cursor_sqlserver.fetchall()
 
-                grabar(param, conn_mysql, datos)
+                print("--------------------------------------")
+                resultado = grabar(param, conn_mysql, datos)
+                print("resultado", resultado)
+                print("--------------------------------------")
 
     except Exception as e:
         graba_log({"ret_code": -3, "ret_txt": "arqueo_caja.consultar_y_grabar"}, "Excepción", e)
@@ -178,7 +181,7 @@ def consultar_y_grabar(tabla, conn_mysql, param) -> list:
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def grabar(param, conn_mysql, datos) -> list:
-    resultado = []
+    resultado = [0.0 , 0]
     donde = "Inicio"
 
     try: 
@@ -207,6 +210,9 @@ def grabar(param, conn_mysql, datos) -> list:
             ventas_diarias[key]["ventas"] += row.Importe
             ventas_diarias[key]["operaciones"] += 0 # row.Operaciones
             ventas_diarias[key]["detalles"].append(row)
+            print("Parcial: ", id_apertura, ventas_diarias[key]["ventas"])
+            resultado[0] = Decimal(resultado[0]) + ventas_diarias[key]["ventas"]
+            resultado[1] += ventas_diarias[key]["operaciones"]
 
         # Insertar en mll_rec_ventas_diarias
         cierre_descs = ["Mañana", "Tarde", "Noche"]
@@ -245,10 +251,11 @@ def grabar(param, conn_mysql, datos) -> list:
                                                         0 # detalle.Operaciones,
                                                        )
                                     )
+        resultado[0] = float(resultado[0]) 
 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": "arqueo_caja.grabar - "+ donde}, "Excepción", e)
-        resultado = []
+        resultado = [0 , 0]
 
     finally:
         return resultado

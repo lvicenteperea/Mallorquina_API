@@ -47,15 +47,15 @@ def close_connection_mysql(conn, cursor):
 #----------------------------------------------------------------------------------------
 def get_db_connection_sqlserver(conexion_json):
     try:
-        connection =  pyodbc.connect(f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};"
-                                     f"DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']}"
-                                    )
+        conexion = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']}"
+        donde = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD='XXXXXXX'"
+        connection =  pyodbc.connect(conexion)
+
+        #connection =  pyodbc.connect(f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};"
+        #                             f"DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']}"
+        #                            )
         return connection
     
     except Exception as e:
-        print("Por excepción")
+        graba_log({"ret_code": -1, "ret_txt": "get_db_connection_sqlserver - "+ donde}, "Excepción", e)
         return False
-        # raise HTTPException(status_code=400, detail= {"ret_code": -1,
-        #                                               "ret_txt": str(e),
-        #                                              }
-        #                   )

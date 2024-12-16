@@ -46,7 +46,7 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
             print("")
 
             # Aquí va la lógica específica para cada bbdd
-            resultado.extend(recorrer_consultas(bbdd, conn_mysql, param))
+            resultado.extend(procesar_consulta(bbdd["ID"], conn_mysql, param))
 
             donde = "update"
             cursor_mysql.execute(
@@ -81,24 +81,9 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> InfoTransaccion:
                      "El proceso de sincronización ha terminado."
         )
 
-
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def recorrer_consultas(reg_cfg_bbdd, conn_mysql, param: InfoTransaccion) -> list:
-
-    try:
-        resultados = procesar_consulta(reg_cfg_bbdd["ID"], conn_mysql, param)
-    
-    except Exception as e:
-        graba_log({"ret_code": -3, "ret_txt": str(e)}, "Excepción", e)
-        resultados = []
-
-    finally:
-        return resultados
-
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-def procesar_consulta(tabla, conn_mysql, param) -> list:
+def procesar_consulta(tabla, conn_mysql, param: InfoTransaccion) -> list:
     resultado = []
 
     try:

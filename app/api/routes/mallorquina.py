@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pyodbc
 
+from app import mi_libreria as mi
 # mias
 import app.services.mallorquina.sync_data as sync_data
 import app.services.mallorquina.consulta_caja as consulta_caja
@@ -71,6 +72,17 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
 
     try:
         donde = "estoy ejecutando mll_consultas"
+        resultado = []
+
+        textos = ["Hola", "esto", "es", "una", "prueba"]
+        mi.imprime(textos, "*")  # Imprime en una línea con '*' como relleno
+        print("\n")
+        mi.imprime(textos, "#", modo=2)  # Imprime cada texto en una línea con '#' como relleno
+        print("\n")
+        mi.imprime(textos, " ", modo=2)  # Imprime cada texto en una línea con '#' como relleno
+        
+
+
 
         if not fecha:
             # Si la variable es None o está vacía, asignar la fecha y hora actuales

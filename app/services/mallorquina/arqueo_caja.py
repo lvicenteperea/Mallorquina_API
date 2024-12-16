@@ -4,6 +4,9 @@ from decimal import Decimal
 
 import json
 
+from app import mi_libreria as mi
+
+
 from app.utils.functions import graba_log
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
@@ -148,6 +151,7 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
                                         AC.[Id Cobro] as ID_Cobro,
                                         AC.[Descripcion] as Medio_Cobro,
                                         AC.[Importe] as Importe,
+                                        0 as Operaciones,
                                         AC.[Realizado] as Realizado,
                                         AC.[Id Rel] as ID_Relacion,
                                         CdC.[Id Puesto] as ID_Puesto,
@@ -159,11 +163,33 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
                                     WHERE AC.[Id Apertura] IN ({placeholders})
                                     ORDER BY CdC.[Id Puesto], AC.[Fecha Hora]
                         """
+                select_query = f"""SELECT AC.[Id Apertura] as ID_Apertura,
+                                        AC.[Fecha Hora] as Fecha_Hora,
+                                        Ca.[Id Cobro] as ID_Cobro,
+                                        AC.[Descripcion] as Medio_Cobro,
+                                        AC.[Realizado] as Realizado,
+                                        AC.[Id Rel] as ID_Relacion,
+                                        CdC.[Id Puesto] as ID_Puesto,
+                                        PF.Descripcion as Puesto_Facturacion,
+                                        AC.[Id Apertura] as ID_Apertura,
+                                        sum(Ca.[Entrada]-Ca.[Salida]) as Importe,
+                                        count(*) as Operaciones
+									FROM [Arqueo Ciego] AC
+                                    inner join [Cierres de Caja] CdC on CdC.[Id Cierre] = AC.[Id Apertura]
+                                    inner join [Puestos Facturacion] PF on PF.[Id Puesto] = CdC.[Id Puesto]
+                                    inner join Caja Ca on Ca.[Id Apertura Puesto Cobro] = AC.[Id Apertura]
+                                    WHERE AC.[Id Apertura] IN ({placeholders})
+                                      and AC.[Importe] != 0
+                                    group by CdC.[Id Puesto], AC.[Fecha Hora], AC.[Id Apertura],
+                                     		 Ca.[Id Cobro],   AC.[Id Rel],
+                                     		 AC.[Realizado],          
+                                        	 AC.[Descripcion], PF.Descripcion
+                        """
                 cursor_sqlserver.execute(select_query, ids_cierre)
                 datos = cursor_sqlserver.fetchall()
 
                 print("--------------------------------------")
-                resultado = grabar(param, conn_mysql, datos)
+                resultado = grabar(param, conn_mysql, tabla, datos)
                 print("resultado", resultado)
                 print("--------------------------------------")
 
@@ -179,9 +205,21 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
     
 
 #----------------------------------------------------------------------------------------
+'''
+para operaciones:
+
+SELECT *
+From [Facturas Cabecera] FC
+ WHERE FC.[Id Relacion] = 842480
+
+ select *
+from caja
+where [Id relacion factura] =842480
+ 
+'''
 #----------------------------------------------------------------------------------------
-def grabar(param, conn_mysql, datos) -> list:
-    resultado = [0.0 , 0]
+def grabar(param, conn_mysql, tabla, datos) -> list:
+    resultado = [0 , 0]
     donde = "Inicio"
 
     try: 
@@ -189,13 +227,15 @@ def grabar(param, conn_mysql, datos) -> list:
         # Agrupar resultados por tienda, puesto y apertura
         ventas_diarias = {}
         for row in datos:
-            id_tienda = row.tienda
+            id_tienda = tabla
             id_puesto = row.ID_Puesto
             id_apertura = row.ID_Apertura
             fecha_hora = row.Fecha_Hora
 
             # Clave única para agrupación
             key = (id_tienda, id_puesto, id_apertura)
+
+            mi.imprime(["Resultado: "]+list(row))
 
             if key not in ventas_diarias:
                 ventas_diarias[key] = {
@@ -208,10 +248,10 @@ def grabar(param, conn_mysql, datos) -> list:
                 }
 
             ventas_diarias[key]["ventas"] += row.Importe
-            ventas_diarias[key]["operaciones"] += 0 # row.Operaciones
+            ventas_diarias[key]["operaciones"] += row.Operaciones
             ventas_diarias[key]["detalles"].append(row)
             print("Parcial: ", id_apertura, ventas_diarias[key]["ventas"])
-            resultado[0] = Decimal(resultado[0]) + ventas_diarias[key]["ventas"]
+            resultado[0] = resultado[0] + float(ventas_diarias[key]["ventas"])
             resultado[1] += ventas_diarias[key]["operaciones"]
 
         # Insertar en mll_rec_ventas_diarias
@@ -240,17 +280,18 @@ def grabar(param, conn_mysql, datos) -> list:
 
             # Insertar en mll_rec_ventas_medio_pago
             for detalle in data["detalles"]:
-                insert_medio_pago = """
-                    INSERT INTO mll_rec_ventas_medio_pago (id_ventas_diarias, id_medios_pago, ventas, operaciones)
-                    VALUES (%s, %s, %s, %s)
-                """
-                cursor_mysql.execute(insert_medio_pago,(
-                                                        id_ventas_diarias,
-                                                        detalle.ID_Cobro,
-                                                        detalle.Importe,
-                                                        0 # detalle.Operaciones,
-                                                       )
-                                    )
+                if detalle.Importe != 0 or detalle.Operaciones != 0:
+                    insert_medio_pago = """
+                        INSERT INTO mll_rec_ventas_medio_pago (id_ventas_diarias, id_medios_pago, ventas, operaciones)
+                        VALUES (%s, %s, %s, %s)
+                    """
+                    cursor_mysql.execute(insert_medio_pago,(
+                                                            id_ventas_diarias,
+                                                            detalle.ID_Cobro,
+                                                            detalle.Importe,
+                                                            detalle.Operaciones,
+                                                        )
+                                        )
         resultado[0] = float(resultado[0]) 
 
     except Exception as e:

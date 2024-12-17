@@ -46,16 +46,16 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
     except MadreException as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_sync_todo", e)
         raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                "ret_txt": resultado.ret_txt,
-                                                "error": str(e)
-                                            }
+                                                     "ret_txt": resultado.ret_txt,
+                                                     "error": str(e)
+                                                    }
                            ) 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_sync_todo", e)
-        raise HTTPException(status_code=500, detail={"ret_code": -1,
-                                                "ret_txt": f"mll_sync_todo: {type(resultado)}-{resultado}",
-                                                "error": str(e)
-                                            }
+        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
+                                                     "ret_txt": resultado.ret_txt,
+                                                     "error": str(e)
+                                                    }
                            )
     
 
@@ -73,16 +73,6 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
     try:
         donde = "estoy ejecutando mll_consultas"
         resultado = []
-
-        textos = ["Hola", "esto", "es", "una", "prueba"]
-        mi.imprime(textos, "*")  # Imprime en una línea con '*' como relleno
-        print("\n")
-        mi.imprime(textos, "#", modo=2)  # Imprime cada texto en una línea con '#' como relleno
-        print("\n")
-        mi.imprime(textos, " ", modo=2)  # Imprime cada texto en una línea con '#' como relleno
-        
-
-
 
         if not fecha:
             # Si la variable es None o está vacía, asignar la fecha y hora actuales
@@ -111,8 +101,8 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
                            )
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_consultas", e)
-        raise HTTPException(status_code=500, detail={"ret_code": -1,
-                                                     "ret_txt": f"mll_consultas: {type(resultado)}-{resultado}",
+        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
+                                                     "ret_txt": resultado.ret_txt,
                                                      "error": str(e)
                                                     }
             )
@@ -138,11 +128,11 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
             fecha = datetime.now().strftime('%Y-%m-%d')
 
         donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
-        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
+        resultado = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
 
         donde = "Llamada a arqueo_caja.proceso"
-        resultado = arqueo_caja.proceso(param = infoTrans)
-
+        resultado = arqueo_caja.proceso(param = resultado)
+        
         donde = f"Retorno: {resultado.ret_code}"
         if isinstance(resultado, pyodbc.Row):
             donde = 'el principal'
@@ -174,8 +164,8 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
                            ) 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_arqueo_caja", e)
-        raise HTTPException(status_code=500, detail={"ret_code": -1,
-                                                     "ret_txt": "A ver porque ha dado error....",
+        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
+                                                     "ret_txt": resultado.ret_txt,
                                                      "error": str(e)
                                                     }
             )
@@ -222,8 +212,8 @@ async def mll_convierte_excel(id_App: int = Query(..., description="Identificado
         
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_excel", e)
-        raise HTTPException(status_code=500, detail={"ret_code": -1,
-                                                     "ret_txt": f"mll_convierte_excel: {type(resultado)}-{resultado}",
+        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
+                                                     "ret_txt": resultado.ret_txt,
                                                      "error": str(e)
                                                     }
             )

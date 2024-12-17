@@ -62,8 +62,8 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
     donde="actualizar_en_ejecucion"
     actualizar_en_ejecucion(1)
 
+    donde = "get_db_connection_mysql"
     try:
-        donde = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
@@ -99,13 +99,9 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
                               )
 
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"},
-                   "Excepción arqueCaja.proceso", e)
-        raise HTTPException(status_code=400, detail={"ret_code": -3,
-                                                     "ret_txt": str(e),
-                                                     "excepcion": e
-                                                    }
-                           )        
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción arqueCaja.proceso", e)
+        param.ret_code = -1
+        param.ret_txt = "Error General, contacte con su administrador"
 
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
@@ -163,39 +159,36 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
                                     WHERE AC.[Id Apertura] IN ({placeholders})
                                     ORDER BY CdC.[Id Puesto], AC.[Fecha Hora]
                         """
-                select_query = f"""SELECT AC.[Id Apertura] as ID_Apertura,
-                                        AC.[Fecha Hora] as Fecha_Hora,
-                                        Ca.[Id Cobro] as ID_Cobro,
-                                        AC.[Descripcion] as Medio_Cobro,
-                                        AC.[Realizado] as Realizado,
-                                        AC.[Id Rel] as ID_Relacion,
-                                        CdC.[Id Puesto] as ID_Puesto,
-                                        PF.Descripcion as Puesto_Facturacion,
-                                        AC.[Id Apertura] as ID_Apertura,
-                                        sum(Ca.[Entrada]-Ca.[Salida]) as Importe,
-                                        count(*) as Operaciones
-									FROM [Arqueo Ciego] AC
+                select_query = f"""SELECT Ca.[Id Apertura Puesto Cobro] as ID_Apertura,
+                                          FORMAT(Ca.Fecha, 'dd/MM/yyyy') as Fecha,
+                                          Ca.[Id Cobro] as ID_Cobro,
+                                          Ca.[Descripcion Cobro] as Medio_Cobro,
+                                          AC.[Realizado] as Realizado,
+                                          AC.[Id Rel] as ID_Relacion,
+                                          CdC.[Id Puesto] as ID_Puesto,
+                                          sum(Ca.[Entrada]-Ca.[Salida]) as Importe,
+                                          count(*) as Operaciones
+                                     FROM Caja Ca
+                                    inner join [Arqueo Ciego] AC on AC.[Id Apertura] = Ca.[Id Apertura Puesto Cobro] and ac.[Id Cobro] = ca.[Id Cobro]
                                     inner join [Cierres de Caja] CdC on CdC.[Id Cierre] = AC.[Id Apertura]
-                                    inner join [Puestos Facturacion] PF on PF.[Id Puesto] = CdC.[Id Puesto]
-                                    inner join Caja Ca on Ca.[Id Apertura Puesto Cobro] = AC.[Id Apertura]
-                                    WHERE AC.[Id Apertura] IN ({placeholders})
-                                      and AC.[Importe] != 0
-                                    group by CdC.[Id Puesto], AC.[Fecha Hora], AC.[Id Apertura],
-                                     		 Ca.[Id Cobro],   AC.[Id Rel],
-                                     		 AC.[Realizado],          
-                                        	 AC.[Descripcion], PF.Descripcion
+                                    WHERE Ca.[Id Apertura Puesto Cobro] IN ({placeholders})
+                                    group by Ca.[Id Apertura Puesto Cobro], FORMAT(Ca.Fecha, 'dd/MM/yyyy'),
+                                             Ca.[Id Cobro],                 Ca.[Descripcion Cobro],
+                                             AC.[Realizado],                AC.[Id Rel],
+                                             CdC.[Id Puesto]
                         """
                 cursor_sqlserver.execute(select_query, ids_cierre)
                 datos = cursor_sqlserver.fetchall()
 
-                print("--------------------------------------")
                 resultado = grabar(param, conn_mysql, tabla, datos)
-                print("resultado", resultado)
-                print("--------------------------------------")
+                if param.ret_code != 0:
+                    mi.imprime(["resultado", resultado, param.ret_code, param.ret_txt], "-")
 
     except Exception as e:
         graba_log({"ret_code": -3, "ret_txt": "arqueo_caja.consultar_y_grabar"}, "Excepción", e)
         resultado = []
+        param.ret_code = -1
+        param.ret_txt = "Error General, contacte con su administrador"
 
     finally:
         if conn_sqlserver:
@@ -218,7 +211,7 @@ where [Id relacion factura] =842480
  
 '''
 #----------------------------------------------------------------------------------------
-def grabar(param, conn_mysql, tabla, datos) -> list:
+def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
     resultado = [0 , 0]
     donde = "Inicio"
 
@@ -230,7 +223,7 @@ def grabar(param, conn_mysql, tabla, datos) -> list:
             id_tienda = tabla
             id_puesto = row.ID_Puesto
             id_apertura = row.ID_Apertura
-            fecha_hora = row.Fecha_Hora
+            fecha = row.Fecha
 
             # Clave única para agrupación
             key = (id_tienda, id_puesto, id_apertura)
@@ -241,7 +234,7 @@ def grabar(param, conn_mysql, tabla, datos) -> list:
                 ventas_diarias[key] = {
                     "id_tienda": id_tienda,
                     "id_tpv": id_puesto,
-                    "fecha_hora": fecha_hora,
+                    "fecha": fecha,
                     "ventas": 0,
                     "operaciones": 0,
                     "detalles": []
@@ -262,14 +255,14 @@ def grabar(param, conn_mysql, tabla, datos) -> list:
             donde = "insert"
             insert_diarias = """
                 INSERT INTO mll_rec_ventas_diarias (id_tienda, id_tpv, fecha, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s)
             """
             cursor_mysql.execute(
                 insert_diarias,
                 (
                     data["id_tienda"],
                     data["id_tpv"],
-                    data["fecha_hora"],
+                    data["fecha"],
                     data["ventas"],
                     data["operaciones"],
                     key[2],  # ID_Apertura
@@ -297,6 +290,8 @@ def grabar(param, conn_mysql, tabla, datos) -> list:
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": "arqueo_caja.grabar - "+ donde}, "Excepción", e)
         resultado = [0 , 0]
+        param.ret_code = -1
+        param.ret_txt = "Error General, contacte con su administrador"
 
     finally:
         return resultado

@@ -33,7 +33,7 @@ def get_db_connection_mysql():
 #----------------------------------------------------------------------------------------
 def close_connection_mysql(conn, cursor):
     try:
-        if conn.is_connected():
+        if conn is not None and conn.is_connected():
             if isinstance(cursor, mysql.connector.cursor_cext.CMySQLCursor):
                 cursor.close()
             conn.close()

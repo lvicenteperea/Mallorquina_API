@@ -1,63 +1,44 @@
 from fastapi import HTTPException
 from datetime import datetime
-from decimal import Decimal
+#from decimal import Decimal
 
 import json
 
 from app import mi_libreria as mi
 
-
-from app.utils.functions import graba_log
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
+from app.utils.functions import graba_log
+from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 
+#----------------------------------------------------------------------------------------
 '''
-#----------------------------------------------------------------------------------------
-# Función para procesar los resultados en formato JSON
-#     data = [
-#         (8285, datetime(2024, 10, 5, 14, 7, 20), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39151),
-#         (8286, datetime(2024, 10, 5, 13, 48, 40), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39142),
-#         (8287, datetime(2024, 10, 5, 21, 21, 6), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39169),
-#         (8288, datetime(2024, 10, 5, 21, 9, 13), 13, 'CREDITO CLIENTE', Decimal('0.000'), True, 39160),
-#     ]
-#----------------------------------------------------------------------------------------
-def lista_arqueo_caja_a_json(data):
-    # Claves descriptivas para los campos de las tuplas
-    keys = ["Id", "Fecha", "Tipo", "Descripcion", "Monto", "Activo", "Codigo"]
-
-    # Función personalizada para serializar Decimal y datetime
-    def custom_serializer(obj):
-        if isinstance(obj, Decimal):
-            return float(obj)
-        elif isinstance(obj, datetime):
-            return obj.isoformat()
-        elif isinstance(obj, bool):
-            return obj
-        raise TypeError(f"Tipo no serializable: {type(obj)}")
-
-    # Convertir la lista de tuplas a una lista de diccionarios
-    dict_data = [dict(zip(keys, row)) for row in data]
-
-    # Convertir a JSON
-    return json.dumps(dict_data, default=custom_serializer, indent=4)
+ALTER TABLE `mallorquina`.`mll_cfg_bbdd` 
+ADD COLUMN `ultimo_cierre` DATE NULL COMMENT 'Fecha del último cierre de caja de esta BBDD' AFTER `Ultima_Fecha_Carga`;
 '''
-#----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> InfoTransaccion:
     donde="Inicio"
     config = obtener_configuracion_general()
+    param.resultados = []
 
     if not config.get("ID", False):
-        print("No se han encontrado datos de configuración", config["En_Ejecucion"])
-        return
+        param.ret_code = -11
+        param.ret_txt = f"..No se han encontrado datos de configuración: {config['En_Ejecucion']}"
+        raise MadreException({"ret_code": -1, 
+                              "ret_txt": f"No se han encontrado datos de configuración: {config['En_Ejecucion']}"}, 
+                              400)
     
     if config["En_Ejecucion"]:
-        print("El proceso ya está en ejecución.")
-        return
+        param.ret_code = -11
+        param.ret_txt = "..El proceso ya está en ejecución."
+        raise MadreException({"ret_code": -1, 
+                              "ret_txt": "El proceso ya está en ejecución."}, 
+                              400)
 
     donde="actualizar_en_ejecucion"
     actualizar_en_ejecucion(1)
@@ -68,38 +49,48 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         donde = "Select"
-        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") # where id=1")
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") 
         lista_bbdd = cursor_mysql.fetchall()
-        resultado = []
 
         for bbdd in lista_bbdd:
-            print("")
-            print("---------------------------------------------------------------------------------------")
-            print(f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}")
-            print("---------------------------------------------------------------------------------------")
-            print("")
+            mi.imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
+            if not param.parametros[0]: # si no tiene parametro fecha
+                #mi.imprime([type(json.loads(bbdd['Conexion'])['ultimo_cierre'])],'.')
+                if bbdd['ultimo_cierre']: # si tiene último cierre
+                    param.parametros[0] = bbdd['ultimo_cierre']
+                else:
+                    param.parametros[0] = datetime.now().strftime('%Y-%m-%d')
 
             # Aquí va la lógica específica para cada bbdd
-            resultado.extend(consultar_y_grabar(bbdd["ID"], conn_mysql, param))
+            param.resultados.extend(consultar_y_grabar(bbdd["ID"], conn_mysql, param))
 
             donde = "update"
             cursor_mysql.execute(
-                "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
-                (datetime.now(), bbdd["ID"])
+                "UPDATE mll_cfg_bbdd SET ultimo_cierre = %s WHERE ID = %s",
+                (param.parametros[0], bbdd["ID"])
             )
         
         conn_mysql.commit()
 
-        return InfoTransaccion( id_App=param.id_App, 
-                                user=param.user, 
-                                ret_code=0, 
-                                ret_txt="",
-                                parametros=param.parametros,
-                                resultados = []
-                              )
+        return param # InfoTransaccion( id_App=param.id_App, 
+                     #            user=param.user, 
+                     #            ret_code=0, 
+                     #            ret_txt="",
+                     #            parametros=param.parametros,
+                     #            resultados = resultado
+                     #          )
 
+    except MadreException as e:
+        param.resultados = []
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_arqueo_caja", e)
+        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+                                                "ret_txt": param.ret_txt,
+                                                "error": str(e)
+                                            }
+                           ) 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción arqueCaja.proceso", e)
+        param.resultados = []
         param.ret_code = -1
         param.ret_txt = "Error General, contacte con su administrador"
 
@@ -111,12 +102,13 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
         )
+        return param
 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
-    resultado = []
+    param.resultados = []
 
     try:
         # Buscamos la conexión que necesitamos para esta bbdd origen
@@ -180,13 +172,13 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
                 cursor_sqlserver.execute(select_query, ids_cierre)
                 datos = cursor_sqlserver.fetchall()
 
-                resultado = grabar(param, conn_mysql, tabla, datos)
+                param.resultados = grabar(param, conn_mysql, tabla, datos)
                 if param.ret_code != 0:
-                    mi.imprime(["resultado", resultado, param.ret_code, param.ret_txt], "-")
+                    mi.imprime(["resultado", param.resultados, param.ret_code, param.ret_txt], "-")
 
     except Exception as e:
         graba_log({"ret_code": -3, "ret_txt": "arqueo_caja.consultar_y_grabar"}, "Excepción", e)
-        resultado = []
+        param.resultados = []
         param.ret_code = -1
         param.ret_txt = "Error General, contacte con su administrador"
 
@@ -194,25 +186,13 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
         if conn_sqlserver:
             conn_sqlserver.close()
 
-        return resultado
+        return param
     
 
 #----------------------------------------------------------------------------------------
-'''
-para operaciones:
-
-SELECT *
-From [Facturas Cabecera] FC
- WHERE FC.[Id Relacion] = 842480
-
- select *
-from caja
-where [Id relacion factura] =842480
- 
-'''
 #----------------------------------------------------------------------------------------
 def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
-    resultado = [0 , 0]
+    param.resultados = [0 , 0]
     donde = "Inicio"
 
     try: 
@@ -244,8 +224,8 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
             ventas_diarias[key]["operaciones"] += row.Operaciones
             ventas_diarias[key]["detalles"].append(row)
             print("Parcial: ", id_apertura, ventas_diarias[key]["ventas"])
-            resultado[0] = resultado[0] + float(ventas_diarias[key]["ventas"])
-            resultado[1] += ventas_diarias[key]["operaciones"]
+            param.resultados[0] = param.resultados[0] + float(ventas_diarias[key]["ventas"])
+            param.resultados[1] += ventas_diarias[key]["operaciones"]
 
         # Insertar en mll_rec_ventas_diarias
         cierre_descs = ["Mañana", "Tarde", "Noche"]
@@ -285,13 +265,13 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
                                                             detalle.Operaciones,
                                                         )
                                         )
-        resultado[0] = float(resultado[0]) 
+        param.resultados[0] = float(param.resultados[0]) 
 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": "arqueo_caja.grabar - "+ donde}, "Excepción", e)
-        resultado = [0 , 0]
+        param.resultados = [0 , 0]
         param.ret_code = -1
         param.ret_txt = "Error General, contacte con su administrador"
 
     finally:
-        return resultado
+        return param

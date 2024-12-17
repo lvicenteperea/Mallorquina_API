@@ -123,9 +123,9 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
     try:
         donde = "estoy ejecutando mll_arqueo_caja"
 
-        if not fecha:
-            # Si la variable es None o está vacía, asignar la fecha y hora actuales
-            fecha = datetime.now().strftime('%Y-%m-%d')
+        #if not fecha:
+        #    # Si la variable es None o está vacía, asignar la fecha y hora actuales
+        #    fecha = datetime.now().strftime('%Y-%m-%d')
 
         donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
         resultado = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
@@ -134,12 +134,12 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
         resultado = arqueo_caja.proceso(param = resultado)
         
         donde = f"Retorno: {resultado.ret_code}"
-        if isinstance(resultado, pyodbc.Row):
+        if isinstance(resultado.resultados, pyodbc.Row):
             donde = 'el principal'
-            resultado = dict(resultado)  # Convertir a diccionario
-        elif isinstance(resultado, list) and isinstance(resultado[0], pyodbc.Row):
+            resultado.resultados = dict(resultado.resultados)  # Convertir a diccionario
+        elif isinstance(resultado.resultados, list) and isinstance(resultado.resultados[0], pyodbc.Row):
             donde = 'es una lista y tiene uan instancia'
-            resultado = [dict(row) for row in resultado]  # Convertir cada fila a diccionario
+            resultado.resultados = [dict(row) for row in resultado.resultados]  # Convertir cada fila a diccionario
         if resultado.ret_code < 0:
             donde = f"resultado.ret_code: {resultado.ret_code}"
 

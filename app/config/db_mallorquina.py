@@ -2,6 +2,7 @@ from fastapi import HTTPException
 
 # Para MySql
 import mysql.connector
+from mysql.connector.cursor import MySQLCursor
 from mysql.connector import Error
 from app.config.settings import settings
 
@@ -34,7 +35,7 @@ def get_db_connection_mysql():
 def close_connection_mysql(conn, cursor):
     try:
         if conn is not None and conn.is_connected():
-            if isinstance(cursor, mysql.connector.cursor_cext.CMySQLCursor):
+            if isinstance(cursor, mysql.connector.cursor.MySQLCursor):
                 cursor.close()
             conn.close()
     

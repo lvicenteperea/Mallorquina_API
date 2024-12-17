@@ -16,10 +16,6 @@ from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------
-'''
-ALTER TABLE `mallorquina`.`mll_cfg_bbdd` 
-ADD COLUMN `ultimo_cierre` DATE NULL COMMENT 'Fecha del último cierre de caja de esta BBDD' AFTER `Ultima_Fecha_Carga`;
-'''
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> InfoTransaccion:
     donde="Inicio"
@@ -72,13 +68,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         
         conn_mysql.commit()
 
-        return param # InfoTransaccion( id_App=param.id_App, 
-                     #            user=param.user, 
-                     #            ret_code=0, 
-                     #            ret_txt="",
-                     #            parametros=param.parametros,
-                     #            resultados = resultado
-                     #          )
+        return param
 
     except MadreException as e:
         param.resultados = []
@@ -134,23 +124,6 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
             if ids_cierre:
                 # buscamos los cierres de estos IDs
                 placeholders = ", ".join(["?"] * len(ids_cierre))
-                select_query = f"""SELECT AC.[Id Apertura] as ID_Apertura,
-                                        AC.[Fecha Hora] as Fecha_Hora,
-                                        AC.[Id Cobro] as ID_Cobro,
-                                        AC.[Descripcion] as Medio_Cobro,
-                                        AC.[Importe] as Importe,
-                                        0 as Operaciones,
-                                        AC.[Realizado] as Realizado,
-                                        AC.[Id Rel] as ID_Relacion,
-                                        CdC.[Id Puesto] as ID_Puesto,
-                                        PF.Descripcion as Puesto_Facturacion, 
-                                        {tabla} as tienda
-                                    FROM [Arqueo Ciego] AC
-                                    inner join [Cierres de Caja] CdC on CdC.[Id Cierre] = AC.[Id Apertura]
-                                    inner join [Puestos Facturacion] PF on PF.[Id Puesto] = CdC.[Id Puesto]
-                                    WHERE AC.[Id Apertura] IN ({placeholders})
-                                    ORDER BY CdC.[Id Puesto], AC.[Fecha Hora]
-                        """
                 select_query = f"""SELECT Ca.[Id Apertura Puesto Cobro] as ID_Apertura,
                                           FORMAT(Ca.Fecha, 'dd/MM/yyyy') as Fecha,
                                           Ca.[Id Cobro] as ID_Cobro,
@@ -196,6 +169,7 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
     donde = "Inicio"
 
     try: 
+        cierre_descs = ["Mañana", "Tarde"]
         cursor_mysql = conn_mysql.cursor()
         # Agrupar resultados por tienda, puesto y apertura
         ventas_diarias = {}
@@ -208,8 +182,6 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
             # Clave única para agrupación
             key = (id_tienda, id_puesto, id_apertura)
 
-            mi.imprime(["Resultado: "]+list(row))
-
             if key not in ventas_diarias:
                 ventas_diarias[key] = {
                     "id_tienda": id_tienda,
@@ -217,22 +189,22 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
                     "fecha": fecha,
                     "ventas": 0,
                     "operaciones": 0,
-                    "detalles": []
+                    "detalles": [],
                 }
 
             ventas_diarias[key]["ventas"] += row.Importe
             ventas_diarias[key]["operaciones"] += row.Operaciones
             ventas_diarias[key]["detalles"].append(row)
-            print("Parcial: ", id_apertura, ventas_diarias[key]["ventas"])
+            
             param.resultados[0] = param.resultados[0] + float(ventas_diarias[key]["ventas"])
             param.resultados[1] += ventas_diarias[key]["operaciones"]
 
+        orden = 1 # porque en la primera alteración quiero que sea 0
         # Insertar en mll_rec_ventas_diarias
-        cierre_descs = ["Mañana", "Tarde", "Noche"]
         for idx, (key, data) in enumerate(ventas_diarias.items()):
-            cierre_tpv_desc = cierre_descs[idx] if idx < len(cierre_descs) else f"Cierre {idx - len(cierre_descs) + 1}"
-
+            orden = orden ^ 1  # Alternar entre 0 y 1
             donde = "insert"
+            
             insert_diarias = """
                 INSERT INTO mll_rec_ventas_diarias (id_tienda, id_tpv, fecha, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
                 VALUES (%s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s)
@@ -246,9 +218,10 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
                     data["ventas"],
                     data["operaciones"],
                     key[2],  # ID_Apertura
-                    cierre_tpv_desc,
+                    cierre_descs[orden],
                 )
             )
+
             id_ventas_diarias = cursor_mysql.lastrowid  # Obtener el ID insertado
 
             # Insertar en mll_rec_ventas_medio_pago

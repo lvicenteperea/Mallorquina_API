@@ -16,25 +16,22 @@ from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
+'''
 def proceso(param: InfoTransaccion) -> InfoTransaccion:
     donde="Inicio"
     config = obtener_configuracion_general()
-    param.resultados = []
+    resultado = param
+    resultado.resultados = []
 
     if not config.get("ID", False):
-        param.ret_code = -11
-        param.ret_txt = f"..No se han encontrado datos de configuración: {config['En_Ejecucion']}"
-        raise MadreException({"ret_code": -1, 
-                              "ret_txt": f"No se han encontrado datos de configuración: {config['En_Ejecucion']}"}, 
-                              400)
+        resultado.ret_code = -1
+        resultado.ret_txt = f"No se han encontrado datos de configuración: {config['En_Ejecucion']}"
+        raise Exception
     
     if config["En_Ejecucion"]:
-        param.ret_code = -11
-        param.ret_txt = "..El proceso ya está en ejecución."
-        raise MadreException({"ret_code": -1, 
-                              "ret_txt": "El proceso ya está en ejecución."}, 
-                              400)
+        resultado.ret_code = -1
+        resultado.ret_txt = "El proceso ya está en ejecución."
+        raise Exception
 
     donde="actualizar_en_ejecucion"
     actualizar_en_ejecucion(1)
@@ -50,15 +47,16 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
 
         for bbdd in lista_bbdd:
             mi.imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
-            if not param.parametros[0]: # si no tiene parametro fecha
+
+            if not resultado.parametros[0]: # si no tiene parametro fecha
                 #mi.imprime([type(json.loads(bbdd['Conexion'])['ultimo_cierre'])],'.')
                 if bbdd['ultimo_cierre']: # si tiene último cierre
-                    param.parametros[0] = bbdd['ultimo_cierre']
+                    resultado.parametros[0] = bbdd['ultimo_cierre']
                 else:
-                    param.parametros[0] = datetime.now().strftime('%Y-%m-%d')
+                    resultado.parametros[0] = datetime.now().strftime('%Y-%m-%d')
 
             # Aquí va la lógica específica para cada bbdd
-            param.resultados.extend(consultar_y_grabar(bbdd["ID"], conn_mysql, param))
+            resultado.resultados.extend(consultar_y_grabar(bbdd["ID"], conn_mysql, resultado))
 
             donde = "update"
             cursor_mysql.execute(
@@ -67,8 +65,6 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
             )
         
         conn_mysql.commit()
-
-        return param
 
     except MadreException as e:
         param.resultados = []
@@ -92,19 +88,97 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
         )
+
         return param
+
+
+'''
+#----------------------------------------------------------------------------------------
+def proceso(param: InfoTransaccion) -> list:
+    donde="Inicio"
+    config = obtener_configuracion_general()
+    resultado = []
+    fecha = param.parametros[0]
+
+    if not config.get("ID", False):
+        param.ret_code = -1
+        param.ret_txt = f"No se han encontrado datos de configuración: {config['En_Ejecucion']}"
+        raise Exception
+    
+    if config["En_Ejecucion"]:
+        param.ret_code = -1
+        param.ret_txt = "El proceso ya está en ejecución."
+        raise Exception
+
+    donde="actualizar_en_ejecucion"
+    actualizar_en_ejecucion(1)
+
+    donde = "get_db_connection_mysql"
+    try:
+        conn_mysql = get_db_connection_mysql()
+        cursor_mysql = conn_mysql.cursor(dictionary=True)
+
+        donde = "Select"
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") 
+        lista_bbdd = cursor_mysql.fetchall()
+
+        for bbdd in lista_bbdd:
+            mi.imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
+
+            if not fecha: # si no tiene parametro fecha
+                #mi.imprime([type(json.loads(bbdd['Conexion'])['ultimo_cierre'])],'.')
+                if bbdd['ultimo_cierre']: # si tiene último cierre
+                    fecha = bbdd['ultimo_cierre']
+                else:
+                    fecha = datetime.now().strftime('%Y-%m-%d')
+
+            # Aquí va la lógica específica para cada bbdd
+            resultado.extend(consultar_y_grabar(bbdd["ID"], conn_mysql, param))
+
+            donde = "update"
+            cursor_mysql.execute(
+                "UPDATE mll_cfg_bbdd SET ultimo_cierre = %s WHERE ID = %s",
+                (fecha, bbdd["ID"])
+            )
+        
+        conn_mysql.commit()
+
+    except MadreException as e:
+        resultado = []
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_arqueo_caja", e)
+        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+                                                "ret_txt": param.ret_txt,
+                                                "error": str(e)
+                                            }
+                           ) 
+    except Exception as e:
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción arqueCaja.proceso", e)
+        resultado = []
+        param.ret_code = -1
+        param.ret_txt = "Error General, contacte con su administrador"
+
+    finally:
+        close_connection_mysql(conn_mysql, cursor_mysql)
+
+        actualizar_en_ejecucion(0)
+        enviar_email(config["Lista_emails"],
+                     "Proceso finalizado",
+                     "El proceso de sincronización ha terminado."
+        )
+        return resultado
 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
-    param.resultados = []
+    resultado = []
+    donde = "Inicio"
 
     try:
-        # Buscamos la conexión que necesitamos para esta bbdd origen
+        donde = "Buscamos la conexión que necesitamos para esta bbdd origen"
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla)
 
-        # conextamos con esta bbdd origen
+        donde = "conextamos con esta bbdd origen"
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
         if conn_sqlserver:
@@ -117,12 +191,14 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
             select_query = f"""SELECT [Id Cierre]
                                 FROM [Cierres de Caja] WHERE CAST(Fecha AS DATE) = ?
                     """
-            cursor_sqlserver.execute(select_query, param.parametros)
+            donde = "Ejecución select 1"
+            cursor_sqlserver.execute(select_query, param.parametros) # parametros es la fecha
             apertura_ids_lista = cursor_sqlserver.fetchall()
             ids_cierre = [item[0] for item in apertura_ids_lista]
             
             if ids_cierre:
                 # buscamos los cierres de estos IDs
+                donde = "Ejecución select 2"
                 placeholders = ", ".join(["?"] * len(ids_cierre))
                 select_query = f"""SELECT Ca.[Id Apertura Puesto Cobro] as ID_Apertura,
                                           FORMAT(Ca.Fecha, 'dd/MM/yyyy') as Fecha,
@@ -145,13 +221,12 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
                 cursor_sqlserver.execute(select_query, ids_cierre)
                 datos = cursor_sqlserver.fetchall()
 
-                param.resultados = grabar(param, conn_mysql, tabla, datos)
-                if param.ret_code != 0:
-                    mi.imprime(["resultado", param.resultados, param.ret_code, param.ret_txt], "-")
+                donde = "Llamada a Grabar"
+                resultado = grabar(param, conn_mysql, tabla, datos)
 
     except Exception as e:
-        graba_log({"ret_code": -3, "ret_txt": "arqueo_caja.consultar_y_grabar"}, "Excepción", e)
-        param.resultados = []
+        graba_log({"ret_code": -3, "ret_txt": donde}, "Excepción arqueo_caja.consultar_y_grabar", e)
+        resultado = []
         param.ret_code = -1
         param.ret_txt = "Error General, contacte con su administrador"
 
@@ -159,13 +234,13 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
         if conn_sqlserver:
             conn_sqlserver.close()
 
-        return param
+        return resultado
     
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
-    param.resultados = [0 , 0]
+    resultado = [0 , 0]
     donde = "Inicio"
 
     try: 
@@ -196,8 +271,6 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
             ventas_diarias[key]["operaciones"] += row.Operaciones
             ventas_diarias[key]["detalles"].append(row)
             
-            param.resultados[0] = param.resultados[0] + float(ventas_diarias[key]["ventas"])
-            param.resultados[1] += ventas_diarias[key]["operaciones"]
 
         orden = 1 # porque en la primera alteración quiero que sea 0
         # Insertar en mll_rec_ventas_diarias
@@ -209,42 +282,43 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
                 INSERT INTO mll_rec_ventas_diarias (id_tienda, id_tpv, fecha, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
                 VALUES (%s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s)
             """
-            cursor_mysql.execute(
-                insert_diarias,
-                (
-                    data["id_tienda"],
-                    data["id_tpv"],
-                    data["fecha"],
-                    data["ventas"],
-                    data["operaciones"],
-                    key[2],  # ID_Apertura
-                    cierre_descs[orden],
-                )
-            )
+            cursor_mysql.execute( insert_diarias,
+                                  (data["id_tienda"],
+                                   data["id_tpv"],
+                                   data["fecha"],
+                                   data["ventas"],
+                                   data["operaciones"],
+                                   key[2],  # ID_Apertura
+                                   cierre_descs[orden],
+                                  )
+                                )
 
             id_ventas_diarias = cursor_mysql.lastrowid  # Obtener el ID insertado
 
             # Insertar en mll_rec_ventas_medio_pago
             for detalle in data["detalles"]:
                 if detalle.Importe != 0 or detalle.Operaciones != 0:
+
+                    resultado[0] = resultado[0] + float(detalle.Importe)
+                    resultado[1] += detalle.Operaciones
+
                     insert_medio_pago = """
                         INSERT INTO mll_rec_ventas_medio_pago (id_ventas_diarias, id_medios_pago, ventas, operaciones)
                         VALUES (%s, %s, %s, %s)
                     """
-                    cursor_mysql.execute(insert_medio_pago,(
-                                                            id_ventas_diarias,
+                    cursor_mysql.execute(insert_medio_pago,(id_ventas_diarias,
                                                             detalle.ID_Cobro,
                                                             detalle.Importe,
                                                             detalle.Operaciones,
-                                                        )
+                                                           )
                                         )
-        param.resultados[0] = float(param.resultados[0]) 
+        resultado[0] = float(resultado[0]) 
 
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": "arqueo_caja.grabar - "+ donde}, "Excepción", e)
-        param.resultados = [0 , 0]
+        graba_log({"ret_code": -1, "ret_txt": donde}, "Excepción arqueo_caja.grabar", e)
+        resultado = [0 , 0]
         param.ret_code = -1
         param.ret_txt = "Error General, contacte con su administrador"
 
     finally:
-        return param
+        return resultado

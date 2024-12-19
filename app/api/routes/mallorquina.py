@@ -72,7 +72,6 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
 
     try:
         donde = "estoy ejecutando mll_consultas"
-        resultado = []
 
         if not fecha:
             # Si la variable es None o está vacía, asignar la fecha y hora actuales
@@ -121,51 +120,28 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
                          ):
 
     try:
-        donde = "estoy ejecutando mll_arqueo_caja"
-
-        #if not fecha:
-        #    # Si la variable es None o está vacía, asignar la fecha y hora actuales
-        #    fecha = datetime.now().strftime('%Y-%m-%d')
-
         donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
-        resultado = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
 
         donde = "Llamada a arqueo_caja.proceso"
-        resultado = arqueo_caja.proceso(param = resultado)
+        resultado = arqueo_caja.proceso(param = param)
         
-        donde = f"Retorno: {resultado.ret_code}"
-        if isinstance(resultado.resultados, pyodbc.Row):
-            donde = 'el principal'
-            resultado.resultados = dict(resultado.resultados)  # Convertir a diccionario
-        elif isinstance(resultado.resultados, list) and isinstance(resultado.resultados[0], pyodbc.Row):
-            donde = 'es una lista y tiene uan instancia'
-            resultado.resultados = [dict(row) for row in resultado.resultados]  # Convertir cada fila a diccionario
-        if resultado.ret_code < 0:
-            donde = f"resultado.ret_code: {resultado.ret_code}"
+        donde = f"Retornando: {type(resultado)}"
+        param.resultados = resultado or []
 
-        donde = f"Resultado: {type(resultado.resultados)}"
-        if resultado.resultados:
-            print('--------------------')
-            for idx, item in enumerate(resultado.resultados):
-                print(f"Item {idx}: {type(item)} - {item}")
-            print('--------------------')
-
-
-        donde = f"Retornando: {type(resultado.resultados)}"
-        resultado.resultados = resultado.resultados or []
-        return resultado 
+        return param
     
     except MadreException as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_arqueo_caja", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                "ret_txt": resultado.ret_txt,
+        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+                                                "ret_txt": param.ret_txt,
                                                 "error": str(e)
                                             }
                            ) 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_arqueo_caja", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                     "ret_txt": resultado.ret_txt,
+        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+                                                     "ret_txt": param.ret_txt,
                                                      "error": str(e)
                                                     }
             )

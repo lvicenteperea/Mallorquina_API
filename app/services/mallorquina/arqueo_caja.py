@@ -240,7 +240,8 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> list:
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
-    resultado = [0 , 0]
+    resultado = [None] * 9
+
     donde = "Inicio"
 
     try: 
@@ -277,7 +278,7 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
         for idx, (key, data) in enumerate(ventas_diarias.items()):
             orden = orden ^ 1  # Alternar entre 0 y 1
             donde = "insert"
-            
+
             insert_diarias = """
                 INSERT INTO mll_rec_ventas_diarias (id_tienda, id_tpv, fecha, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
                 VALUES (%s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s)
@@ -299,9 +300,16 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
             for detalle in data["detalles"]:
                 if detalle.Importe != 0 or detalle.Operaciones != 0:
 
-                    resultado[0] = resultado[0] + float(detalle.Importe)
-                    resultado[1] += detalle.Operaciones
-
+                    resultado[0] = float(detalle.Importe)
+                    resultado[1] = detalle.Operaciones
+                    resultado[2] = data["id_tienda"]
+                    resultado[3] = data["id_tpv"]
+                    resultado[4] = data["fecha"]
+                    resultado[5] = data["ventas"]
+                    resultado[6] = data["operaciones"]
+                    resultado[7] = key[2],  # ID_Apertura
+                    resultado[8] = cierre_descs[orden]
+                    
                     insert_medio_pago = """
                         INSERT INTO mll_rec_ventas_medio_pago (id_ventas_diarias, id_medios_pago, ventas, operaciones)
                         VALUES (%s, %s, %s, %s)
@@ -312,7 +320,8 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> list:
                                                             detalle.Operaciones,
                                                            )
                                         )
-        resultado[0] = float(resultado[0]) 
+
+        # resultado[0] = float(resultado[0]) 
 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": donde}, "Excepción arqueo_caja.grabar", e)

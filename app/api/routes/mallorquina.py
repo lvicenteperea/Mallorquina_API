@@ -110,6 +110,38 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
   
 
 #----------------------------------------------------------------------------------
+'''
+SELECT * FROM mallorquina.mll_rec_ventas_diarias;
+SELECT * FROM mallorquina.mll_rec_ventas_medio_pago;
+SELECT 
+    vd.id_tienda,
+    t.nombre Tienda,
+    vd.id_tpv,
+    tpv.nombre Nombre_TPV,
+    vd.fecha,
+    vd.cierre_tpv_id,
+    vd.cierre_tpv_desc,
+    vmp.id_medios_pago,
+    mp.nombre Nombre_MdP,
+    SUM(vmp.ventas) AS total_ventas,
+    SUM(vmp.operaciones) AS total_operaciones
+FROM mll_rec_ventas_diarias vd
+     JOIN  mll_rec_ventas_medio_pago vmp ON vd.id = vmp.id_ventas_diarias
+LEFT JOIN mll_cfg_bbdd t         ON vd.id_tienda = t.id
+LEFT JOIN mll_mae_TPV tpv        ON vd.id_tpv = tpv.id and vd.id_tienda = tpv.id_tienda
+LEFT JOIN mll_mae_medios_pago mp ON vmp.id_medios_pago = mp.id
+GROUP BY 
+    vd.id_tienda,
+    t.nombre,
+    vd.id_tpv,
+    tpv.nombre,
+    vd.fecha,
+    vd.cierre_tpv_id,
+    vd.cierre_tpv_desc,
+    vmp.id_medios_pago,
+    mp.nombre;
+
+'''
 #----------------------------------------------------------------------------------
 @router.get("/mll_arqueo_caja", response_model=InfoTransaccion)
 async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador de la aplicación"),

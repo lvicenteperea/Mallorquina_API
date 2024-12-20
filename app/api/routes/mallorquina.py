@@ -125,8 +125,6 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
 
         donde = "Llamada a arqueo_caja.proceso"
         resultado = arqueo_caja.proceso(param = param)
-        mi.imprime([type(resultado), resultado],'@')
-        resultado = list(resultado)
         
         donde = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []

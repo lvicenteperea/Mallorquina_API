@@ -134,7 +134,7 @@ def proceso(param: InfoTransaccion) -> list:
 
             # Aquí va la lógica específica para cada bbdd
             resultado_dict = consultar_y_grabar(bbdd["ID"], conn_mysql, param)
-            resultado.extend(resultado_dict)
+            resultado.append(resultado_dict)
 
             donde = "update"
             cursor_mysql.execute(
@@ -307,30 +307,18 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
                     if clave not in resultado:
                         # Creamos el registro si no existe
                         resultado[clave] = {
-                            "ventas": float(data["ventas"]),
-                            "operaciones": int(data["operaciones"]),
-
-                            "ventas1": float(detalle.Importe),
-                            "operaciones1": int(detalle.Operaciones)
+                            "ventas": float(detalle.Importe),
+                            "operaciones": int(detalle.Operaciones)
                         }
                         mi.imprime(["0->"
                                     , (resultado[clave]["ventas"])
                                     , (resultado[clave]["operaciones"])
-                                    , (resultado[clave]["ventas1"])
-                                    , (resultado[clave]["operaciones1"])
                                    ]
                                    ,'-')
                     else:
                         # Incrementamos los valores existentes si la clave ya está
-                        mi.imprime(["1->", type(resultado[clave]["ventas"]), resultado[clave]["ventas"], type(data["ventas"]), data["ventas"]],'-')
-                        resultado[clave]["ventas"] += float(data["ventas"])
-                        mi.imprime(["2->", type(resultado[clave]["operaciones"]), resultado[clave]["operaciones"], type(data["operaciones"]), data["operaciones"]],'-')
-                        resultado[clave]["operaciones"] += int(data["operaciones"]),
-
-                        mi.imprime(["3->", type(resultado[clave]["ventas1"]), resultado[clave]["ventas1"], type(detalle.Importe), detalle.Importe],'-')
-                        resultado[clave]["ventas1"] = resultado[clave]["ventas1"] + float(detalle.Importe),
-                        mi.imprime(["4->", type(resultado[clave]["operaciones1"]), resultado[clave]["operaciones1"], type(detalle.Operaciones), detalle.Operaciones],'-')
-                        resultado[clave]["operaciones1"] += int(detalle.Operaciones)
+                        resultado[clave]["ventas"] = resultado[clave]["ventas"] + float(detalle.Importe)
+                        resultado[clave]["operaciones"] += int(detalle.Operaciones)
  
                     
                     insert_medio_pago = """

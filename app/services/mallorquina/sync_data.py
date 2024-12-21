@@ -36,7 +36,7 @@ def recorre_tiendas(param: list) -> InfoTransaccion:
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd")
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'")
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:

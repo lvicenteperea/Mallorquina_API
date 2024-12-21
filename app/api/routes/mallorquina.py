@@ -113,11 +113,13 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
 '''
 SELECT * FROM mallorquina.mll_rec_ventas_diarias;
 SELECT * FROM mallorquina.mll_rec_ventas_medio_pago;
+SELECT * FROM mallorquina.mll_rec_ventas_diarias;
+SELECT * FROM mallorquina.mll_rec_ventas_medio_pago;
 SELECT 
     vd.id_tienda,
     t.nombre Tienda,
     vd.id_tpv,
-    tpv.nombre Nombre_TPV,
+    tpv.descripcion Nombre_TPV,
     vd.fecha,
     vd.cierre_tpv_id,
     vd.cierre_tpv_desc,
@@ -128,19 +130,18 @@ SELECT
 FROM mll_rec_ventas_diarias vd
      JOIN  mll_rec_ventas_medio_pago vmp ON vd.id = vmp.id_ventas_diarias
 LEFT JOIN mll_cfg_bbdd t         ON vd.id_tienda = t.id
-LEFT JOIN mll_mae_TPV tpv        ON vd.id_tpv = tpv.id and vd.id_tienda = tpv.id_tienda
+LEFT JOIN tpv_puestos_facturacion tpv        ON vd.id_tpv = tpv.id_puesto and vd.id_tienda = tpv.Origen_BBDD
 LEFT JOIN mll_mae_medios_pago mp ON vmp.id_medios_pago = mp.id
 GROUP BY 
     vd.id_tienda,
     t.nombre,
     vd.id_tpv,
-    tpv.nombre,
+    tpv.descripcion,
     vd.fecha,
     vd.cierre_tpv_id,
     vd.cierre_tpv_desc,
     vmp.id_medios_pago,
     mp.nombre;
-
 '''
 #----------------------------------------------------------------------------------
 @router.get("/mll_arqueo_caja", response_model=InfoTransaccion)

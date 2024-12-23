@@ -202,7 +202,8 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> dict:
                 donde = "Ejecución select 2"
                 placeholders = ", ".join(["?"] * len(ids_cierre))
                 select_query = f"""SELECT Ca.[Id Apertura Puesto Cobro] as ID_Apertura,
-                                          FORMAT(Ca.Fecha, 'dd/MM/yyyy') as Fecha,
+                                          -- FORMAT(Ca.Fecha, 'dd/MM/yyyy') as Fecha,
+                                          FORMAT(AC.[Fecha Hora], 'dd/MM/yyyy') as Fecha,
                                           Ca.[Id Cobro] as ID_Cobro,
                                           Ca.[Descripcion Cobro] as Medio_Cobro,
                                           AC.[Realizado] as Realizado,
@@ -214,7 +215,7 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> dict:
                                     inner join [Arqueo Ciego] AC on AC.[Id Apertura] = Ca.[Id Apertura Puesto Cobro] and ac.[Id Cobro] = ca.[Id Cobro]
                                     inner join [Cierres de Caja] CdC on CdC.[Id Cierre] = AC.[Id Apertura]
                                     WHERE Ca.[Id Apertura Puesto Cobro] IN ({placeholders})
-                                    group by Ca.[Id Apertura Puesto Cobro], FORMAT(Ca.Fecha, 'dd/MM/yyyy'),
+                                    group by Ca.[Id Apertura Puesto Cobro], FORMAT(AC.[Fecha Hora], 'dd/MM/yyyy'),
                                              Ca.[Id Cobro],                 Ca.[Descripcion Cobro],
                                              AC.[Realizado],                AC.[Id Rel],
                                              CdC.[Id Puesto]

@@ -3,7 +3,13 @@ from datetime import datetime
 #from decimal import Decimal
 
 import json
+
+# Para trabajar con Excel PANDA
 import pandas as pd
+
+# Para trabajar con Excel OPENPYXL
+from openpyxl import Workbook
+from openpyxl.styles import numbers
 
 from app import mi_libreria as mi
 
@@ -41,7 +47,8 @@ def informe(param: InfoTransaccion) -> list:
             mi.imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
             resultado.append(consultar(bbdd["ID"], conn_mysql, param))
 
-        a_excel(param, resultado)
+        a_excel_con_pd(param, resultado)
+        a_excel_con_openpyxl(param, resultado)
         
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción arqueCajaInfo.informe", e)
@@ -121,10 +128,10 @@ def consultar(tienda, conn_mysql, param: InfoTransaccion) -> list:
 
 
 #----------------------------------------------------------------------------------------
-# Creamos el escritor de Excel
+# Creamos el escritor de Excel con la librería PANDA
 #----------------------------------------------------------------------------------------
-def a_excel(param: InfoTransaccion, todos_los_conjuntos):
-    with pd.ExcelWriter("resultado.xlsx") as writer:
+def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
+    with pd.ExcelWriter("resultado_panda.xlsx") as writer:
         for sublista in todos_los_conjuntos:
             # Si la sublista está vacía, pasamos de largo
             if not sublista:
@@ -158,3 +165,117 @@ def a_excel(param: InfoTransaccion, todos_los_conjuntos):
             df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
     print("¡Excel creado con éxito!")
+
+
+#----------------------------------------------------------------------------------------
+# Creamos el escritor de Excel con la librería PANDA
+#----------------------------------------------------------------------------------------
+def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
+    # Supongamos que esta es tu lista de listas (sublistas) de diccionarios
+    todos_los_conjuntos = [
+        [
+            {
+                "id_tienda": 1,
+                "Tienda": "Velázquez",
+                "id_tpv": 4,
+                "Nombre_TPV": "BAR",
+                "fecha": "2024-10-05",
+                "cierre_tpv_id": 8286,
+                "cierre_tpv_desc": "Mañana",
+                "id_medios_pago": 1,
+                "Nombre_MdP": "EUROS",
+                "total_ventas": "295.50",
+                "total_operaciones": "32"
+            },
+            # ... más filas en la sublista 1 ...
+        ],
+        # Conjunto 2, 3, etc.
+    ]
+
+    # 1. Creamos el libro de Excel y removemos la hoja por defecto
+    wb = Workbook()
+    ws_default = wb.active
+    wb.remove(ws_default)
+
+    # 2. Columnas que NO queremos mostrar
+    columnas_excluir = {"id_tienda", "id_tpv", "cierre_tpv_id", "id_medios_pago"}
+
+    for sublista in todos_los_conjuntos:
+        # Si la sublista está vacía, la saltamos
+        if not sublista:
+            continue
+
+        # 3. Preprocesamos la sublista para convertir valores y eliminar columnas
+        #    - Convertimos "fecha" a datetime
+        #    - Convertimos "total_ventas" y "total_operaciones" a float
+        #    - Quitamos las columnas que no queremos
+        datos_procesados = []
+        for fila in sublista:
+            # Creamos una copia limpia
+            nueva_fila = {}
+            for k, v in fila.items():
+                if k in columnas_excluir:
+                    continue  # saltar columnas no deseadas
+
+                if k == "fecha":
+                    # Convertir "AAAA-MM-DD" a datetime
+                    nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
+
+                elif k in ("total_ventas", "total_operaciones"):
+                    # Convertir a float
+                    nueva_fila[k] = float(v)
+                else:
+                    # Dejar el valor tal cual
+                    nueva_fila[k] = v
+            datos_procesados.append(nueva_fila)
+
+        # 4. Obtenemos el nombre de la tienda (primer elemento)
+        nombre_tienda = datos_procesados[0]["Tienda"]
+        # Máximo 31 caracteres para el nombre de la hoja
+        sheet_name = nombre_tienda[:31]
+
+        # 5. Creamos una hoja nueva con el nombre de la tienda
+        ws = wb.create_sheet(title=sheet_name)
+
+        # 6. Escribimos la CABECERA
+        #    Obtenemos las columnas del primer registro (ordenadas)
+        columnas = list(datos_procesados[0].keys())
+        ws.append(columnas)  # primera fila con los nombres de columna
+
+        # 7. Escribimos los datos fila por fila
+        for fila in datos_procesados:
+            row_data = [fila[col] for col in columnas]
+            ws.append(row_data)
+
+        # 8. Aplicamos FORMATO a las celdas
+        #    - Fecha en formato dd/mm/yyyy
+        #    - total_ventas con 2 decimales
+        #    - total_operaciones con 0 decimales (o lo que prefieras)
+        
+        # Calculamos los índices de columna para "fecha", "total_ventas", etc.
+        # ojo: openpyxl usa 1-based index, ws["A1"] es row=1,col=1
+        idx_fecha = columnas.index("fecha") + 1 if "fecha" in columnas else None
+        idx_ventas = columnas.index("total_ventas") + 1 if "total_ventas" in columnas else None
+        idx_operaciones = columnas.index("total_operaciones") + 1 if "total_operaciones" in columnas else None
+
+        # Recorremos las filas de datos (comienzan en la 2, ya que la 1 es cabecera)
+        for row in range(2, 2 + len(datos_procesados)):
+            # Fecha (dd/mm/yyyy)
+            if idx_fecha:
+                cell_fecha = ws.cell(row=row, column=idx_fecha)
+                # Indicamos que es un formato de fecha dd/mm/yyyy
+                cell_fecha.number_format = "DD/MM/YYYY"
+
+            # total_ventas con 2 decimales
+            if idx_ventas:
+                cell_ventas = ws.cell(row=row, column=idx_ventas)
+                cell_ventas.number_format = "#,##0.00"
+
+            # total_operaciones sin decimales
+            if idx_operaciones:
+                cell_oper = ws.cell(row=row, column=idx_operaciones)
+                cell_oper.number_format = "#,##0"
+
+    # 9. Guardamos el archivo
+    wb.save("resultado_openpyxl.xlsx")
+    print("¡Excel creado con éxito con openpyxl!")

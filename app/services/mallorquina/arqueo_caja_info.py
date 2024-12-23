@@ -61,7 +61,7 @@ def informe(param: InfoTransaccion) -> list:
 
         enviar_email(config["Lista_emails"],
                      "Proceso finalizado",
-                     ["El proceso de informes de arqueo de caja ha terminado."]+resultado
+                     ["El proceso de informes de arqueo de caja ha terminado."]
         )
         return resultado
 
@@ -161,8 +161,8 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
             nombre_tienda = df["Tienda"].iloc[0]
             nombre_hoja = nombre_tienda[:31]
 
-            # 6. Exportamos este DataFrame a una hoja en el Excel
-            df.to_excel(writer, sheet_name=nombre_hoja, index=False)
+    # 6. Exportamos este DataFrame a una hoja en el Excel
+    df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
     print("¡Excel creado con éxito!")
 
@@ -171,27 +171,6 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
 # Creamos el escritor de Excel con la librería PANDA
 #----------------------------------------------------------------------------------------
 def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
-    # Supongamos que esta es tu lista de listas (sublistas) de diccionarios
-    todos_los_conjuntos = [
-        [
-            {
-                "id_tienda": 1,
-                "Tienda": "Velázquez",
-                "id_tpv": 4,
-                "Nombre_TPV": "BAR",
-                "fecha": "2024-10-05",
-                "cierre_tpv_id": 8286,
-                "cierre_tpv_desc": "Mañana",
-                "id_medios_pago": 1,
-                "Nombre_MdP": "EUROS",
-                "total_ventas": "295.50",
-                "total_operaciones": "32"
-            },
-            # ... más filas en la sublista 1 ...
-        ],
-        # Conjunto 2, 3, etc.
-    ]
-
     # 1. Creamos el libro de Excel y removemos la hoja por defecto
     wb = Workbook()
     ws_default = wb.active
@@ -219,7 +198,8 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
 
                 if k == "fecha":
                     # Convertir "AAAA-MM-DD" a datetime
-                    nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
+                    #nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
+                    nueva_fila[k] = v
 
                 elif k in ("total_ventas", "total_operaciones"):
                     # Convertir a float

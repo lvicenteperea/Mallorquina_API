@@ -5,7 +5,7 @@ from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def proceso(param: InfoTransaccion) -> InfoTransaccion:
+def proceso(param: InfoTransaccion) -> list:
     """
     Convierte un archivo Excel de origen al formato deseado y lo guarda en el destino.
 
@@ -17,7 +17,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         destino_path = "app/datos/importa_TPV.xlsx"
     """
     resultado = []
-    path = "app/datos/"
+    path = "app/datos/tarifas_a_TPV/"
     origen_path = f"{path}{param.parametros[0]}"
     output_path = f"{path}{param.parametros[1]}"
     try:
@@ -70,19 +70,15 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         else:
             param.ret_code = -1
             param.ret_txt = f"Error: El archivo origen tiene {num_registros_origen} registros. El archivo generado tiene {num_registros_destino} registros."
-        raise
+        
+        resultado = param.ret_txt
 
     except Exception as e:
         param.ret_code = -1
         param.ret_txt = "Error general. contacte con su administrador"
-        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción convierte_excel.proceso-{donde}", e)
+        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
        
 
     finally:
-        return InfoTransaccion( id_App=param.id_App, 
-                        user=param.user, 
-                        ret_code=param.ret_code, 
-                        ret_txt=param.ret_txt,
-                        parametros=param.parametros,
-                        resultados = resultado
-                        )
+        return resultado
+

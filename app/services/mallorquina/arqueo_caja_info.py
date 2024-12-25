@@ -131,7 +131,9 @@ def consultar(tienda, conn_mysql, param: InfoTransaccion) -> list:
 # Creamos el escritor de Excel con la librería PANDA
 #----------------------------------------------------------------------------------------
 def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
-    with pd.ExcelWriter("resultado_panda.xlsx") as writer:
+    path = "app/datos/cierre_caja/"
+
+    with pd.ExcelWriter(f"{path}resultado_panda.xlsx") as writer:
         for sublista in todos_los_conjuntos:
             # Si la sublista está vacía, pasamos de largo
             if not sublista:
@@ -175,6 +177,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
     wb = Workbook()
     ws_default = wb.active
     wb.remove(ws_default)
+    path = "app/datos/cierre_caja/"
 
     # 2. Columnas que NO queremos mostrar
     columnas_excluir = {"id_tienda", "id_tpv", "cierre_tpv_id", "id_medios_pago"}
@@ -199,7 +202,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
                 if k == "fecha":
                     # Convertir "AAAA-MM-DD" a datetime
                     #nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
-                    nueva_fila[k] = v
+                    nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
 
                 elif k in ("total_ventas", "total_operaciones"):
                     # Convertir a float
@@ -257,5 +260,5 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
                 cell_oper.number_format = "#,##0"
 
     # 9. Guardamos el archivo
-    wb.save("resultado_openpyxl.xlsx")
+    wb.save(f"{path}resultado_openpyxl.xlsx")
     print("¡Excel creado con éxito con openpyxl!")

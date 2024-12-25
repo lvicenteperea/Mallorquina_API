@@ -9,7 +9,7 @@ import app.services.mallorquina.sync_data as sync_data
 import app.services.mallorquina.consulta_caja as consulta_caja
 import app.services.mallorquina.arqueo_caja as arqueo_caja
 import app.services.mallorquina.arqueo_caja_info as arqueo_caja_info
-import app.services.mallorquina.convierte_excel as convierte_excel
+import app.services.mallorquina.tarifas_a_TPV as tarifas_a_TPV
 
 from app.utils.functions import graba_log
 from app.utils.mis_excepciones import MadreException
@@ -224,8 +224,8 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_convierte_excel", response_model=InfoTransaccion)
-async def mll_convierte_excel(id_App: int = Query(..., description="Identificador de la aplicación"),
+@router.get("/mll_convierte_tarifas", response_model=InfoTransaccion)
+async def mll_convierte_tarifas(id_App: int = Query(..., description="Identificador de la aplicación"),
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
@@ -235,26 +235,20 @@ async def mll_convierte_excel(id_App: int = Query(..., description="Identificado
 
     try:
         donde = "Inicio"
-        resultado = []
-        print("")
-        print("estoy ejecutando mll_convierte_excel")
-        print("")
 
         donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path} - {output_path}"
-        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path, output_path])
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path, output_path])
 
-        donde = "Llamada a convierte_excel"
-        resultado = convierte_excel.proceso(param = infoTrans)
+        donde = "Llamada a proceso"
+        resultado = tarifas_a_TPV.proceso(param = param)
 
-        donde = f"Retorno: {resultado.ret_code}"
-        if resultado.ret_code < 0:
-            raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
-
-        resultado.resultados = resultado.resultados or []
-        return resultado 
+        donde = f"Retornando: {type(resultado)}"
+        param.resultados = resultado or []
+    
+        return param
     
     except MadreException as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_convierte_excel", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_convierte_tarifas", e)
         raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
                                                      "ret_txt": resultado.ret_txt,
                                                      "error": str(e)
@@ -262,7 +256,7 @@ async def mll_convierte_excel(id_App: int = Query(..., description="Identificado
                            )
         
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_excel", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_tarifas", e)
         raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
                                                      "ret_txt": resultado.ret_txt,
                                                      "error": str(e)

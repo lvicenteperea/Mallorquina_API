@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime
 
-from app import mi_libreria as mi
 # mias
 import app.services.mallorquina.sync_data as sync_data
 import app.services.mallorquina.consulta_caja as consulta_caja
@@ -15,6 +14,56 @@ from app.utils.InfoTransaccion import InfoTransaccion
 
 # Definimos el router
 router = APIRouter()
+
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.get("/mll_consultas", response_model=InfoTransaccion)
+async def mll_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
+                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                        ret_code: int = Query(..., description="Código de retorno inicial"),
+                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                        fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
+                       ):
+    donde = "Inicio"
+    resultado = []
+
+    try:
+        """
+            Hay que reestructurar su módulo
+        """
+
+
+        if not fecha:
+            # Si la variable es None o está vacía, asignar la fecha y hora actuales
+            fecha = datetime.now().strftime('%Y-%m-%d')
+
+        donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
+
+        donde = "Llamando a consulta_caja.recorre_consultas_tiendas"
+        resultado = consulta_caja.recorre_consultas_tiendas(param = param)
+        if param.ret_code < 0:
+            raise MadreException(param.to_dict())
+
+        donde = f"Retornando: {type(resultado)}"
+        param.resultados = resultado or []
+
+        return param
+    
+    except MadreException as e:
+        raise MadreException(param.to_dict())
+                
+    except Exception as e:
+        param.ret_code = -99
+        param.ret_txt = "Error general. contacte con su administrador"
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_consultas", e)
+        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+                                                     "ret_txt": param.ret_txt,
+                                                     "error": str(e)
+                                                    }
+            ) 
+
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -30,84 +79,32 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
         resultado = []
 
         donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
-        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
 
         donde = "Llamando a sync_data.recorre_tiendas"
-        resultado = sync_data.recorre_tiendas(param = infoTrans)
+        resultado = sync_data.recorre_tiendas(param = param)
 
-        if resultado.ret_code < 0:
-            raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
+        if param.ret_code < 0:
+            raise MadreException(param.to_dict())
+        
+        donde = f"Retornando: {type(resultado)}"
+        param.resultados = resultado or []
 
-        donde = f"Resultado: {type(resultado.resultados)}"
-        resultado.resultados = resultado.resultados or []
-        return resultado 
+        return param
     
     except MadreException as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_sync_todo", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                     "ret_txt": resultado.ret_txt,
-                                                     "error": str(e)
-                                                    }
-                           ) 
+        raise MadreException(param.to_dict())
+                
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_sync_todo", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                     "ret_txt": resultado.ret_txt,
+        param.ret_code = -99
+        param.ret_txt = "Error general. contacte con su administrador"
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_sync_todo", e)
+        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+                                                     "ret_txt": param.ret_txt,
                                                      "error": str(e)
                                                     }
-                           )
+            ) 
     
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.get("/mll_consultas", response_model=InfoTransaccion)
-async def mll_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
-                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                        ret_code: int = Query(..., description="Código de retorno inicial"),
-                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                        fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
-                       ):
-
-    try:
-        donde = "estoy ejecutando mll_consultas"
-
-        if not fecha:
-            # Si la variable es None o está vacía, asignar la fecha y hora actuales
-            fecha = datetime.now().strftime('%Y-%m-%d')
-
-        donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
-        infoTrans = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
-
-        donde = "Llamando a consulta_caja.recorre_consultas_tiendas"
-        resultado = consulta_caja.recorre_consultas_tiendas(param = infoTrans)
-
-        donde = f"Retorno: {resultado.ret_code}"
-        if resultado.ret_code < 0:
-            raise MadreException({"ret_code": resultado.ret_code, "ret_txt": resultado.ret_txt}, 400)
-
-        donde = f"Resultado: {type(resultado.resultados)}"
-        resultado.resultados = resultado.resultados or []
-        return resultado 
-    
-    except MadreException as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_consultas", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                "ret_txt": resultado.ret_txt,
-                                                "error": str(e)
-                                            }
-                           )
-    except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_consultas", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                     "ret_txt": resultado.ret_txt,
-                                                     "error": str(e)
-                                                    }
-            )
-    
-
-  
-
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/mll_arqueo_caja", response_model=InfoTransaccion)
@@ -117,6 +114,8 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
                             ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                             fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
                          ):
+    donde = "Inicio"
+    resultado = []
 
     try:
         donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
@@ -124,6 +123,8 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
 
         donde = "Llamada a arqueo_caja.proceso"
         resultado = arqueo_caja.proceso(param = param)
+        if param.ret_code < 0:
+            raise MadreException(param.to_dict())
         
         donde = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
@@ -131,19 +132,17 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
         return param
     
     except MadreException as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_arqueo_caja", e)
-        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
-                                                "ret_txt": param.ret_txt,
-                                                "error": str(e)
-                                            }
-                           ) 
+        raise MadreException(param.to_dict())
+                
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_arqueo_caja", e)
+        param.ret_code = -99
+        param.ret_txt = "Error general. contacte con su administrador"
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_arqueo_caja", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
                                                      "error": str(e)
                                                     }
-            )
+            ) 
     
 
 #----------------------------------------------------------------------------------
@@ -188,6 +187,8 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
                               fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
                               tienda: int = Query(0, description="BBDD/Tienda (mll_cfg_bbdd) de la que queremos la información, 0 --> Todas"),
                              ):
+    donde = "Inicio"
+    resultado = []
 
     try:
         donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha} - {tienda}"
@@ -198,27 +199,27 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
 
         donde = "Llamada a arqueo_caja_info.informe"
         resultado = arqueo_caja_info.informe(param = param)
+        if param.ret_code < 0:
+            raise MadreException(param.to_dict())
         
         donde = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
 
         return param
     
+
     except MadreException as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_inf_arqueo_caja", e)
-        raise HTTPException(status_code=400, detail={"ret_code": param.ret_code,
-                                                "ret_txt": param.ret_txt,
-                                                "error": str(e)
-                                            }
-                           ) 
+        raise MadreException(param.to_dict())
+                
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Exception mll_inf_arqueo_caja", e)
+        param.ret_code = -99
+        param.ret_txt = "Error general. contacte con su administrador"
+        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_inf_arqueo_caja", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
                                                      "error": str(e)
                                                     }
-            )
-    
+            )    
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -251,7 +252,9 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
         raise MadreException(param.to_dict())
                 
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_tarifas", e)
+        param.ret_code = -99
+        param.ret_txt = "Error general. contacte con su administrador"
+        #graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_tarifas", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
                                                      "error": str(e)

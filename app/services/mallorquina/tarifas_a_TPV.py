@@ -1,13 +1,12 @@
 import pandas as pd
-from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Alignment
+# from openpyxl import Workbook, load_workbook
+# from openpyxl.styles import Alignment
 from datetime import datetime
 
-from app.utils.functions import graba_log
-from fastapi import HTTPException
+from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
-from app import mi_libreria as mi
+from app.config.settings import settings
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -26,13 +25,15 @@ def proceso(param: InfoTransaccion) -> list:
     donde = "Inicio"
 
     try:
-        path = "app/datos/tarifas_a_TPV/"
+        x=1/0
+        path = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
         
         if param.parametros and param.parametros[0]:
             origen_path = f"{path}{param.parametros[0]}"
         else:
+            param.ret_code = -1
             param.ret_txt = "No ha llegado fichero origen para crear el nuevo fichero"
-            raise MadreException(param.to_dict())
+            return
                 
         if len(param.parametros) >= 2  and param.parametros[1]:
             output_path = f"{path}{param.parametros[1]}"
@@ -43,29 +44,26 @@ def proceso(param: InfoTransaccion) -> list:
         resultado = convierte_con_pd(param, origen_path, output_path)
         
         # donde = "convierte_con_openpyxl" 
-        #resulta do.append(convierte_con_openpyxl(param, f"{origen_path}", f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}"))
-
-
-    except MadreException as e:
-        param.ret_code = -1
-
-              
+        # if param.ret_code == 0:
+        #   resulta do.append(convierte_con_openpyxl(param, f"{origen_path}", f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}"))
+        
+        return resultado
+            
     except Exception as e:
         param.ret_code = -99
         param.ret_txt = "Error general. contacte con su administrador"
         graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
-
-    
-    finally:
-        return resultado
+        raise
+        
 
 # -----------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------
 def convierte_con_pd (param, origen_path, output_path):
     resultado = []
-
+    donde = "Inicio"
+    
     try:
-        donde = "#Leer el archivo de origen"
+        #Leer el archivo de origen
         origen_df = pd.read_excel(origen_path)
 
         donde = "# Crear un DataFrame vacío con las columnas deseadas"
@@ -116,16 +114,17 @@ def convierte_con_pd (param, origen_path, output_path):
             param.ret_code = -1
             param.ret_txt = f"Error: El archivo origen ({origen_path}) tiene {num_registros_origen} registros. El archivo generado ({output_path}) tiene {num_registros_destino} registros."
         
-        resultado = [param.ret_txt]
+        resultado = [num_registros_origen , num_registros_destino]
+        return resultado
 
     except Exception as e:
-        param.ret_code = -1
+        param.ret_code = -99
         param.ret_txt = "Error general. contacte con su administrador"
-        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
-       
+        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.convierte_con_pd-{donde}", e)
+        raise
 
-    finally:
-        return resultado
+        
+
 
 '''
 # -----------------------------------------------------------------------------------------------------

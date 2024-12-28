@@ -76,3 +76,18 @@ Independientemente de esto, que es para control interno y manejo de mensajes,
 503 - Service Unavailable: El servidor está sobrecargado o en mantenimiento.
 504 - Gateway Timeout: El servidor no recibió respuesta a tiempo de otro servidor.
 505 - HTTP Version Not Supported: La versión de HTTP no es compatible.
+
+
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+
+SEGURIDAD
+
+1. Autenticación con JWT: Para que solo usuarios autorizados puedan acceder a tus APIs, tanto desde la web como desde servidores externos.
+2. CORS: Para permitir solo llamadas desde dominios confiables (tu web).
+3. Rate Limiting: Para prevenir abusos y ataques de fuerza bruta.
+4. HTTPS: Obligatorio en producción para proteger la comunicación entre clientes y tu API.
+5. Validación de entrada con Pydantic: Para garantizar que las solicitudes sean válidas y evitar inyecciones.
+
+Tambien deberíamos crear un middleware personalizado y ver como mejoramos los logs

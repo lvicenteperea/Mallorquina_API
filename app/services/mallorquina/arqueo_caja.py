@@ -4,15 +4,12 @@ from datetime import datetime
 
 import json
 
-from app import mi_libreria as mi
-
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
-from app.utils.functions import graba_log
-from app.utils.mis_excepciones import MadreException
+from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------
@@ -103,12 +100,12 @@ def proceso(param: InfoTransaccion) -> list:
     if not config.get("ID", False):
         param.ret_code = -1
         param.ret_txt = f"No se han encontrado datos de configuración: {config['En_Ejecucion']}"
-        raise Exception
+        return
     
     if config["En_Ejecucion"]:
         param.ret_code = -1
         param.ret_txt = "El proceso ya está en ejecución."
-        raise Exception
+        return
 
     donde="actualizar_en_ejecucion"
     actualizar_en_ejecucion(1)
@@ -123,7 +120,7 @@ def proceso(param: InfoTransaccion) -> list:
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            mi.imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
+            imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
 
             if not fecha: # si no tiene parametro fecha
                 #mi.imprime([type(json.loads(bbdd['Conexion'])['ultimo_cierre'])],'.')
@@ -133,7 +130,7 @@ def proceso(param: InfoTransaccion) -> list:
                     fecha = datetime.now().strftime('%Y-%m-%d')
 
             # Aquí va la lógica específica para cada bbdd
-            resultado_dict = consultar_y_grabar(bbdd["ID"], conn_mysql, param)
+            resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql)
             resultado.append(resultado_dict)
 
             donde = "update"
@@ -144,19 +141,12 @@ def proceso(param: InfoTransaccion) -> list:
         
         conn_mysql.commit()
 
-    except MadreException as e:
-        resultado = []
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_arqueo_caja", e)
-        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
-                                                "ret_txt": param.ret_txt,
-                                                "error": str(e)
-                                            }
-                           ) 
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción arqueCaja.proceso", e)
         resultado = []
         param.ret_code = -1
         param.ret_txt = "Error General, contacte con su administrador"
+        raise
 
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
@@ -171,7 +161,7 @@ def proceso(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> dict:
+def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql) -> dict:
     resultado = {}
     donde = "Inicio"
 
@@ -227,10 +217,11 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> dict:
                 resultado = grabar(param, conn_mysql, tabla, datos)
 
     except Exception as e:
-        graba_log({"ret_code": -3, "ret_txt": donde}, "Excepción arqueo_caja.consultar_y_grabar", e)
+        graba_log({"ret_code": -99, "ret_txt": donde}, "Excepción arqueo_caja.consultar_y_grabar", e)
         resultado = {}
-        param.ret_code = -1
+        param.ret_code = -99
         param.ret_txt = "Error General, contacte con su administrador"
+        raise
 
     finally:
         if conn_sqlserver:
@@ -243,7 +234,6 @@ def consultar_y_grabar(tabla, conn_mysql, param: InfoTransaccion) -> dict:
 #----------------------------------------------------------------------------------------
 def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
     resultado = {}
-
     donde = "Inicio"
 
     try: 
@@ -311,7 +301,7 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
                             "ventas": float(detalle.Importe),
                             "operaciones": int(detalle.Operaciones)
                         }
-                        mi.imprime(["0->"
+                        imprime(["0->"
                                     , (resultado[clave]["ventas"])
                                     , (resultado[clave]["operaciones"])
                                    ]
@@ -336,8 +326,9 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": donde}, "Excepción arqueo_caja.grabar", e)
         resultado = [0 , 0]
-        param.ret_code = -1
+        param.ret_code = -99
         param.ret_txt = "Error General, contacte con su administrador"
+        raise
 
     finally:
         return resultado

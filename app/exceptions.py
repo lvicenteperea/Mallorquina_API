@@ -6,8 +6,7 @@ import logging.config
 import traceback
 
 
-from app import mi_libreria as mi
-
+# from app.utils.functions import imprime
 from app.utils.mis_excepciones import MadreException
 from app.utils.functions import graba_log
 
@@ -58,10 +57,12 @@ from app.utils.functions import graba_log
 # -----------------------------------------------------------------------------------------------
 async def madre_exception_handler(request: Request, exc: MadreException):
 # -----------------------------------------------------------------------------------------------
-    #print(f"madre_exception_handler: (status: {exc.status_code} {exc.mi_mensaje})")
-    
-
-    #mi.imprime(exc.mi_mensaje,'*')
+    # mi.imprime(["madre_exception_handler:", 
+    #             f"(status: {exc.status_code}",
+    #             f"Mensaje: {exc.mi_mensaje})"
+    #            ],
+    #            '*'
+    # )
 
     if isinstance(exc.mi_mensaje, dict):
         mi_mensaje = exc.mi_mensaje
@@ -70,14 +71,11 @@ async def madre_exception_handler(request: Request, exc: MadreException):
                       "ret_txt": exc.mi_mensaje,
                      }
 
-    graba_log(mi_mensaje, 
-                "madre_exception", 
-                exc # str(exc.detail.get("excepcion", exc.detail.get('ret_txt',"Sin texto asociado")))
-                )
+    graba_log(mi_mensaje, "madre_exception", exc)
 
     return JSONResponse(
         status_code = 500 if mi_mensaje['ret_code'] == -99 else 400, # exc.status_code
-        content={"codigo_error": exc.status_code, "mensaje": mi_mensaje},
+        content={"codigo_error (status_code)": exc.status_code, "mensaje": mi_mensaje},
     )
 
 # -----------------------------------------------------------------------------------------------

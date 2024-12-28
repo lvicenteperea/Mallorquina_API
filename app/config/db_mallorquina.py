@@ -2,7 +2,6 @@ from fastapi import HTTPException
 
 # Para MySql
 import mysql.connector
-from mysql.connector.cursor import MySQLCursor
 from mysql.connector import Error
 from app.config.settings import settings
 

@@ -5,6 +5,7 @@ from datetime import datetime
 
 from app.utils.functions import graba_log
 from fastapi import HTTPException
+from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app import mi_libreria as mi
 
@@ -21,16 +22,17 @@ def proceso(param: InfoTransaccion) -> list:
         origen_path = "app/datos/export_sqlpyme.xlsx"
         destino_path = "app/datos/importa_TPV.xlsx"
     """
+    resultado = []
     donde = "Inicio"
 
     try:
-        resultado = []
         path = "app/datos/tarifas_a_TPV/"
         
         if param.parametros and param.parametros[0]:
             origen_path = f"{path}{param.parametros[0]}"
         else:
-            raise Exception("No ha llegado fichero origen para crear el nuevo fichero")
+            param.ret_txt = "No ha llegado fichero origen para crear el nuevo fichero"
+            raise MadreException(param.to_dict())
                 
         if len(param.parametros) >= 2  and param.parametros[1]:
             output_path = f"{path}{param.parametros[1]}"
@@ -40,15 +42,20 @@ def proceso(param: InfoTransaccion) -> list:
         donde = "convierte_con_pd"
         resultado = convierte_con_pd(param, origen_path, output_path)
         
-        # donde = "convierte_con_openpyxl"
+        # donde = "convierte_con_openpyxl" 
         #resulta do.append(convierte_con_openpyxl(param, f"{origen_path}", f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}"))
 
 
-    except Exception as e:
+    except MadreException as e:
         param.ret_code = -1
+
+              
+    except Exception as e:
+        param.ret_code = -99
         param.ret_txt = "Error general. contacte con su administrador"
         graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
 
+    
     finally:
         return resultado
 

@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime
 
-import pyodbc
-
 from app import mi_libreria as mi
 # mias
 import app.services.mallorquina.sync_data as sync_data
@@ -208,7 +206,7 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
     
     except MadreException as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_inf_arqueo_caja", e)
-        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+        raise HTTPException(status_code=400, detail={"ret_code": param.ret_code,
                                                 "ret_txt": param.ret_txt,
                                                 "error": str(e)
                                             }
@@ -233,14 +231,16 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
                         output_path: str = Query(..., description="Fichero destino")
                        ):
 
+    donde = "Inicio"
+    resultado = []
+    donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path} - {output_path}"
+    param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path, output_path])
+    
     try:
-        donde = "Inicio"
-
-        donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path} - {output_path}"
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path, output_path])
-
         donde = "Llamada a proceso"
         resultado = tarifas_a_TPV.proceso(param = param)
+        if param.ret_code < 0:
+            raise MadreException(param.to_dict())
 
         donde = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
@@ -248,17 +248,12 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
         return param
     
     except MadreException as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_convierte_tarifas", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                     "ret_txt": resultado.ret_txt,
-                                                     "error": str(e)
-                                                    }
-                           )
-        
+        raise MadreException(param.to_dict())
+                
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_tarifas", e)
-        raise HTTPException(status_code=500, detail={"ret_code": resultado.ret_code,
-                                                     "ret_txt": resultado.ret_txt,
+        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
+                                                     "ret_txt": param.ret_txt,
                                                      "error": str(e)
                                                     }
             )

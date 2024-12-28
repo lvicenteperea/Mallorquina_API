@@ -31,9 +31,11 @@ class InfoTransaccion(BaseModel):
     def to_list(self):
         return [self.id_App, self.user, self.ret_code, self.ret_txt]
 
+    def to_dict(self):
+        return {"id_app": self.id_App, "Usuario": self.user, "ret_code": self.ret_code, "ret_txt": self.ret_txt, "parametros": self.parametros, "resultados": self.resultados}
+    
     def __str__(self):
         return f"App: {self.id_App}, Usuario: {self.user}, Error: {self.ret_code} - {self.ret_txt}, parametros: {self.parametros}"
-
 
 '''
 Si realmente necesitas que InfoTransaccion siga siendo una clase personalizada y quieres que FastAPI/Pydantic

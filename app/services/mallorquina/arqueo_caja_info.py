@@ -44,7 +44,7 @@ def informe(param: InfoTransaccion) -> list:
 
         for bbdd in lista_bbdd:
             imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
-            resultado.append(param, consultar(bbdd["ID"], conn_mysql))
+            resultado.append(consultar(param, bbdd["ID"], conn_mysql))
             if param.ret_code != 0:
                 return
 
@@ -170,8 +170,8 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 nombre_tienda = df["Tienda"].iloc[0]
                 nombre_hoja = nombre_tienda[:31]
 
-        # 6. Exportamos este DataFrame a una hoja en el Excel
-        df.to_excel(writer, sheet_name=nombre_hoja, index=False)
+                # 6. Exportamos este DataFrame a una hoja en el Excel
+                df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
     except Exception as e:
         param.ret_code = -99

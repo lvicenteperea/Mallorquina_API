@@ -29,11 +29,6 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
     resultado = []
 
     try:
-        """
-            Hay que reestructurar su módulo
-        """
-
-
         if not fecha:
             # Si la variable es None o está vacía, asignar la fecha y hora actuales
             fecha = datetime.now().strftime('%Y-%m-%d')
@@ -55,8 +50,7 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
         raise MadreException(param.to_dict())
                 
     except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error general. contacte con su administrador"
+        param.error_sistema()
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_consultas", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
@@ -96,8 +90,7 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
         raise MadreException(param.to_dict())
                 
     except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error general. contacte con su administrador"
+        param.error_sistema()
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_sync_todo", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
@@ -135,8 +128,7 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
         raise MadreException(param.to_dict())
                 
     except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error general. contacte con su administrador"
+        param.error_sistema()
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_arqueo_caja", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
@@ -212,8 +204,7 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
         raise MadreException(param.to_dict())
                 
     except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error general. contacte con su administrador"
+        param.error_sistema()
         graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_inf_arqueo_caja", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
@@ -252,8 +243,7 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
         raise MadreException(param.to_dict())
                 
     except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error general. contacte con su administrador"
+        param.error_sistema()
         #graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_tarifas", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,

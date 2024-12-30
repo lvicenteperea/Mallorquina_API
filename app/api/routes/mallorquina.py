@@ -231,6 +231,7 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
     try:
         donde = "Llamada a proceso"
         resultado = tarifas_a_TPV.proceso(param = param)
+
         if param.ret_code < 0:
             raise MadreException(param.to_dict())
 
@@ -240,14 +241,10 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
         return param
     
     except MadreException as e:
-        raise MadreException(param.to_dict())
+        #raise MadreException(param.to_dict())
+        raise MadreException(param, status_code=500, detail=param.to_dict() | {"error": e, "traceback":e.__traceback__})
                 
     except Exception as e:
-        param.error_sistema()
-        #graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_convierte_tarifas", e)
-        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
-                                                     "ret_txt": param.ret_txt,
-                                                     "error": str(e)
-                                                    }
-            )
+        # param.error_sistema()
+        raise HTTPException(param, status_code=500, detail=param.to_dict() | {"error": e, "traceback":e.__traceback__})
       

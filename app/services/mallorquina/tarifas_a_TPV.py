@@ -22,10 +22,9 @@ def proceso(param: InfoTransaccion) -> list:
         destino_path = "app/datos/importa_TPV.xlsx"
     """
     resultado = []
-    donde = "Inicio"
+    param.debug = "Inicio"
 
     try:
-        x=1/0
         path = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
         
         if param.parametros and param.parametros[0]:
@@ -40,33 +39,34 @@ def proceso(param: InfoTransaccion) -> list:
         else:
             output_path = f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
 
-        donde = "convierte_con_pd"
+        param.debug = "convierte_con_pd"
         resultado = convierte_con_pd(param, origen_path, output_path)
         
-        # donde = "convierte_con_openpyxl" 
+        # param.debug = "convierte_con_openpyxl" 
         # if param.ret_code == 0:
         #   resulta do.append(convierte_con_openpyxl(param, f"{origen_path}", f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}"))
         
         return resultado
             
     except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error general. contacte con su administrador"
-        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
+        param.error_sistema()
+        graba_log(param.to_dict(), "Excepción tarifas_a_TPV.proceso", e)
         raise
         
 
 # -----------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------
-def convierte_con_pd (param, origen_path, output_path):
+def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
     resultado = []
-    donde = "Inicio"
+    param.debug = "Inicio"
     
     try:
+        x=1/0
+
         #Leer el archivo de origen
         origen_df = pd.read_excel(origen_path)
 
-        donde = "# Crear un DataFrame vacío con las columnas deseadas"
+        param.debug = "# Crear un DataFrame vacío con las columnas deseadas"
         columns_destino = [
             "Id Plato", "Descripcion", "Barra", "Comedor", "Terraza", "Hotel", 
             "Reservado", "Menú", "Orden Factura", "Orden Cocina", "OrdenTactil",
@@ -75,7 +75,7 @@ def convierte_con_pd (param, origen_path, output_path):
         ]
         converted_df = pd.DataFrame(columns=columns_destino)
 
-        donde = "# Mapear las columnas según las indicaciones"
+        param.debug = "# Mapear las columnas según las indicaciones"
         converted_df["Id Plato"] = origen_df["Código"]
         converted_df["Descripcion"] = origen_df["Nombre"]
         converted_df["Barra"] = origen_df["PVP TIENDA"]
@@ -94,16 +94,16 @@ def convierte_con_pd (param, origen_path, output_path):
         converted_df["Familia"] = ""
         converted_df["Código Barras"] = origen_df["Código de barras"]
 
-        donde = "# Mapear centros de preparación a 'X'"
+        param.debug = "# Mapear centros de preparación a 'X'"
         converted_df["Centro"] = origen_df["CENTRO PREPARACION CAFETERA"].apply(lambda x: "X" if not pd.isna(x) else "")
         converted_df["Centro 2"] = origen_df["CENTRO PREPARACION PLANCHA"].apply(lambda x: "X" if not pd.isna(x) else "")
         converted_df["Centro 3"] = origen_df["CENTRO PREPARACION COCINA"].apply(lambda x: "X" if not pd.isna(x) else "")
 
         # Guardar el DataFrame convertido en el archivo de destino"
-        donde = f"Guarda el archivo {output_path}.   "
+        param.debug = f"Guarda el archivo {output_path}.   "
         converted_df.to_excel(output_path, index=False)
         
-        donde = f"# Contar registros generados"
+        param.debug = f"# Contar registros generados"
         num_registros_destino = converted_df.shape[0]
         num_registros_origen = origen_df.shape[0]
         
@@ -118,9 +118,7 @@ def convierte_con_pd (param, origen_path, output_path):
         return resultado
 
     except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error general. contacte con su administrador"
-        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.convierte_con_pd-{donde}", e)
+        param.error_sistema()
         raise
 
         
@@ -129,7 +127,7 @@ def convierte_con_pd (param, origen_path, output_path):
 '''
 # -----------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------
-def convierte_con_openpyxl (param, origen_path, output_path):
+def convierte_con_openpyxl (param: InfoTransaccion, origen_path, output_path):
     resultado = []
 
     try:
@@ -199,7 +197,7 @@ def convierte_con_openpyxl (param, origen_path, output_path):
         print(f"El archivo final generado tiene {num_registros_destino} registros.")
 
 
-        donde = "Comparando registros"       
+        param.debug = "Comparando registros"       
         if num_registros_origen == num_registros_destino:
             param.ret_code = 0
             param.ret_txt = f"Ok: Ambos archivos tienen {num_registros_origen} registros"
@@ -210,9 +208,8 @@ def convierte_con_openpyxl (param, origen_path, output_path):
         resultado = [param.ret_txt]
 
     except Exception as e:
-        param.ret_code = -1
-        param.ret_txt = "Error general. contacte con su administrador"
-        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
+        param.error_sistema()
+        graba_log(param.to_dict(), f"Excepción tarifas_a_TPV.proceso", e)
        
 
     finally:

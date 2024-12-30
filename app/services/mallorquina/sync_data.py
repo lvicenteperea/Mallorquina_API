@@ -1,11 +1,8 @@
-from fastapi import HTTPException
 from datetime import datetime
 from datetime import timedelta
 import json
 
-from app.utils.mis_excepciones import MadreException
-
-from app.utils.functions import graba_log
+from app.utils.functions import graba_log, imprime
 
 from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
@@ -17,65 +14,61 @@ from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def recorre_tiendas(param: list) -> InfoTransaccion:
+def recorre_tiendas(param: InfoTransaccion) -> list:
     resultado = []
+    param.debug = "Obtener Conf. Gen"
     config = obtener_configuracion_general()
 
 
     if not config.get("ID", False):
-        print("No se han encontrado datos de configuración", config["En_Ejecucion"])
+        param.ret_code = -1
+        param.ret_txt = f'No se han encontrado datos de configuración: config["En_Ejecucion"]'
         return
-    
+        
     if config["En_Ejecucion"]:
-        print("El proceso ya está en ejecución.")
+        param.ret_code = -1
+        param.ret_txt = f'print("El proceso ya está en ejecución.'
         return
 
+    param.debug = "actualiza ejec 1"
     actualizar_en_ejecucion(1)
 
     try:
+        param.debug = "conn. MySql"
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
+        param.debug = "execute cfg_bbdd"
         cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'")
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            print("")
-            print("---------------------------------------------------------------------------------------")
-            print(f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}")
-            print("---------------------------------------------------------------------------------------")
-            print("")
+            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database']], "-")
 
+            param.debug = "por tablas"
             # Aquí va la lógica específica para cada bbdd
-            recorre_tablas(bbdd, conn_mysql,[])
+            recorre_tablas(param, bbdd, conn_mysql,[])
 
+            param.debug = "execute act. fec_Carga"
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
                 (datetime.now(), bbdd["ID"])
             )
-        conn_mysql.commit()
+        resultado = conn_mysql.commit()
 
-        return InfoTransaccion( id_App=param.id_App, 
-                            user=param.user, 
-                            ret_code=0, 
-                            ret_txt="Ok",
-                            parametros=param.parametros,
-                            resultados = resultado
-                            )
-
+        param.debug = "Fin"
+        return resultado
 
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"Error general consulte con su administrador"},
-                   "Excepción sync_data.recorre_tiendas", e)
-        raise HTTPException(status_code=400, detail={"ret_code": -1,
-                                                     "ret_txt": str(e),
-                                                     "excepcion": e
-                                                    }
-                           )        
+        param.error_sistema()
+        graba_log(param.to_dict(), "Excepción sync_data.recorre_tiendas", e)
+        raise
 
     finally:
+        param.debug = "cierra conn"
         close_connection_mysql(conn_mysql, cursor_mysql)
 
+        param.debug = "Actualiza Ejec 0"
         actualizar_en_ejecucion(0)
         enviar_email(config["Lista_emails"],
                      "Proceso finalizado",
@@ -90,12 +83,14 @@ def recorre_tiendas(param: list) -> InfoTransaccion:
 #   - Conexion str: es la conexión de la tienda en formato -->{"host": "ip", "port": "1433", "user": "usuario", "database": "nombre_database", "p a s  s w o  r d": "la_contraseña"}
 #   - Ultima_Fecha_Carga str: fecha en la que se sincronizó la última vez
 #----------------------------------------------------------------------------------------
-def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
+def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
 
     try:
+        param.debug = "Inicio"
         # conn_mysql = conexion_mysql("General")
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
+        param.debug = "execute cfg_tablas"
         cursor_mysql.execute("SELECT * FROM mll_cfg_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
         tablas_bbdd = cursor_mysql.fetchall()
 
@@ -104,37 +99,38 @@ def recorre_tablas(reg_cfg_bbdd, conn_mysql, param: list) -> InfoTransaccion:
             intervalo = tabla["Cada_Cuanto_Ejecutar"]
 
             if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
-                # print(f"Procesando tabla: {tabla['ID_Tabla']}")
-                print(f"Procesando tabla: {tabla}")
-
+                param.debug = f"Procesando tabla: {tabla}"
                 # Aquí va la lógica específica para cada tabla
-                procesar_tabla(tabla, conn_mysql)
+                procesar_tabla(param, tabla, conn_mysql)
 
+                param.debug = "Execute fec_ult_act"
                 cursor_mysql.execute(
                     "UPDATE mll_cfg_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
                     (datetime.now(), tabla["ID"])
                 )
                 conn_mysql.commit()
         
+        return []
+    
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"Error general consulte con su administrador"},
-                   "Excepción sync_data.recorre_tablas", e)
-        raise HTTPException(status_code=400, detail={"ret_code": -1,
-                                                     "ret_txt": str(e),
-                                                     "excepcion": e
-                                                    }
-                           )            
+        param.error_sistema()
+        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, "Excepción sync_data.recorre_tablas", e)
+        raise    
+            
     finally:
+        param.debug = "Cierra Cursor"
         cursor_mysql.close()
 
 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def procesar_tabla(tabla, conn_mysql):
+def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
+    param.debug = "inicio"
     # Obtener configuración y campos necesarios
     cursor_mysql = conn_mysql.cursor(dictionary=True)
     
+    param.debug = "Select cfg_tablas"
     # Obtener nombre de la tabla y si se debe borrar
     cursor_mysql.execute("SELECT * FROM mll_cfg_tablas WHERE ID = %s", (tabla["ID_Tabla"],))
 
@@ -144,22 +140,19 @@ def procesar_tabla(tabla, conn_mysql):
     # borrar_tabla = tabla_config["Borrar_Tabla"]
     cursor_mysql.close()
 
+    param.debug = "obtener campos"
     # Obtener campos de la tabla
     campos = obtener_campos_tabla(conn_mysql, tabla["ID_Tabla"])
 
-    '''
-    no puede estar aquí porque cada vez que lea una bbdd diferente borro la tabla y solo se debe borrar en la primera carga, si podemos hacer esto.
-    # Borrar tabla si corresponde
-    if borrar_tabla:
-       drop_tabla(conn_mysql, nombre_tabla_destino)
-    '''
-
+    param.debug = "crea_tabla_dest"
     # Crear tabla si no existe
     crear_tabla_destino(conn_mysql, nombre_tabla_destino, campos)
 
+    param.debug = "obt. Origen"
     # Buscamos la conexión que necesitamos para esta bbdd origen
     bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla["ID_BBDD"])
 
+    param.debug = "conn origen"
     # conextamos con esta bbdd origen
     conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
@@ -222,15 +215,13 @@ def procesar_tabla(tabla, conn_mysql):
         conn_mysql.commit()
         cursor_mysql.close()
 
+        return []
      
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"Error general consulte con su administrador"},
-                   "Excepción sync_data.procesar_tabla", e)
-        raise HTTPException(status_code=400, detail={"ret_code": -1,
-                                                     "ret_txt": str(e),
-                                                     "excepcion": e
-                                                    }
-                           )   
+        param.error_sistema()
+        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción sync_data.procesar_tabla", e)
+        raise  
 
     finally:
+        param.debug = "cierra cursos sqlserver"
         conn_sqlserver.close()

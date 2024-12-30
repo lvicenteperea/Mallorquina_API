@@ -1,11 +1,13 @@
 
 from pydantic import BaseModel
+from datetime import datetime
 
 class InfoTransaccion(BaseModel):
     id_App: int
     user: str
     ret_code: int = 0
     ret_txt: str = "Ok"
+    debug: str = "" # solo por si se necesita saber por donde ha pasado la ejecución
 
     # Datos cuando las funciones de BBDD retornar un valor Ok, Dos listas diferentes
     # En "parametros" retorna la lista de parametros que son de salida o entrada/salida
@@ -24,19 +26,22 @@ class InfoTransaccion(BaseModel):
         self.ret_code = ret_code
         self.ret_txt = ret_txt
 
-    def error_sistema(self):
-        self.ret_code = -99
-        self.ret_txt = "Error general. contacte con su administrador"
+    def error_sistema(self, txt_adic: str = '.'):
+        if self.ret_code is None or self.ret_code >= 0:
+            self.ret_code = -99
+            self.ret_txt = f"Error general. contacte con su administrador ({datetime.now().strftime('%Y%m%d%H%M%S')}){txt_adic}"
 
     def limpiar_error(self):
         self.ret_code = None
         self.ret_txt = None
+        self.debug = None
 
     def to_list(self):
         return [self.id_App, self.user, self.ret_code, self.ret_txt]
 
     def to_dict(self):
-        return {"id_app": self.id_App, "Usuario": self.user, "ret_code": self.ret_code, "ret_txt": self.ret_txt, "parametros": self.parametros, "resultados": self.resultados}
+        return {"id_app": self.id_App, "Usuario": self.user, "ret_code": self.ret_code, "ret_txt": self.ret_txt, "debug": self.debug}
+        #return {"id_app": self.id_App, "Usuario": self.user, "ret_code": self.ret_code, "ret_txt": self.ret_txt, "debug": self.debug, "parametros": self.parametros, "resultados": self.resultados}
     
     def __str__(self):
-        return f"App: {self.id_App}, Usuario: {self.user}, Error: {self.ret_code} - {self.ret_txt}, parametros: {self.parametros}"
+        return f"App: {self.id_App}, Usuario: {self.user}, Error: {self.ret_code} - {self.ret_txt}, Error: {self.debug}, parametros: {self.parametros}"

@@ -1,7 +1,5 @@
 from fastapi import HTTPException
 from datetime import datetime
-#from decimal import Decimal
-
 import json
 
 # Para trabajar con Excel PANDA
@@ -9,7 +7,6 @@ import pandas as pd
 
 # Para trabajar con Excel OPENPYXL
 from openpyxl import Workbook
-from openpyxl.styles import numbers
 
 from app.models.mll_cfg import obtener_configuracion_general
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
@@ -22,17 +19,17 @@ from app.config.settings import settings
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def informe(param: InfoTransaccion) -> list:
-    donde="Inicio"
+    param.debug="Inicio"
     resultado = []
     config = obtener_configuracion_general()
     tienda = param.parametros[1]
 
-    donde = "get_db_connection_mysql"
+    param.debug = "get_db_connection_mysql"
     try:
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        donde = "Select"
+        param.debug = "Select"
         if tienda == 0:
             query = "SELECT * FROM mll_cfg_bbdd WHERE activo='S'"
             cursor_mysql.execute(query)
@@ -51,12 +48,18 @@ def informe(param: InfoTransaccion) -> list:
         a_excel_con_pd(param, resultado)
         if param.ret_code == 0:
             a_excel_con_openpyxl(param, resultado)
-        
-    except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error General, contacte con su administrador"
-        graba_log({"ret_code": -99, "ret_txt": f"{donde}"}, "Excepción arqueCajaInfo.informe", e)
+
+        return resultado
+
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "informe.HTTPException", e)
         raise
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "informe.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
 
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
@@ -65,21 +68,20 @@ def informe(param: InfoTransaccion) -> list:
                      "Proceso finalizado",
                      ["El proceso de informes de arqueo de caja ha terminado."]
         )
-        return resultado
 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
     resultado = []
-    donde="Inicio"
+    param.debug="Inicio"
     fecha = param.parametros[0]
 
-    donde = "get_db_connection_mysql"
+    param.debug = "get_db_connection_mysql"
     try:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        donde = "Select"
+        param.debug = "Select"
         query = f"""SELECT 
                         vd.id_tienda,
                         t.nombre Tienda,
@@ -110,23 +112,26 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
                         vmp.id_medios_pago,
                         mp.nombre
                  """
-        donde="execute del cursor"
+        param.debug="execute del cursor"
         cursor_mysql.execute(query)
         datos = cursor_mysql.fetchall()
 
-        donde= "en el FOR"
+        param.debug= "en el FOR"
         for row in datos:
             resultado.append(row)
 
-    except Exception as e:
-        resultado = []
-        param.ret_code = -99
-        param.ret_txt = "Error General, contacte con su administrador"
-        graba_log({"ret_code": -99, "ret_txt": f"{donde}"}, "Excepción arqueCajaInfo.consultar", e)
+        return resultado
+    
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "consultar.HTTPException", e)
         raise
 
-    finally:        
-        return resultado
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "consultar.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+
 
 
 
@@ -134,12 +139,12 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
 # Creamos el escritor de Excel con la librería PANDA
 #----------------------------------------------------------------------------------------
 def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
-    donde = "Inicio"
+    param.debug = "Inicio"
     path = f"{settings.RUTA_DATOS}cierre_caja/"
 
     try:
         with pd.ExcelWriter(f"{path}resultado_panda.xlsx") as writer:
-            donde = "Bucle for"
+            param.debug = "Bucle for"
             for sublista in todos_los_conjuntos:
                 # Si la sublista está vacía, pasamos de largo
                 if not sublista:
@@ -152,7 +157,7 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 columnas_a_eliminar = ["id_tienda", "id_tpv", "cierre_tpv_id", "id_medios_pago"]
                 df.drop(columns=columnas_a_eliminar, axis=1, inplace=True)
 
-                donde = "convertimos fecha"
+                param.debug = "convertimos fecha"
                 # 3. Convertimos 'fecha' a formato dd/mm/aaaa
                 #    Primero la parseamos a datetime y luego la formateamos
                 df["fecha"] = pd.to_datetime(df["fecha"]).dt.strftime('%d/%m/%Y')
@@ -173,17 +178,21 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 # 6. Exportamos este DataFrame a una hoja en el Excel
                 df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
-    except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error General, contacte con su administrador"
-        graba_log({"ret_code": -99, "ret_txt": f"{donde}"}, "Excepción arqueCajaInfo.a_excel_con_pd", e)
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "informe.HTTPException", e)
         raise
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "informe.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
 
 #----------------------------------------------------------------------------------------
 # Creamos el escritor de Excel con la librería PANDA
 #----------------------------------------------------------------------------------------
 def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
-    donde ="Inicio"
+    param.debug ="Inicio"
     try:
         # 1. Creamos el libro de Excel y removemos la hoja por defecto
         wb = Workbook()
@@ -191,7 +200,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         wb.remove(ws_default)
         path = "app/datos/cierre_caja/"
 
-        donde = "2. Elimiar Columnas"
+        param.debug = "2. Elimiar Columnas"
         # 2. Columnas que NO queremos mostrar
         columnas_excluir = {"id_tienda", "id_tpv", "cierre_tpv_id", "id_medios_pago"}
 
@@ -200,7 +209,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
             if not sublista:
                 continue
             
-            donde = "3. Procesamos"
+            param.debug = "3. Procesamos"
             # 3. Preprocesamos la sublista para convertir valores y eliminar columnas
             #    - Convertimos "fecha" a datetime
             #    - Convertimos "total_ventas" y "total_operaciones" a float
@@ -226,29 +235,29 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
                         nueva_fila[k] = v
                 datos_procesados.append(nueva_fila)
 
-            donde = "4. Obtenemos nombre tienda"
+            param.debug = "4. Obtenemos nombre tienda"
             # 4. Obtenemos el nombre de la tienda (primer elemento)
             nombre_tienda = datos_procesados[0]["Tienda"]
             # Máximo 31 caracteres para el nombre de la hoja
             sheet_name = nombre_tienda[:31]
 
-            donde = "5. Creamos nueva hoja"
+            param.debug = "5. Creamos nueva hoja"
             # 5. Creamos una hoja nueva con el nombre de la tienda
             ws = wb.create_sheet(title=sheet_name)
             
-            donde = "6. Escribimos cabecera"
+            param.debug = "6. Escribimos cabecera"
             # 6. Escribimos la CABECERA
             #    Obtenemos las columnas del primer registro (ordenadas)
             columnas = list(datos_procesados[0].keys())
             ws.append(columnas)  # primera fila con los nombres de columna
 
-            donde = "7. Filas"
+            param.debug = "7. Filas"
             # 7. Escribimos los datos fila por fila
             for fila in datos_procesados:
                 row_data = [fila[col] for col in columnas]
                 ws.append(row_data)
 
-            donde = "8. Formatos"
+            param.debug = "8. Formatos"
             # 8. Aplicamos FORMATO a las celdas
             #    - Fecha en formato dd/mm/yyyy
             #    - total_ventas con 2 decimales
@@ -278,12 +287,16 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
                     cell_oper = ws.cell(row=row, column=idx_operaciones)
                     cell_oper.number_format = "#,##0"
 
-        donde = "9. Guardamos"
+        param.debug = "9. Guardamos"
         # 9. Guardamos el archivo
         wb.save(f"{path}resultado_openpyxl.xlsx")
 
-    except Exception as e:
-        param.ret_code = -99
-        param.ret_txt = "Error General, contacte con su administrador"
-        graba_log({"ret_code": -99, "ret_txt": f"{donde}"}, "Excepción arqueCajaInfo.a_excel_con_pd", e)
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "a_excel_con_openpyxl.HTTPException", e)
         raise
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "a_excel_con_openpyxl.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e

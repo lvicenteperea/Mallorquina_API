@@ -54,25 +54,27 @@ time_logger = logging.getLogger('time_logger')
 # ------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------
 def graba_log(mi_mensaje:dict, origen, e, logger = app_logger):
+    try:
+        loc = "no disponible"
 
-    tb = traceback.extract_tb(e.__traceback__)
-    archivo, linea, funcion, texto_err = tb[-1]
+        if isinstance(e, BaseException):  # Comprueba si es una excepción
+            tb = traceback.extract_tb(e.__traceback__)
+            archivo, linea, funcion, texto_err = tb[-1]
+            loc = {texto_err.replace("-", "_")} - {archivo.replace("-", "_")} - {linea} - {funcion}
 
-    archivo = archivo.replace("-", "_")
-    texto_err = texto_err.replace("-", "_")
-    if "mensaje" in mi_mensaje and isinstance(mi_mensaje["mensaje"], str):
-        mi_mensaje["mensaje"] = mi_mensaje["mensaje"].replace("-", "_")
+        # Intentar obtener un código de error
+        if hasattr(e, 'errno'):  # Excepciones del sistema
+            err_num = e.errno
+        elif hasattr(e, 'args') and len(e.args) > 0:  # Excepciones genéricas con args
+            err_num = e.args[0]
+        else:
+            err_num = 0
 
-    # Intentar obtener un código de error
-    if hasattr(e, 'errno'):  # Excepciones del sistema
-        err_num = e.errno
-    elif hasattr(e, 'args') and len(e.args) > 0:  # Excepciones genéricas con args
-        err_num = e.args[0]
-    else:
-        err_num = 0
+        logger.error(f"MI ERROR: {origen}: {mi_mensaje} - ERROR: {err_num} - {str(e)} - LOCALIZACION: {loc})")
 
-    logger.error(f"MI ERROR: {origen}: {mi_mensaje} - ERROR: {err_num} - {str(e)} - LOCALIZACION: {texto_err} - {archivo} - {linea} - {funcion})")
-
+    except Exception as e:
+        imprime(["Error en graba_log:", e], relleno="*")
+        return
 
 # ------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------

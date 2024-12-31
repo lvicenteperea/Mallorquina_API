@@ -8,7 +8,7 @@ import app.services.mallorquina.arqueo_caja as arqueo_caja
 import app.services.mallorquina.arqueo_caja_info as arqueo_caja_info
 import app.services.mallorquina.tarifas_a_TPV as tarifas_a_TPV
 
-from app.utils.functions import graba_log
+from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 
@@ -25,7 +25,7 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                         fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
                        ):
-    donde = "Inicio"
+    param.debug = "Inicio"
     resultado = []
 
     try:
@@ -33,15 +33,15 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
             # Si la variable es None o está vacía, asignar la fecha y hora actuales
             fecha = datetime.now().strftime('%Y-%m-%d')
 
-        donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
 
-        donde = "Llamando a consulta_caja.recorre_consultas_tiendas"
+        param.debug = "Llamando a consulta_caja.recorre_consultas_tiendas"
         resultado = consulta_caja.recorre_consultas_tiendas(param = param)
         if param.ret_code < 0:
             raise MadreException(param.to_dict())
 
-        donde = f"Retornando: {type(resultado)}"
+        param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
 
         return param
@@ -51,7 +51,7 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
                 
     except Exception as e:
         param.error_sistema()
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_consultas", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{param.debug}"}, "Excepción mll_consultas", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
                                                      "error": str(e)
@@ -69,19 +69,19 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
                        ):
 
     try:
-        donde = "Lo estoy ejecutando"
+        param.debug = "Lo estoy ejecutando"
         resultado = []
 
-        donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
 
-        donde = "Llamando a sync_data.recorre_tiendas"
+        param.debug = "Llamando a sync_data.recorre_tiendas"
         resultado = sync_data.recorre_tiendas(param = param)
 
         if param.ret_code < 0:
             raise MadreException(param.to_dict())
         
-        donde = f"Retornando: {type(resultado)}"
+        param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
 
         return param
@@ -91,7 +91,7 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
                 
     except Exception as e:
         param.error_sistema()
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_sync_todo", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{param.debug}"}, "Excepción mll_sync_todo", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
                                                      "error": str(e)
@@ -107,19 +107,19 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
                             ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                             fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
                          ):
-    donde = "Inicio"
+    param.debug = "Inicio"
     resultado = []
 
     try:
-        donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
 
-        donde = "Llamada a arqueo_caja.proceso"
+        param.debug = "Llamada a arqueo_caja.proceso"
         resultado = arqueo_caja.proceso(param = param)
         if param.ret_code < 0:
             raise MadreException(param.to_dict())
         
-        donde = f"Retornando: {type(resultado)}"
+        param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
 
         return param
@@ -129,7 +129,7 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
                 
     except Exception as e:
         param.error_sistema()
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_arqueo_caja", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{param.debug}"}, "Excepción mll_arqueo_caja", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                      "ret_txt": param.ret_txt,
                                                      "error": str(e)
@@ -179,38 +179,44 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
                               fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
                               tienda: int = Query(0, description="BBDD/Tienda (mll_cfg_bbdd) de la que queremos la información, 0 --> Todas"),
                              ):
-    donde = "Inicio"
-    resultado = []
 
     try:
-        donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha} - {tienda}"
+        print("------ 0 -------")
+        resultado = []
+
+        print("------ 1 -------")
         if not fecha: # si no tiene parametro fecha
             fecha = datetime.now().strftime('%Y-%m-%d')
 
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha, tienda])
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha, tienda], debug="Inicio")
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha} - {tienda}"
 
-        donde = "Llamada a arqueo_caja_info.informe"
+        print("------ 2 -------")
+        param.debug = "Llamada a arqueo_caja_info.informe"
         resultado = arqueo_caja_info.informe(param = param)
         if param.ret_code < 0:
             raise MadreException(param.to_dict())
         
-        donde = f"Retornando: {type(resultado)}"
+        print("------ 3 -------")
+        param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
 
-        return param
-    
-
-    except MadreException as e:
-        raise MadreException(param.to_dict())
-                
-    except Exception as e:
+    except HTTPException as e:
+        print("------ 4 -------")
         param.error_sistema()
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción mll_inf_arqueo_caja", e)
-        raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
-                                                     "ret_txt": param.ret_txt,
-                                                     "error": str(e)
-                                                    }
-            )    
+        imprime(param,"$")
+        imprime(["Capturado en nivel 1: Código", e.status_code, "Detalle:", e.detail], "$")
+        graba_log(param, "mll_inf_arqueo_caja.HTTPException", e)
+
+
+    except Exception as e:
+        print("------ 5 -------")
+        param.error_sistema()
+        graba_log(param, "mll_inf_arqueo_caja.Exception", e)
+
+    finally:
+        print("------ 6 -------")
+        return param  
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -222,29 +228,33 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
                         origen_path: str = Query(..., description="Fichero origen"),
                         output_path: str = Query(..., description="Fichero destino")
                        ):
-
-    donde = "Inicio"
-    resultado = []
-    donde = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path} - {output_path}"
     param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path, output_path])
+    resultado = []
+    param.debug = "Inicio"
     
     try:
-        donde = "Llamada a proceso"
+        param.debug = "Llamada a proceso"
         resultado = tarifas_a_TPV.proceso(param = param)
 
         if param.ret_code < 0:
             raise MadreException(param.to_dict())
 
-        donde = f"Retornando: {type(resultado)}"
+        param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
     
-        return param
-    
     except MadreException as e:
-        #raise MadreException(param.to_dict())
-        raise MadreException(param, status_code=500, detail=param.to_dict() | {"error": e, "traceback":e.__traceback__})
+        #raise MadreException(param, status_code=500, detail=param.to_dict() | {"error": e, "traceback":e.__traceback__})
+        param.error_sistema()
+        graba_log(param, "mll_convierte_tarifas.MadreException", e)
                 
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "mll_convierte_tarifas.HTTPException", e)
+
+
     except Exception as e:
-        # param.error_sistema()
-        raise HTTPException(param, status_code=500, detail=param.to_dict() | {"error": e, "traceback":e.__traceback__})
-      
+        param.error_sistema()
+        graba_log(param, "mll_convierte_tarifas.Exception", e)
+
+    finally:
+        return param

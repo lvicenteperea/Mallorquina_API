@@ -116,7 +116,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     if hasattr(exc, "status_code"):
         status_code = getattr(exc, "status_code", 500)
     else:
-        status_code = 500  # Estatus predeterminado para errores genéricos
+        status_code = 550  # Estatus predeterminado para errores genéricos
 
     if hasattr(exc, "detail"):
         detalle = getattr(exc, "detail", "Detalle no disponible")
@@ -153,19 +153,44 @@ async def generic_exception_handler(request: Request, exc: Exception):
         )
     '''    
 # -----------------------------------------------------------------------------------------------
+    param = InfoTransaccion(id_App = 0, user="system", ret_code=-1, ret_txt="", parametros=[], resultados=[])
+
+    print("Argumentos de la excepción:", type(exc.args), exc.args)
+    print("exc:", getattr(exc, "status_code", 503), getattr(exc, "detail", "Sin detalle"))
+    #print("Claves del diccionario:", list(exc.args[0].keys()))
+
+    # Si es una HTTPException, obtenemos el código de estado
     if hasattr(exc, "status_code"):
+        print("--------------------------------------76 primera vez-----------------------------------------------")
         status_code = getattr(exc, "status_code", 500)
     else:
-        status_code = 500  # Estatus predeterminado para errores genéricos
+        status_code = 550  # Estatus predeterminado para errores genéricos
 
-    if hasattr(exc, "detail"):
-        detalle = getattr(exc, "detail", "Detalle no disponible")
+    if exc.args and isinstance(exc.args, str):
+        print("--------------------------------------77 primera vez-----------------------------------------------")
+        param.ret_txt = str(exc.args) # o solo tiene un argumento os es cero
     else:
-        detalle = "Detalle no ha llegado"
+        if exc.args and isinstance(exc.args, tuple):
+            if "detalle" in exc.args[0]:
+                print("--------------------------------------generic_exception_handler-----------------------------------------------")
+                param = exc.args[0]["detalle"]
+                print("1", param)
+            else:
+                print("--------------------------------------otro1 primera vez-----------------------------------------------")
+                param.ret_txt =  f"Error desconocido: {type(exc.args)}"
+        else:
+            param.ret_txt = "Error desconocido"
+            print("--------------------------------------otro2 primera vez-----------------------------------------------")
+
+    print("-------------------------------------------------------------------------------------")
+    print(param.ret_txt, status_code)
+
+    # -----------------------------------------------------------
+    graba_log(param, "GenericException", exc)
 
     return {
         "status_code": status_code,
-        "message": detalle
+        "message": param.ret_txt
     }
 
 

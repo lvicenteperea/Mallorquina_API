@@ -1,26 +1,43 @@
-class MadreException(Exception):
+from app.utils.functions import imprime
+from app.utils.InfoTransaccion import InfoTransaccion
 
-    """Excepción base para todos los errores específicos de la aplicación."""
-    def __init__(self, detail, status_code: int = 0):
-        if isinstance(detail, dict):
-            self.mi_mensaje = detail
+class MadreException(Exception):
+    param: dict = InfoTransaccion(id_App=0, user="Sistema")
+    status_code: int = 0
+    detail: str = ""
+
+    def __init__(self, param: InfoTransaccion, detail: str = "", status_code: int = 0):
+        if not param:
+            self.param = InfoTransaccion()
         else:
-            self.mi_mensaje = {"ret_code": -1,
-                               "ret_txt": detail,
-                              }
+            self.param = param
+
+        if not self.param.ret_code:
+            self.param.ret_code = -1
+
+        if not self.param.ret_txt:
+            self.param.ret_txt = detail if detail else "Error no controlado"
+
+        elif isinstance(detail, str) and detail:
+            self.detail = detail
+        else:
+            self.detail = self.param.ret_txt
+
         if status_code == 0:
-            if self.mi_mensaje['ret_code'] == -99:
+            if self.param['ret_code'] == -99:
                 self.status_code = 500
             else:
                 self.status_code = 400
         else:
             self.status_code = status_code
 
-
-        # print("Madre / Excptn: ", self.mi_mensaje, self.status_code)
+        imprime("Madre / Excptn: ", self.param, self.status_code, self.detail, relleno="-")
         
-        super().__init__(self.mi_mensaje['ret_txt'])
+        super().__init__(self.param['ret_txt'])
         
 
-    def to_dict(self):
-        return {"error": self.mi_mensaje['ret_txt'], "status_code": self.status_code}
+    def to_dict(self) -> dict:
+        return {"detail": self.detail,
+                "status_code": self.status_code, 
+                "param": self.param
+        }

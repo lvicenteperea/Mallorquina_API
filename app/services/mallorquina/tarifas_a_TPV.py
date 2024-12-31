@@ -2,6 +2,9 @@ import pandas as pd
 # from openpyxl import Workbook, load_workbook
 # from openpyxl.styles import Alignment
 from datetime import datetime
+from fastapi import HTTPException
+
+import os
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
@@ -22,9 +25,14 @@ def proceso(param: InfoTransaccion) -> list:
         destino_path = "app/datos/importa_TPV.xlsx"
     """
     resultado = []
-    param.debug = "Inicio"
+    param.debug = "proceso"
 
     try:
+        imprime(["Estás posicionado en:", os.getcwd()], "|")
+
+        with open(f"{settings.RUTA_DATOS}datos.txt", "w") as f:
+            f.write("No hay datos")
+        
         path = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
         
         if param.parametros and param.parametros[0]:
@@ -48,21 +56,24 @@ def proceso(param: InfoTransaccion) -> list:
         
         return resultado
             
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "proceso.HTTPException", e)
+        raise
+
     except Exception as e:
         param.error_sistema()
-        graba_log(param.to_dict(), "Excepción tarifas_a_TPV.proceso", e)
-        raise
+        graba_log(param, "proceso.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
         
 
 # -----------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------
 def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
     resultado = []
-    param.debug = "Inicio"
+    param.debug = "convierte_con_pd"
     
     try:
-        x=1/0
-
         #Leer el archivo de origen
         origen_df = pd.read_excel(origen_path)
 
@@ -117,9 +128,15 @@ def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
         resultado = [num_registros_origen , num_registros_destino]
         return resultado
 
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "convierte_con_pd.HTTPException", e)
+        raise
+
     except Exception as e:
         param.error_sistema()
-        raise
+        graba_log(param, "convierte_con_pd.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
 
         
 

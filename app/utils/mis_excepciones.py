@@ -24,16 +24,16 @@ class MadreException(Exception):
             self.detail = self.param.ret_txt
 
         if status_code == 0:
-            if self.param['ret_code'] == -99:
+            if self.param.ret_code == -99:
                 self.status_code = 500
             else:
                 self.status_code = 400
         else:
             self.status_code = status_code
 
-        imprime("Madre / Excptn: ", self.param, self.status_code, self.detail, relleno="-")
+        imprime(["Madre / Excptn: ", self.param, self.status_code, self.detail], relleno="-")
         
-        super().__init__(self.param['ret_txt'])
+        super().__init__(self.param.ret_txt)
         
 
     def to_dict(self) -> dict:

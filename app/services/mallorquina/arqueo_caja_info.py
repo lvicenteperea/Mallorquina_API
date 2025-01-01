@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from datetime import datetime
+from datetime import datetime, date
 import json
 
 # Para trabajar con Excel PANDA
@@ -15,6 +15,7 @@ from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
+from app.utils.mis_excepciones import MadreException
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -51,15 +52,18 @@ def informe(param: InfoTransaccion) -> list:
 
         return resultado
 
+    except MadreException as e:
+        raise
+                    
     except HTTPException as e:
         param.error_sistema()
-        graba_log(param, "informe.HTTPException", e)
+        graba_log(param, "proceso.HTTPException", e)
         raise
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "informe.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+        graba_log(param, "proceso.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
@@ -121,16 +125,19 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
             resultado.append(row)
 
         return resultado
-    
+
+    except MadreException as e:
+        raise
+                    
     except HTTPException as e:
         param.error_sistema()
-        graba_log(param, "consultar.HTTPException", e)
+        graba_log(param, "proceso.HTTPException", e)
         raise
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "consultar.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+        graba_log(param, "proceso.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
 
@@ -178,15 +185,19 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 # 6. Exportamos este DataFrame a una hoja en el Excel
                 df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
+
+    except MadreException as e:
+        raise
+                    
     except HTTPException as e:
         param.error_sistema()
-        graba_log(param, "informe.HTTPException", e)
+        graba_log(param, "proceso.HTTPException", e)
         raise
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "informe.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+        graba_log(param, "proceso.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 #----------------------------------------------------------------------------------------
 # Creamos el escritor de Excel con la librería PANDA
@@ -198,7 +209,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         wb = Workbook()
         ws_default = wb.active
         wb.remove(ws_default)
-        path = "app/datos/cierre_caja/"
+        path = f"{settings.RUTA_DATOS}cierre_caja/"
 
         param.debug = "2. Elimiar Columnas"
         # 2. Columnas que NO queremos mostrar
@@ -224,9 +235,12 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
 
                     if k == "fecha":
                         # Convertir "AAAA-MM-DD" a datetime
-                        #nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
-                        nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
-
+                        if isinstance(v, str):     # Si es una cadena, puedes usar strptime
+                            nueva_fila[k] = datetime.strptime(v, "%Y-%m-%d").date()
+                        elif isinstance(v, date): # Si ya es un objeto date, úsalo directamente
+                            nueva_fila[k] = v
+                        else:
+                            raise ValueError(f"El valor {type(v)}-{v} no es una cadena ni un objeto date")
                     elif k in ("total_ventas", "total_operaciones"):
                         # Convertir a float
                         nueva_fila[k] = float(v)
@@ -291,12 +305,15 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         # 9. Guardamos el archivo
         wb.save(f"{path}resultado_openpyxl.xlsx")
 
+    except MadreException as e:
+        raise
+                    
     except HTTPException as e:
         param.error_sistema()
-        graba_log(param, "a_excel_con_openpyxl.HTTPException", e)
+        graba_log(param, "proceso.HTTPException", e)
         raise
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "a_excel_con_openpyxl.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+        graba_log(param, "proceso.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail)

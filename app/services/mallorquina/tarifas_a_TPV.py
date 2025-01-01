@@ -28,11 +28,6 @@ def proceso(param: InfoTransaccion) -> list:
     param.debug = "proceso"
 
     try:
-        imprime(["Estás posicionado en:", os.getcwd()], "|")
-
-        with open(f"{settings.RUTA_DATOS}datos.txt", "w") as f:
-            f.write("No hay datos")
-        
         path = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
         
         if param.parametros and param.parametros[0]:
@@ -55,7 +50,10 @@ def proceso(param: InfoTransaccion) -> list:
         #   resulta do.append(convierte_con_openpyxl(param, f"{origen_path}", f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}"))
         
         return resultado
-            
+
+    except MadreException as e:
+        raise
+                    
     except HTTPException as e:
         param.error_sistema()
         graba_log(param, "proceso.HTTPException", e)
@@ -64,7 +62,7 @@ def proceso(param: InfoTransaccion) -> list:
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
         
 
 # -----------------------------------------------------------------------------------------------------
@@ -128,15 +126,18 @@ def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
         resultado = [num_registros_origen , num_registros_destino]
         return resultado
 
+    except MadreException as e:
+        raise
+                    
     except HTTPException as e:
         param.error_sistema()
-        graba_log(param, "convierte_con_pd.HTTPException", e)
+        graba_log(param, "proceso.HTTPException", e)
         raise
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "convierte_con_pd.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+        graba_log(param, "proceso.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
         
 

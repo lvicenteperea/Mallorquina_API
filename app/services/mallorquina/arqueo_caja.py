@@ -1,6 +1,5 @@
 from fastapi import HTTPException
 from datetime import datetime
-#from decimal import Decimal
 
 import json
 
@@ -9,13 +8,14 @@ from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
+from app.utils.mis_excepciones import MadreException
 from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------
 '''
 def proceso(param: InfoTransaccion) -> InfoTransaccion:
-    donde="Inicio"
+    param.debug="Inicio"
     config = obtener_configuracion_general()
     resultado = param
     resultado.resultados = []
@@ -30,15 +30,15 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         resultado.ret_txt = "El proceso ya está en ejecución."
         raise Exception
 
-    donde="actualizar_en_ejecucion"
+    param.debug="actualizar_en_ejecucion"
     actualizar_en_ejecucion(1)
 
-    donde = "get_db_connection_mysql"
+    param.debug = "get_db_connection_mysql"
     try:
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        donde = "Select"
+        param.debug = "Select"
         cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") 
         lista_bbdd = cursor_mysql.fetchall()
 
@@ -55,7 +55,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
             # Aquí va la lógica específica para cada bbdd
             resultado.resultados.extend(consultar_y_grabar(bbdd["ID"], conn_mysql, resultado))
 
-            donde = "update"
+            param.debug = "update"
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET ultimo_cierre = %s WHERE ID = %s",
                 (param.parametros[0], bbdd["ID"])
@@ -65,14 +65,14 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
 
     except MadreException as e:
         param.resultados = []
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "MadreException mll_arqueo_caja", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{param.debug}"}, "MadreException mll_arqueo_caja", e)
         raise HTTPException(status_code=500, detail={"ret_code": param.ret_code,
                                                 "ret_txt": param.ret_txt,
                                                 "error": str(e)
                                             }
                            ) 
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción arqueCaja.proceso", e)
+        graba_log({"ret_code": -1, "ret_txt": f"{param.debug}"}, "Excepción arqueCaja.proceso", e)
         param.resultados = []
         param.ret_code = -1
         param.ret_txt = "Error General, contacte con su administrador"
@@ -92,30 +92,32 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
 '''
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> list:
-    donde="Inicio"
+    funcion = "arqueo_caja.proceso"
+    param.debug="Inicio"
     config = obtener_configuracion_general()
     resultado = []
+    conn_mysql = None # para que no de error en el finally
+    cursor_mysql = None # para que no de error en el finally
     fecha = param.parametros[0]
 
-    if not config.get("ID", False):
-        param.ret_code = -1
-        param.ret_txt = f"No se han encontrado datos de configuración: {config['En_Ejecucion']}"
-        return
-    
-    if config["En_Ejecucion"]:
-        param.ret_code = -1
-        param.ret_txt = "El proceso ya está en ejecución."
-        return
-
-    donde="actualizar_en_ejecucion"
-    actualizar_en_ejecucion(1)
-
-    donde = "get_db_connection_mysql"
     try:
+        if  config.get("ID", False): 
+            param.registrar_error(-1, f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", f"{funcion}.config-ID")
+            raise MadreException(param = param)
+        
+        if config["En_Ejecucion"]:
+            param.registrar_error(-1, "El proceso ya está en ejecución.", f"{funcion}.config.en_ejecucion")
+            raise MadreException(param = param)
+
+        param.debug="actualizar_en_ejecucion"
+        actualizar_en_ejecucion(1)
+
+        param.debug = "get_db_connection_mysql"
+        #try:
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        donde = "Select"
+        param.debug = "Select"
         cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") 
         lista_bbdd = cursor_mysql.fetchall()
 
@@ -133,7 +135,7 @@ def proceso(param: InfoTransaccion) -> list:
             resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql)
             resultado.append(resultado_dict)
 
-            donde = "update"
+            param.debug = "update"
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET ultimo_cierre = %s WHERE ID = %s",
                 (fecha, bbdd["ID"])
@@ -141,13 +143,21 @@ def proceso(param: InfoTransaccion) -> list:
         
         conn_mysql.commit()
 
-    except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"{donde}"}, "Excepción arqueCaja.proceso", e)
-        resultado = []
-        param.ret_code = -1
-        param.ret_txt = "Error General, contacte con su administrador"
+        return resultado
+
+    except MadreException as e:
+        raise
+                    
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "proceso.HTTPException", e)
         raise
 
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "proceso.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
 
@@ -156,20 +166,19 @@ def proceso(param: InfoTransaccion) -> list:
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
         )
-        return resultado
 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql) -> dict:
     resultado = {}
-    donde = "Inicio"
+    param.debug = "Inicio"
 
     try:
-        donde = "Buscamos la conexión que necesitamos para esta bbdd origen"
+        param.debug = "Buscamos la conexión que necesitamos para esta bbdd origen"
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla)
 
-        donde = "conextamos con esta bbdd origen"
+        param.debug = "conextamos con esta bbdd origen"
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
         if conn_sqlserver:
@@ -182,14 +191,14 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql) -> dict:
             select_query = f"""SELECT [Id Cierre]
                                 FROM [Cierres de Caja] WHERE CAST(Fecha AS DATE) = ?
                     """
-            donde = "Ejecución select 1"
+            param.debug = "Ejecución select 1"
             cursor_sqlserver.execute(select_query, param.parametros) # parametros es la fecha
             apertura_ids_lista = cursor_sqlserver.fetchall()
             ids_cierre = [item[0] for item in apertura_ids_lista]
             
             if ids_cierre:
                 # buscamos los cierres de estos IDs
-                donde = "Ejecución select 2"
+                param.debug = "Ejecución select 2"
                 placeholders = ", ".join(["?"] * len(ids_cierre))
                 select_query = f"""SELECT Ca.[Id Apertura Puesto Cobro] as ID_Apertura,
                                           -- FORMAT(Ca.Fecha, 'dd/MM/yyyy') as Fecha,
@@ -213,28 +222,32 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql) -> dict:
                 cursor_sqlserver.execute(select_query, ids_cierre)
                 datos = cursor_sqlserver.fetchall()
 
-                donde = "Llamada a Grabar"
+                param.debug = "Llamada a Grabar"
                 resultado = grabar(param, conn_mysql, tabla, datos)
 
-    except Exception as e:
-        graba_log({"ret_code": -99, "ret_txt": donde}, "Excepción arqueo_caja.consultar_y_grabar", e)
-        resultado = {}
-        param.ret_code = -99
-        param.ret_txt = "Error General, contacte con su administrador"
+        return resultado
+
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "consultar_y_grabar.HTTPException", e)
         raise
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "consultar_y_grabar.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
 
     finally:
         if conn_sqlserver:
             conn_sqlserver.close()
 
-        return resultado
     
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
     resultado = {}
-    donde = "Inicio"
+    param.debug = "Inicio"
 
     try: 
         cierre_descs = ["Mañana", "Tarde"]
@@ -269,7 +282,7 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
         # Insertar en mll_rec_ventas_diarias
         for idx, (key, data) in enumerate(ventas_diarias.items()):
             orden = orden ^ 1  # Alternar entre 0 y 1
-            donde = "insert"
+            param.debug = "insert"
             ID_Apertura = key[2]
 
             insert_diarias = """
@@ -310,8 +323,7 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
                         # Incrementamos los valores existentes si la clave ya está
                         resultado[clave]["ventas"] = resultado[clave]["ventas"] + float(detalle.Importe)
                         resultado[clave]["operaciones"] += int(detalle.Operaciones)
- 
-                    
+                     
                     insert_medio_pago = """
                         INSERT INTO mll_rec_ventas_medio_pago (id_ventas_diarias, id_medios_pago, ventas, operaciones)
                         VALUES (%s, %s, %s, %s)
@@ -323,12 +335,15 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
                                                            )
                                         )
 
-    except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": donde}, "Excepción arqueo_caja.grabar", e)
-        resultado = [0 , 0]
-        param.ret_code = -99
-        param.ret_txt = "Error General, contacte con su administrador"
+        return resultado
+    
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "grabar.HTTPException", e)
         raise
 
-    finally:
-        return resultado
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "grabar.Exception", e)
+        raise HTTPException(status_code=e.status_code, detail=e.detail) from e
+

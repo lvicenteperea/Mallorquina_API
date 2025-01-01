@@ -10,28 +10,32 @@ from app.config.db_mallorquina import get_db_connection_mysql, close_connection_
 from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
 from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.InfoTransaccion import InfoTransaccion
+from app.utils.mis_excepciones import MadreException
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
-    donde="Inicio"
-    resultado = []
+    funcion = "consulta.caja.recorre_consultas_tiendas"
+    param.debug="Inicio"
+
     config = obtener_configuracion_general()
-
-    if not config.get("ID", False):
-        param.ret_code = -1
-        param.ret_txt = "No se han encontrado datos de configuración", config["En_Ejecucion"]
-        return resultado
-    
-    if config["En_Ejecucion"]:
-        param.ret_code = -1
-        param.ret_txt = "El proceso ya está en ejecución."
-        return resultado
-
-    donde="actualizar_en_ejecucion"
-    actualizar_en_ejecucion(1)
+    resultado = []
+    conn_mysql = None # para que no de error en el finally
+    cursor_mysql = None # para que no de error en el finally
 
     try:
+        if not config.get("ID", False):
+            param.registrar_error(-1, f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", f"{funcion}.config-ID")
+            raise MadreException(param = param)
+        
+        if config["En_Ejecucion"]:
+            param.registrar_error(-1, "El proceso ya está en ejecución.", f"{funcion}.config.en_ejecucion")
+            raise MadreException(param = param)
+
+
+        donde="actualizar_en_ejecucion"
+        actualizar_en_ejecucion(1)
+
         donde = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
@@ -53,9 +57,7 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
             )
             conn_mysql.commit()
 
-
         return resultado 
-
        
     except Exception as e:
         param.error_sistema()

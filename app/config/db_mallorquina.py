@@ -59,3 +59,15 @@ def get_db_connection_sqlserver(conexion_json):
     except Exception as e:
         graba_log({"ret_code": -1, "ret_txt": "get_db_connection_sqlserver - "+ donde}, "Excepción", e)
         return False
+    
+#----------------------------------------------------------------------------------------
+def close_connection_sqlserver(conn, cursor):
+    try:
+        if conn is not None:
+            if cursor is not None:
+                cursor.close()
+            conn.close()
+    
+    except Error as e:
+        return
+

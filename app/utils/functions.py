@@ -57,10 +57,10 @@ def graba_log(mi_mensaje:dict, origen, e, logger = app_logger):
     try:
         loc = "no disponible"
 
-        if isinstance(e, BaseException):  # Comprueba si es una excepción
+        if isinstance(e, BaseException): # Comprueba si es una excepción
             tb = traceback.extract_tb(e.__traceback__)
             archivo, linea, funcion, texto_err = tb[-1]
-            loc = {texto_err.replace("-", "_")} - {archivo.replace("-", "_")} - {linea} - {funcion}
+            loc = f'{texto_err.replace("-", "_")} - {archivo.replace("-", "_")} - {linea} - {funcion}'
 
         # Intentar obtener un código de error
         if hasattr(e, 'errno'):  # Excepciones del sistema

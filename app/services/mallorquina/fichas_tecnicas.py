@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from fastapi import HTTPException
+from jinja2 import Template
 
 import os
 
@@ -9,155 +10,138 @@ from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
-# RUTA_BASE: str = "app/ficheros/"
-# RUTA_IMAGEN: str = "app/ficheros/imagen/"
-# RUTA_DATOS: str = "app/ficheros/datos/"
+# Rutas de los archivos
+RUTA_ICONOS = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "alergenos/")
+RUTA_LOGO = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
+RUTA_EXCEL = os.path.join(settings.RUTA_DATOS, "alergenos/fichas_tecnicas.xlsx")
+RUTA_PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_html_FT.txt")
+RUTA_PLANTILLA_PROD = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_producto_FT.txt")
+RUTA_HTML = os.path.join(settings.RUTA_DATOS, "alergenos/fichas_tecnicas.html")
+
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-# Función para procesar el Excel y generar el HTML
+# Leer el archivo Excel
+def leer_excel():
+    try:
+        df = pd.read_excel(RUTA_EXCEL)
+        return df
+    except Exception as e:
+        print(f"Error al leer el archivo Excel: {e}")
+        exit()
+
+#----------------------------------------------------------------------------------------
+# Generar índice con filtro y orden
+#----------------------------------------------------------------------------------------
+def generar_indice(df, ordenar_por):
+    df_filtrado = df[df['TPV'] == 'Sí']
+    df_ordenado = df_filtrado.sort_values(by=ordenar_por)
+    indice_html = "<ul>"
+    #cabeceras=df.columns.tolist()
+    for _, row in df_ordenado.iterrows():
+        codigo = row['Código']
+        nombre = row['Nombre']
+        alergenos = ''.join(
+            f'<img src="{os.path.join(RUTA_ICONOS, col+ ".webp")}" alt="{col}" class="icono-alergeno">'
+            for col in df.columns[3:17] if row[col] in ['Sí', 'Traza']
+        )
+        indice_html += f"<li><a href='#{codigo}'  class='icono-alergeno'>{codigo} - {nombre.capitalize()}</a> {alergenos}</li>\n"
+    
+    indice_html += "</ul>"
+    return indice_html
+
+#----------------------------------------------------------------------------------------
+# Generar fichas técnicas
+#----------------------------------------------------------------------------------------
+def generar_fichas(df):
+    plantilla = ""
+    fichas_html = ""
+    
+    # Cargamos la platilla de la FICHA de un producto en una variable
+    with open(RUTA_PLANTILLA_PROD, "r", encoding="utf-8") as archivo:
+        plantilla = archivo.read()
+
+    #print(df.columns.tolist())
+    #['Código', 'Nombre', 'Listado alergenos', 'Huevo', 'Lacteos', 'Crustaceos', 'Cascara', 'Gluten', 'Pescado', 
+    # 'Altramuz', 'Mostaza', 'Cacahuetes', 'Apio', 'Sulfitos', 'Soja', 'Moluscos', 'Sésamo', 'Población diana', 
+    # 'Uso esperado', 'Condiciones almacenamiento', 'Condiciones conservación', 'Vida frío desde fabric.', 
+    # 'Peso neto aprox.', 'Composición del producto', 'Rec. Aerobios totales', 'Rec. Enterobacterias', 
+    # 'Rec. Escherichia Coli', 'Rec. Staphylococcus Aureus', 'Det. Salmonella cpp', 'Rec. Listeria Monocytogenes', 
+    # 'Rec. Mohos y levaduras', 'Valor_energetico_Kcal_Kj', 'Grasas_g', 'De_las_cuales_SATURADAS_g', 'Hidratos_de_carbono_g', 
+    # 'De_los_cuales_AZUCARES_g', 'Proteinas_g', 'Sal_g', 'Fibra_dietetica_g', 'Otros', 'TEMPORADA', 'Descripción', 'Código.1', 
+    # 'TPV', 'GRUPO DE CARTA']
+
+    for _, row in df.iterrows():
+        ficha = plantilla.format(
+            codigo=row.get('Código', ''),
+            nombre=row.get('Nombre', ''),
+            temporada=row.get('Temporada', ''),
+            categoria=row.get('Categoría', ''),
+            composicion=row.get('Composición del producto', ''),
+            Composicion_del_producto = '' if pd.isna(row.get('Composición del producto', '')) else row.get('Composición del producto', ''),
+
+            Gluten      = "X" if row.get('Gluten', '') == "Sí" else "Traza" if row.get('Gluten', '') == "Traza" else "",
+            Cascara     = "X" if row.get('Cascara', '') == "Sí" else "Traza" if row.get('Cascara', '') == "Traza" else "",
+            Crustaceos  = "X" if row.get('Crustaceos', '') == "Sí" else "Traza" if row.get('Crustaceos', '') == "Traza" else "",
+            Apio        = "X" if row.get('Apio', '') == "Sí" else "Traza" if row.get('Apio', '') == "Traza" else "",
+            Huevo       = "X" if row.get('Huevo', '') == "Sí" else "Traza" if row.get('Huevo', '') == "Traza" else "",
+            Mostaza     = "X" if row.get('Mostaza', '') == "Sí" else "Traza" if row.get('Mostaza', '') == "Traza" else "",
+            Pescado     = "X" if row.get('Pescado', '') == "Sí" else "Traza" if row.get('Pescado', '') == "Traza" else "",
+            Sésamo      = "X" if row.get('Sésamo', '') == "Sí" else "Traza" if row.get('Sésamo', '') == "Traza" else "",
+            Cacahuetes  = "X" if row.get('Cacahuetes', '') == "Sí" else "Traza" if row.get('Cacahuetes', '') == "Traza" else "",
+            Sulfitos    = "X" if row.get('Sulfitos', '') == "Sí" else "Traza" if row.get('Sulfitos', '') == "Traza" else "",
+            Soja        = "X" if row.get('Soja', '') == "Sí" else "Traza" if row.get('Soja', '') == "Traza" else "",
+            Altramuz    = "X" if row.get('Altramuz', '') == "Sí" else "Traza" if row.get('Altramuz', '') == "Traza" else "",
+            Leche       = "X" if row.get('Leche', '') == "Sí" else "Traza" if row.get('Leche', '') == "Traza" else "",
+            Moluscos    = "X" if row.get('Moluscos', '') == "Sí" else "Traza" if row.get('Moluscos', '') == "Traza" else "",
+
+            Valor_energetico_Kcal_Kj = row.get('Valor_energetico_Kcal_Kj', ''),
+            Grasas_g = row.get('Grasas_g', ''),
+            De_las_cuales_SATURADAS_g = row.get('De_las_cuales_SATURADAS_g', ''),
+            Hidratos_de_carbono_g = row.get('Hidratos_de_carbono_g', ''),
+            De_los_cuales_AZUCARES_g = row.get('De_los_cuales_AZUCARES_g', ''),
+            Proteinas_g = row.get('Proteinas_g', ''),
+            Sal_g = row.get('Sal_g', ''),
+            Rec_Enterobacterias = row.get('Rec. Enterobacterias', ''),
+            Rec_Aerobios_totales = row.get('Rec. Aerobios totales', ''),
+            Rec_Escherichia_Coli = row.get('Rec. Escherichia Coli', ''),
+            Rec_Staphylococcus_Aureus = row.get('Rec. Staphylococcus Aureus', ''),
+            Det_Salmonella_cpp = row.get('Det_Salmonella cpp', ''),
+            Rec_Listeria_Monocytogenes = row.get('Rec. ListeriaMonocytogenes', ''),
+            Rec_Mohos_y_levaduras = row.get('Rec. Mohos y levaduras', ''),
+            Población_diana = row.get('Población diana', ''),
+            uso_esperado = row.get('uso_esperado', ''),
+            Condiciones_conservación = row.get('Condiciones_conservación', ''),
+            vida_en_lugar_fresco_y_seco = row.get('vida_en_lugar_fresco_y_seco', ''),
+            vida_en_refrigeración = row.get('vida_en_refrigeración', ''),
+            vida_en_congelación = row.get('vida_en_congelación', '')
+        )
+        fichas_html += ficha
+    return fichas_html
+
+
+#----------------------------------------------------------------------------------------
+# Generar el HTML completo
+#----------------------------------------------------------------------------------------
 def generar_html(param: InfoTransaccion) -> list:
-    resultado = []
-    param.debug = "proceso"
+    resultado = [f"HTML generado en {RUTA_HTML}"]
+    param.debug = "generar_html"
 
     try:
-        # Rutas de los archivos
-        RUTA_BASE = f"{settings.RUTA_DATOS}ficheros"
-        RUTA_ICONOS = os.path.join(settings.RUTA_IMAGEN, "alergenos")
-        RUTA_LOGO = os.path.join(settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
-        RUTA_EXCEL = os.path.join(settings.RUTA_DATOS, "alergenos/fichas_tecnicas.xlsx")
-        RUTA_HTML = os.path.join(settings.RUTA_DATOS, "alergenos/fichas_tecnicas.html")
+        df = leer_excel()
+        indice = generar_indice(df, ordenar_por='Nombre')
+        fichas = generar_fichas(df)
 
-        # Leer el Excel
-        df = pd.read_excel(RUTA_EXCEL, sheet_name=0)
+        # Cargamos la platilla en una variable
+        with open(RUTA_PLANTILLA, "r", encoding="utf-8") as archivo:
+            html = archivo.read()
+        # sustituimos las variables de la plantilla por los valores
+        html = html.replace("{RUTA_LOGO}", RUTA_LOGO)
+        html = html.replace("{indice}", indice)
+        html = html.replace("{fichas}", fichas)
+        html = html.replace("{fecha}", datetime.now().strftime('%d/%m/%Y'))
 
-        # Filtrar filas donde la columna "TPV" (AR) tenga el valor "Si"
-        df_filtrado = df[df['TPV'] == 'Si']
-
-        # Iniciar HTML
-        html = """<!DOCTYPE html>
-    <html lang=\"es\">
-    <head>
-        <meta charset=\"UTF-8\">
-        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-        <title>Ficha Técnica</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-            }
-            header {
-                position: fixed;
-                top: 0;
-                width: 100%;
-                background-color: #fff;
-                border-bottom: 1px solid #ccc;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 10px;
-                z-index: 1000;
-            }
-            header img {
-                max-height: 50px;
-                margin-right: 10px;
-            }
-            footer {
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-                background-color: #fff;
-                border-top: 1px solid #ccc;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px;
-                z-index: 1000;
-            }
-            footer .date {
-                font-size: 0.9em;
-            }
-            footer .back-link {
-                font-size: 0.9em;
-                color: #007BFF;
-                text-decoration: none;
-            }
-            main {
-                margin: 80px 20px 60px 20px;
-            }
-            .index {
-                margin-bottom: 20px;
-            }
-            .index-item {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-            }
-            .allergens img {
-                height: 20px;
-                margin-right: 5px;
-            }
-            .technical-sheet {
-                margin-bottom: 40px;
-            }
-        </style>
-    </head>
-    <body>
-        <header>
-            <img src=\"{logo}\" alt=\"Logotipo\">
-            <h1>Ficha Técnica de Productos</h1>
-        </header>
-
-        <main>
-            <section class=\"index\">
-                <h2>Índice</h2>
-                <ul>
-        """.format(logo=RUTA_LOGO)
-
-        # Generar el índice
-        for _, row in df_filtrado.iterrows():
-            codigo = row['A']
-            nombre = row['B']
-            alergenos = ''.join(
-                f'<img src="{os.path.join(RUTA_ICONOS, col[0] + ".webp")}" alt="{col}">'
-                for col in df.columns[3:17] if row[col] in ['Sí', 'Traza']
-            )
-            html += f"<li class=\"index-item\"><a href=\"#{codigo}\">{codigo} - {nombre}</a>{alergenos}</li>\n"
-
-        html += """</ul>
-            </section>
-
-            <section class=\"technical-sheets\">
-                <h2>Fichas Técnicas</h2>
-        """
-
-        # Generar las fichas técnicas
-        for _, row in df_filtrado.iterrows():
-            html += f"""
-            <article id=\"{row['A']}\" class=\"technical-sheet\">
-                <h3>{row['B']}</h3>
-                <p>Composición: {row.get('Composición del producto', '')}</p>
-                <p>Condiciones de conservación: {row.get('Condiciones conservación', '')}</p>
-                <!-- Agregar más datos según las columnas -->
-            </article>
-            """
-
-        # Finalizar HTML
-        html += """</section>
-        </main>
-
-        <footer>
-            <span class=\"date\">Generado el: {fecha}</span>
-            <a href=\"#\" class=\"back-link\">Volver a inicio</a>
-        </footer>
-    </body>
-    </html>""".format(fecha=datetime.now().strftime('%d/%m/%Y'))
-
-        # Guardar el archivo HTML
-        os.makedirs(os.path.dirname(RUTA_HTML), exist_ok=True)
+        # Grabamos el HTML en un archivo 
         with open(RUTA_HTML, "w", encoding="utf-8") as f:
             f.write(html)
 

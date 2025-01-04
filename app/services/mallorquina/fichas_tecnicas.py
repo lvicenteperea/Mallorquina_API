@@ -1,9 +1,7 @@
+import os
 import pandas as pd
 from datetime import datetime
 from fastapi import HTTPException
-from jinja2 import Template
-
-import os
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
@@ -12,10 +10,10 @@ from app.config.settings import settings
 
 # Rutas de los archivos
 RUTA_ICONOS = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "alergenos/")
-RUTA_LOGO = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
 
-RUTA_PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_FT_general.html")
-RUTA_PLANTILLA_PROD = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_FT_producto.html")
+LOGO = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
+PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_FT_general.html")
+PLANTILLA_PROD = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_FT_producto.html")
 
 RUTA_EXCEL = os.path.join(settings.RUTA_DATOS, "alergenos/")
 RUTA_HTML = os.path.join(settings.RUTA_DATOS, "alergenos/")
@@ -51,57 +49,66 @@ def leer_excel(excel: str):
 #----------------------------------------------------------------------------------------
 # Generar índice con filtro y orden
 #----------------------------------------------------------------------------------------
-def generar_indice(df, ordenar_por):
+def generar_indice(param, df, ordenar_por):
     df_filtrado = df[df['TPV'] == 'Sí']
     df_ordenado = df_filtrado.sort_values(by=ordenar_por)
     indice_html = ""
+    param.debug = "generar_indice"
     
-    cabeceras = df.columns.tolist()
+    # cabeceras = df.columns.tolist()
     lista_alergenos = ['Huevo', 'Lacteos', 'Crustaceos', 'Cáscara', 'Gluten', 'Pescado', 'Altramuz', 'Mostaza', 'Cacahuetes', 'Apio', 'Sulfitos', 'Soja', 'Moluscos', 'Sésamo']
     # Encontrar las posiciones
-    posiciones = [cabeceras.index(elemento) for elemento in lista_alergenos if elemento in cabeceras]
-    # Primera y última posición
-    pos_ini = min(posiciones) if posiciones else 0
-    por_fin = max(posiciones) if posiciones else 0
+    # posiciones = [cabeceras.index(elemento) for elemento in lista_alergenos if elemento in cabeceras]
+    # # Primera y última posición
+    # pos_ini = min(posiciones) if posiciones else 0
+    # por_fin = max(posiciones) if posiciones else 0
 
 
-    for _, row in df_ordenado.iterrows():
-        composicion = '' if pd.isna(row.get('Composición completa', '')) else row.get('Composición completa', '')
-        if not composicion: 
-            composicion = '' if pd.isna(row.get('Composición del producto', '')) else row.get('Composición del producto', '')
-        if imprimible(row):
-            codigo = row['Código']
-            nombre = row['Nombre']
-            alergenos = ''.join(
-                f'<img src="{os.path.join(RUTA_ICONOS, col+ ".webp")}" alt="{col}" class="icono-alergeno">'
-                for col in df.columns[pos_ini:por_fin] if row[col] in ['Sí', 'Traza']
-            )
-            indice_html += f"<li><a href='#{codigo}'  class='enlace-producto'>{codigo} - {nombre.capitalize()}</a> {alergenos}</li>\n"
-    
+    for _, fila in df_ordenado.iterrows():
+        if imprimible(fila):
+            codigo = fila['Código']
+            nombre = fila['Nombre']
+            fila_html = '<tr>'
+            # fila_html += f'<td class="lista-producto">{nombre.capitalize()}</td>'
+            fila_html += f"<td><a href='#{codigo}' class='lista-producto'>{nombre.capitalize()}</a></td>"
+            
+            
+            # Procesar las columnas de interés
+            for columna in lista_alergenos:
+                valor = '' if pd.isna(fila.get(columna, "")) else fila.get(columna, "")
+                if valor == "Sí":
+                    contenido_td = "<td><p class='lista-X'>X</p></td>"
+                elif valor == "Trazas":
+                    contenido_td = "<td><p class='lista-T'>T</p></td>"
+                else:
+                    contenido_td = "<td><p class='lista-X'>&nbsp;</p></td>"
+                fila_html += f'{contenido_td}'
+            
+            fila_html += '</tr>'
+
+            indice_html += fila_html
     return indice_html
 
 #----------------------------------------------------------------------------------------
 # Generar fichas técnicas
 #----------------------------------------------------------------------------------------
-def generar_fichas(df):
+def generar_fichas(param, df):
     plantilla = ""
     fichas_html = ""
-    
+    param.debug = "Generar fichas técnicas"
+
     # Cargamos la platilla de la FICHA de un producto en una variable
-    with open(RUTA_PLANTILLA_PROD, "r", encoding="utf-8") as archivo:
+    with open(PLANTILLA_PROD, "r", encoding="utf-8") as archivo:
         plantilla = archivo.read()
 
     for _, row in df.iterrows():
-        composicion = '' if pd.isna(row.get('Composición completa', '')) else row.get('Composición completa', '')
-        if not composicion: 
-            composicion = '' if pd.isna(row.get('Composición del producto', '')) else row.get('Composición del producto', '')
         composicion = imprimible(row)
         if composicion: 
             ficha = plantilla.format(
-                codigo=row.get('Código', ''),
-                nombre=row.get('Nombre', ''),
-                temporada=row.get('TEMPORADA', ''),
-                categoria=row.get('Categoría', ''),
+                codigo = row.get('Código', ''),
+                nombre = row.get('Nombre', ''),
+                temporada = '' if pd.isna(row.get('TEMPORADA', '')) else row.get('TEMPORADA', ''),
+                categoria = '' if pd.isna(row.get('Categoría', '')) else row.get('Categoría', ''),
                 composicion_completa=composicion,
                 Gluten      = "X" if row.get('Gluten', '') == "Sí" else "Traza" if row.get('Gluten', '') == "Traza" else "",
                 Cascara     = "X" if row.get('Cáscara', '') == "Sí" else "Traza" if row.get('Cáscara', '') == "Traza" else "",
@@ -140,7 +147,8 @@ def generar_fichas(df):
 
                 vida_en_lugar_fresco_y_seco = row.get('vida_en_lugar_fresco_y_seco', ''),
                 vida_en_refrigeración = row.get('vida_en_refrigeración', ''),
-                vida_en_congelación = row.get('vida_en_congelación', '')
+                vida_en_congelación = row.get('vida_en_congelación', ''),
+                fecha = datetime.now().strftime('%d/%m/%Y')
             )
             fichas_html += ficha
 
@@ -168,14 +176,32 @@ def generar_html(param: InfoTransaccion) -> list:
 
         param.debug = f"{param.parametros[0]} - {salida}"
         df = leer_excel(os.path.join(RUTA_EXCEL, param.parametros[0])) # Nombre del archivo Excel viene en el primer parámetro
-        indice = generar_indice(df, ordenar_por='Nombre')
-        fichas = generar_fichas(df)
+        indice = generar_indice(param, df, ordenar_por='Nombre')
+        fichas = generar_fichas(param, df)
 
         # Cargamos la platilla en una variable
-        with open(RUTA_PLANTILLA, "r", encoding="utf-8") as archivo:
+        with open(PLANTILLA, "r", encoding="utf-8") as archivo:
             html = archivo.read()
+
         # sustituimos las variables de la plantilla por los valores
-        html = html.replace("{RUTA_LOGO}", RUTA_LOGO)
+        ruta = os.path.join(RUTA_ICONOS, "")
+        html = html.replace("{LOGO}", LOGO)
+        html = html.replace("{Huevo}", f"{ruta}Huevo.ico")
+        html = html.replace("{Leche}", f"{ruta}Leche.ico")
+        html = html.replace("{Crustaceos}", f"{ruta}Crustaceos.ico")
+        html = html.replace("{Cáscara}", f"{ruta}Cáscara.ico")
+        html = html.replace("{Gluten}", f"{ruta}Gluten.ico")
+        html = html.replace("{Pescado}", f"{ruta}Pescado.ico")
+        html = html.replace("{Altramuz}", f"{ruta}Altramuz.ico")
+        html = html.replace("{Mostaza}", f"{ruta}Mostaza.ico")
+        html = html.replace("{Cacahuetes}", f"{ruta}Cacahuetes.ico")
+        html = html.replace("{Apio}", f"{ruta}Apio.ico")
+        html = html.replace("{Sulfitos}", f"{ruta}Sulfitos.ico")
+        html = html.replace("{Soja}", f"{ruta}Soja.ico")
+        html = html.replace("{Moluscos}", f"{ruta}Moluscos.ico")
+        html = html.replace("{Sésamo}", f"{ruta}Sésamo.ico")
+
+        # sutituimos los grandes bloques
         html = html.replace("{indice}", indice)
         html = html.replace("{fichas}", fichas)
         html = html.replace("{fecha}", datetime.now().strftime('%d/%m/%Y'))

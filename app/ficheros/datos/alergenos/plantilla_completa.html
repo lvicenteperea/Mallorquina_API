@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Fichas Técnicas La Mallorquina</title>
+      <style>
+        * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+        }
+        .container {             #            width: 90%;
+            max-width: 21cm;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .header {
+               background-color: #F89ABA;
+               color: white;
+               padding: 10px 20px;
+               text-align: center;
+               position: sticky;
+               top: 0;
+               z-index: 1000;
+        }
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+        }                
+        .main {
+           flex: 1;
+           padding: 20px;
+           overflow-y: auto;
+        }
+        .footer {
+           background-color: #333;
+           color: white;
+           padding: 10px 20px;
+           text-align: center;
+           position: sticky;
+           bottom: 0;
+        }
+        .section {
+            margin-top: 20px;
+            border: 1px solid #000;
+            padding: 15px;
+        }
+        .section h2 {
+            background-color: #f4f4f4;
+            padding: 10px;
+            margin: 0 -15px 15px -15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table th, table td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: left;
+        }
+        table th.alergeno, table td.alergeno {
+            width: calc(50% - 50px);
+        }
+        table th.contiene, table td.contiene {
+            width: 50px;
+            text-align: center;
+        }
+        .highlight {
+            background-color: #f4f4f4;
+        }
+        @media (max-width: 768px) {
+                                   header, footer {
+                                                   text-align: center;
+                                                   padding: 15px;
+                                                  }
+                                  }
+        @media (max-width: 480px) {
+                                   header, footer {
+                                                   font-size: 14px;
+                                                  }
+                                  }
+        .cab_producto{
+               background-color: #F89ABA;
+               color: white;
+               text-align: center;
+               margin-top: 20px;
+               border: 1px solid #000;
+               padding: 15px;                           
+        }
+        .icono-alergeno {
+               width: 24px;
+               height: 30px;
+               margin-right: 5px;
+               vertical-align: middle;
+        }
+        .enlace-producto {
+               font-size: 16px;
+               font-family: Arial, sans-serif;
+               text-decoration: none;
+               color: inherit;
+        }
+         .td_alergeno{
+                font-weight: bold; /* Negrita */
+                text-align: center; /* Centrado horizontal */
+                vertical-align: middle; /* Centrado vertical */
+         }
+    </style>
+</head>
+<body>
+  <div class='container'>
+    <header>
+        <div class="container">
+            <div class="header">
+                <img src='{RUTA_LOGO}' alt='Logotipo' style='height: 40px;'>
+            </div>
+            <div class="header">
+                <p>Fichas Técnicas La Mallorquina</p>
+            </div>
+            <div class="sub-header">
+                <span>Realizado por: <strong>Dpto. de Calidad</strong></span>
+                <span>Código del Documento: <strong>5018</strong></span>
+                <span>Rev. 0 | Fecha: <strong>{fecha}</strong></span>
+            </div>
+    </header>
+    <main>
+        <section id='indice' class="section">
+            <h2>Índice</h2>
+            <ul>
+            <!-- ********************************************************** -->
+            <!-- INICIO INDICE: Una línea por cada ficha                    -->
+            <!-- ********************************************************** -->
+            <li><a href='#{codigo}'  class='enlace-producto'>{codigo} - {nombre}</a> <img src="icono1.webp" alt="{col}" class="icono-alergeno"></li>\n"
+            <!-- ********************************************************** -->
+            <!-- FIN INDICE                                                 -->
+            <!-- ********************************************************** -->
+        </ul>
+        </section>
+
+        <section id='fichas' class="section">
+            <!-- ********************************************************** -->
+            <!-- INICIO Fichas Técnicas: Este código se repetirá x veces    -->
+            <!-- ********************************************************** -->
+            <div class="cab_producto" id={codigo}>
+                <h1>{codigo} - {nombre}</h1>
+                <p>{categoria}</p>
+                <p>{temporada}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Composición del producto</h2>
+                <p>{composicion_completa}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Información sobre alérgenos</h2>
+                <p>En base al Reglamento (UE) nº 1169/2011, del Parlamento Europeo y del Consejo, sobre la información alimentaria facilitada al consumidor:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Alérgeno</th>
+                            <th>Contiene</th>
+                            <th>Alérgeno</th>
+                            <th>Contiene</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cereales que contengan gluten y productos derivados</td>
+                            <td class="td_alergeno">{Gluten}</td>
+                            <td>Frutos de cáscara y productos derivados</td>
+                            <td class="td_alergeno">{Cascara}</td>
+                        </tr>
+                        <tr>
+                            <td>Crustáceos y productos a base de crustáceos</td>
+                            <td class="td_alergeno">{Crustaceos}</td>
+                            <td>Apio y productos derivados</td>
+                            <td class="td_alergeno">{Apio}</td>
+                        </tr>
+                        <tr>
+                            <td>Huevos y productos a base de huevo</td>
+                            <td class="td_alergeno">{Huevo}</td>
+                            <td>Mostaza y productos derivados</td>
+                            <td class="td_alergeno">{Mostaza}</td>
+                        </tr>
+                        <tr>
+                            <td>Pescado y productos a base de pescado</td>
+                            <td class="td_alergeno">{Pescado}</td>
+                            <td>Granos de sésamo y productos a base de granos de sésamo</td>
+                            <td class="td_alergeno">{Sésamo}</td>
+                        </tr>
+                        <tr>
+                            <td>Cacahuetes y productos a base de cacahuetes</td>
+                            <td class="td_alergeno">{Cacahuetes}</td>
+                            <td>Dióxido de azufre y sulfitos en concentración > 10 mg/kg (SO2)</td>
+                            <td class="td_alergeno">{Sulfitos}</td>
+                        </tr>
+                        <tr>
+                            <td>Soja y productos a base de soja</td>
+                            <td class="td_alergeno">{Soja}</td>
+                            <td>Altramuces y productos a base de altramuces</td>
+                            <td class="td_alergeno">{Altramuz}</td>
+                        </tr>
+                        <tr>
+                            <td>Leche y sus derivados (incluida la lactosa)</td>
+                            <td class="td_alergeno">{Leche}</td>
+                            <td>Moluscos y productos a base de moluscos</td>
+                            <td class="td_alergeno">{Moluscos}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>X=Contiene  T=Trazas en producto (puede contener)</p>
+            </div>
+            
+            <div class="section">
+                <h2>Información Nutricional</h2>
+                <p>En base al Reglamento (UE) nº 1169/2011 del Parlamento Europeo y del Consejo, sobre la información alimentaria facilitada al consumidor y sus posteriores modificaciones:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nutrientes/100g</th>
+                            <th>Aporte por 100g</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Valor energético (kcal/kJ)</td>
+                            <td>{Valor_energetico_Kcal_Kj}</td>
+                        </tr>
+                        <tr>
+                            <td>Grasas (g)</td>
+                            <td>{Grasas_g}</td>
+                        </tr>
+                        <tr>
+                            <td>de las cuales SATURADAS (g)</td>
+                            <td>{De_las_cuales_SATURADAS_g}</td>
+                        </tr>
+                        <tr>
+                            <td>Hidratos de carbono (g)</td>
+                            <td>{Hidratos_de_carbono_g}</td>
+                        </tr>
+                        <tr>
+                            <td>de los cuales AZÚCARES (g)</td>
+                            <td>{De_los_cuales_AZUCARES_g}</td>
+                        </tr>
+                        <tr>
+                            <td>Proteínas (g)</td>
+                            <td>{Proteinas_g}</td>
+                        </tr>
+                        <tr>
+                            <td>Sal (g)</td>
+                            <td>{Sal_g}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Fuente da datos: BEDCA</p>
+            </div>
+            
+            <div class="section">
+                <h2>Criterios Microbiológicos</h2>
+                <p>En base al Reglamento (CE) nº 1441/2007 de la Comisión, que modifica el Reglamento (CE) nº 2073/2005 relativo a los criterios microbiológicos aplicables a los productos alimenticios:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Microorganismo</th>
+                            <th>Valor admisible (ufc/g)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Rec. Aerobios totales</td>
+                            <td>{Rec_Aerobios_totales}</td>
+                        </tr>
+                        <tr>
+                            <td>Rec. Enterobacterias</td>
+                            <td>{Rec_Enterobacterias}</td>
+                        </tr>
+                        <tr>
+                            <td>Rec. Escherichia Coli</td>
+                            <td>{Rec_Escherichia_Coli}</td>
+                        </tr>
+            
+                        <tr>
+                            <td>Rec. Staphylococcus Aureus</td>
+                            <td>{Rec_Staphylococcus_Aureus}</td>
+                        </tr>
+                        <tr>
+                            <td>Det. Salmonella spp</td>
+                            <td>{Det_Salmonella_cpp}</td>
+                        </tr>
+                        <tr>
+                            <td>Rec. Listeria Monocytogenes</td>
+                            <td>{Rec_Listeria_Monocytogenes}</td>
+                        </tr>
+                        <tr>
+                            <td>Rec. Mohos y levaduras</td>
+                            <td>{Rec_Mohos_y_levaduras}</td>
+                        </tr>
+            
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>Presentación y Población Diana</h2>
+                <p>{Población_diana}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Descripción del uso esperado del producto</h2>
+                <p>{uso_esperado}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Condiciones de almacenamiento y conservación</h2>
+                <p>{Condiciones_conservación}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Vida Útil</h2>
+                <p>Caducidad (horas/días desde la fecha de fabricación):</p>
+                <ul>
+                    <li>En lugar fresco y seco: <strong>{vida_en_lugar_fresco_y_seco}</strong></li>
+                    <li>En refrigeración: <strong>{vida_en_refrigeración}</strong></li>
+                    <li>En congelación: <strong>{vida_en_congelación}</strong></li>
+                </ul>
+            </div>
+            <!-- ********************************************************** -->
+            <!-- FIN Fichas Técnicas                                        -->
+            <!-- ********************************************************** -->
+        </section>
+    </main>
+    <footer>
+        <span>Generado el: {fecha}</span>
+        <a href='#indice'>Volver a inicio</a>
+    </footer>
+  </div>
+</body>
+</html>

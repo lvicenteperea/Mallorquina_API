@@ -13,18 +13,36 @@ from app.config.settings import settings
 # Rutas de los archivos
 RUTA_ICONOS = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "alergenos/")
 RUTA_LOGO = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
-RUTA_EXCEL = os.path.join(settings.RUTA_DATOS, "alergenos/fichas_tecnicas.xlsx")
-RUTA_PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_html_FT.txt")
-RUTA_PLANTILLA_PROD = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_producto_FT.txt")
-RUTA_HTML = os.path.join(settings.RUTA_DATOS, "alergenos/fichas_tecnicas.html")
+
+RUTA_PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_FT_general.html")
+RUTA_PLANTILLA_PROD = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_FT_producto.html")
+
+RUTA_EXCEL = os.path.join(settings.RUTA_DATOS, "alergenos/")
+RUTA_HTML = os.path.join(settings.RUTA_DATOS, "alergenos/")
+FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_DATOS, "alergenos/no_imprimibles.csv")
 
 
+
+#----------------------------------------------------------------------------------------
+# Comprueba que tenemos descripción de la composición del productos, porque si no tiene, 
+# no se puede imprimir
+#----------------------------------------------------------------------------------------
+def imprimible(fila):
+    composicion = '' if pd.isna(fila.get('Composición completa', '')) else fila.get('Composición completa', '')
+    if not composicion: 
+        composicion = '' if pd.isna(fila.get('Composición del producto', '')) else fila.get('Composición del producto', '')
+        
+    if not composicion:
+        with open(FICH_NO_IMPRIMIBLES, "a") as f:
+            f.write(f"{fila['Código']};{fila['Nombre']}" + "\n")  # Escribir el registro con salto de línea
+
+    return composicion
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 # Leer el archivo Excel
-def leer_excel():
+def leer_excel(excel: str):
     try:
-        df = pd.read_excel(RUTA_EXCEL)
+        df = pd.read_excel(excel)
         return df
     except Exception as e:
         print(f"Error al leer el archivo Excel: {e}")
@@ -36,18 +54,30 @@ def leer_excel():
 def generar_indice(df, ordenar_por):
     df_filtrado = df[df['TPV'] == 'Sí']
     df_ordenado = df_filtrado.sort_values(by=ordenar_por)
-    indice_html = "<ul>"
-    #cabeceras=df.columns.tolist()
-    for _, row in df_ordenado.iterrows():
-        codigo = row['Código']
-        nombre = row['Nombre']
-        alergenos = ''.join(
-            f'<img src="{os.path.join(RUTA_ICONOS, col+ ".webp")}" alt="{col}" class="icono-alergeno">'
-            for col in df.columns[3:17] if row[col] in ['Sí', 'Traza']
-        )
-        indice_html += f"<li><a href='#{codigo}'  class='icono-alergeno'>{codigo} - {nombre.capitalize()}</a> {alergenos}</li>\n"
+    indice_html = ""
     
-    indice_html += "</ul>"
+    cabeceras = df.columns.tolist()
+    lista_alergenos = ['Huevo', 'Lacteos', 'Crustaceos', 'Cáscara', 'Gluten', 'Pescado', 'Altramuz', 'Mostaza', 'Cacahuetes', 'Apio', 'Sulfitos', 'Soja', 'Moluscos', 'Sésamo']
+    # Encontrar las posiciones
+    posiciones = [cabeceras.index(elemento) for elemento in lista_alergenos if elemento in cabeceras]
+    # Primera y última posición
+    pos_ini = min(posiciones) if posiciones else 0
+    por_fin = max(posiciones) if posiciones else 0
+
+
+    for _, row in df_ordenado.iterrows():
+        composicion = '' if pd.isna(row.get('Composición completa', '')) else row.get('Composición completa', '')
+        if not composicion: 
+            composicion = '' if pd.isna(row.get('Composición del producto', '')) else row.get('Composición del producto', '')
+        if imprimible(row):
+            codigo = row['Código']
+            nombre = row['Nombre']
+            alergenos = ''.join(
+                f'<img src="{os.path.join(RUTA_ICONOS, col+ ".webp")}" alt="{col}" class="icono-alergeno">'
+                for col in df.columns[pos_ini:por_fin] if row[col] in ['Sí', 'Traza']
+            )
+            indice_html += f"<li><a href='#{codigo}'  class='enlace-producto'>{codigo} - {nombre.capitalize()}</a> {alergenos}</li>\n"
+    
     return indice_html
 
 #----------------------------------------------------------------------------------------
@@ -61,62 +91,59 @@ def generar_fichas(df):
     with open(RUTA_PLANTILLA_PROD, "r", encoding="utf-8") as archivo:
         plantilla = archivo.read()
 
-    #print(df.columns.tolist())
-    #['Código', 'Nombre', 'Listado alergenos', 'Huevo', 'Lacteos', 'Crustaceos', 'Cascara', 'Gluten', 'Pescado', 
-    # 'Altramuz', 'Mostaza', 'Cacahuetes', 'Apio', 'Sulfitos', 'Soja', 'Moluscos', 'Sésamo', 'Población diana', 
-    # 'Uso esperado', 'Condiciones almacenamiento', 'Condiciones conservación', 'Vida frío desde fabric.', 
-    # 'Peso neto aprox.', 'Composición del producto', 'Rec. Aerobios totales', 'Rec. Enterobacterias', 
-    # 'Rec. Escherichia Coli', 'Rec. Staphylococcus Aureus', 'Det. Salmonella cpp', 'Rec. Listeria Monocytogenes', 
-    # 'Rec. Mohos y levaduras', 'Valor_energetico_Kcal_Kj', 'Grasas_g', 'De_las_cuales_SATURADAS_g', 'Hidratos_de_carbono_g', 
-    # 'De_los_cuales_AZUCARES_g', 'Proteinas_g', 'Sal_g', 'Fibra_dietetica_g', 'Otros', 'TEMPORADA', 'Descripción', 'Código.1', 
-    # 'TPV', 'GRUPO DE CARTA']
-
     for _, row in df.iterrows():
-        ficha = plantilla.format(
-            codigo=row.get('Código', ''),
-            nombre=row.get('Nombre', ''),
-            temporada=row.get('Temporada', ''),
-            categoria=row.get('Categoría', ''),
-            composicion=row.get('Composición del producto', ''),
-            Composicion_del_producto = '' if pd.isna(row.get('Composición del producto', '')) else row.get('Composición del producto', ''),
+        composicion = '' if pd.isna(row.get('Composición completa', '')) else row.get('Composición completa', '')
+        if not composicion: 
+            composicion = '' if pd.isna(row.get('Composición del producto', '')) else row.get('Composición del producto', '')
+        composicion = imprimible(row)
+        if composicion: 
+            ficha = plantilla.format(
+                codigo=row.get('Código', ''),
+                nombre=row.get('Nombre', ''),
+                temporada=row.get('TEMPORADA', ''),
+                categoria=row.get('Categoría', ''),
+                composicion_completa=composicion,
+                Gluten      = "X" if row.get('Gluten', '') == "Sí" else "Traza" if row.get('Gluten', '') == "Traza" else "",
+                Cascara     = "X" if row.get('Cáscara', '') == "Sí" else "Traza" if row.get('Cáscara', '') == "Traza" else "",
+                Crustaceos  = "X" if row.get('Crustaceos', '') == "Sí" else "Traza" if row.get('Crustaceos', '') == "Traza" else "",
+                Apio        = "X" if row.get('Apio', '') == "Sí" else "Traza" if row.get('Apio', '') == "Traza" else "",
+                Huevo       = "X" if row.get('Huevo', '') == "Sí" else "Traza" if row.get('Huevo', '') == "Traza" else "",
+                Mostaza     = "X" if row.get('Mostaza', '') == "Sí" else "Traza" if row.get('Mostaza', '') == "Traza" else "",
+                Pescado     = "X" if row.get('Pescado', '') == "Sí" else "Traza" if row.get('Pescado', '') == "Traza" else "",
+                Sésamo      = "X" if row.get('Sésamo', '') == "Sí" else "Traza" if row.get('Sésamo', '') == "Traza" else "",
+                Cacahuetes  = "X" if row.get('Cacahuetes', '') == "Sí" else "Traza" if row.get('Cacahuetes', '') == "Traza" else "",
+                Sulfitos    = "X" if row.get('Sulfitos', '') == "Sí" else "Traza" if row.get('Sulfitos', '') == "Traza" else "",
+                Soja        = "X" if row.get('Soja', '') == "Sí" else "Traza" if row.get('Soja', '') == "Traza" else "",
+                Altramuz    = "X" if row.get('Altramuz', '') == "Sí" else "Traza" if row.get('Altramuz', '') == "Traza" else "",
+                Leche       = "X" if row.get('Leche', '') == "Sí" else "Traza" if row.get('Leche', '') == "Traza" else "",
+                Moluscos    = "X" if row.get('Moluscos', '') == "Sí" else "Traza" if row.get('Moluscos', '') == "Traza" else "",
 
-            Gluten      = "X" if row.get('Gluten', '') == "Sí" else "Traza" if row.get('Gluten', '') == "Traza" else "",
-            Cascara     = "X" if row.get('Cascara', '') == "Sí" else "Traza" if row.get('Cascara', '') == "Traza" else "",
-            Crustaceos  = "X" if row.get('Crustaceos', '') == "Sí" else "Traza" if row.get('Crustaceos', '') == "Traza" else "",
-            Apio        = "X" if row.get('Apio', '') == "Sí" else "Traza" if row.get('Apio', '') == "Traza" else "",
-            Huevo       = "X" if row.get('Huevo', '') == "Sí" else "Traza" if row.get('Huevo', '') == "Traza" else "",
-            Mostaza     = "X" if row.get('Mostaza', '') == "Sí" else "Traza" if row.get('Mostaza', '') == "Traza" else "",
-            Pescado     = "X" if row.get('Pescado', '') == "Sí" else "Traza" if row.get('Pescado', '') == "Traza" else "",
-            Sésamo      = "X" if row.get('Sésamo', '') == "Sí" else "Traza" if row.get('Sésamo', '') == "Traza" else "",
-            Cacahuetes  = "X" if row.get('Cacahuetes', '') == "Sí" else "Traza" if row.get('Cacahuetes', '') == "Traza" else "",
-            Sulfitos    = "X" if row.get('Sulfitos', '') == "Sí" else "Traza" if row.get('Sulfitos', '') == "Traza" else "",
-            Soja        = "X" if row.get('Soja', '') == "Sí" else "Traza" if row.get('Soja', '') == "Traza" else "",
-            Altramuz    = "X" if row.get('Altramuz', '') == "Sí" else "Traza" if row.get('Altramuz', '') == "Traza" else "",
-            Leche       = "X" if row.get('Leche', '') == "Sí" else "Traza" if row.get('Leche', '') == "Traza" else "",
-            Moluscos    = "X" if row.get('Moluscos', '') == "Sí" else "Traza" if row.get('Moluscos', '') == "Traza" else "",
+                Valor_energetico_Kcal_Kj = row.get('Valor_energetico_Kcal_Kj', ''),
+                Grasas_g = row.get('Grasas_g', ''),
+                De_las_cuales_SATURADAS_g = row.get('De_las_cuales_SATURADAS_g', ''),
+                Hidratos_de_carbono_g = row.get('Hidratos_de_carbono_g', ''),
+                De_los_cuales_AZUCARES_g = row.get('De_los_cuales_AZUCARES_g', ''),
+                Proteinas_g = row.get('Proteinas_g', ''),
+                Sal_g = row.get('Sal_g', ''),
 
-            Valor_energetico_Kcal_Kj = row.get('Valor_energetico_Kcal_Kj', ''),
-            Grasas_g = row.get('Grasas_g', ''),
-            De_las_cuales_SATURADAS_g = row.get('De_las_cuales_SATURADAS_g', ''),
-            Hidratos_de_carbono_g = row.get('Hidratos_de_carbono_g', ''),
-            De_los_cuales_AZUCARES_g = row.get('De_los_cuales_AZUCARES_g', ''),
-            Proteinas_g = row.get('Proteinas_g', ''),
-            Sal_g = row.get('Sal_g', ''),
-            Rec_Enterobacterias = row.get('Rec. Enterobacterias', ''),
-            Rec_Aerobios_totales = row.get('Rec. Aerobios totales', ''),
-            Rec_Escherichia_Coli = row.get('Rec. Escherichia Coli', ''),
-            Rec_Staphylococcus_Aureus = row.get('Rec. Staphylococcus Aureus', ''),
-            Det_Salmonella_cpp = row.get('Det_Salmonella cpp', ''),
-            Rec_Listeria_Monocytogenes = row.get('Rec. ListeriaMonocytogenes', ''),
-            Rec_Mohos_y_levaduras = row.get('Rec. Mohos y levaduras', ''),
-            Población_diana = row.get('Población diana', ''),
-            uso_esperado = row.get('uso_esperado', ''),
-            Condiciones_conservación = row.get('Condiciones_conservación', ''),
-            vida_en_lugar_fresco_y_seco = row.get('vida_en_lugar_fresco_y_seco', ''),
-            vida_en_refrigeración = row.get('vida_en_refrigeración', ''),
-            vida_en_congelación = row.get('vida_en_congelación', '')
-        )
-        fichas_html += ficha
+                Rec_Enterobacterias = row.get('Rec. Enterobacterias', ''),
+                Rec_Aerobios_totales = row.get('Rec. Aerobios totales', ''),
+                Rec_Escherichia_Coli = row.get('Rec. Escherichia Coli', ''),
+                Rec_Staphylococcus_Aureus = row.get('Rec. Staphylococcus Aureus', ''),
+                Det_Salmonella_cpp = row.get('Det_Salmonella cpp', ''),
+                Rec_Listeria_Monocytogenes = row.get('Rec. ListeriaMonocytogenes', ''),
+                Rec_Mohos_y_levaduras = row.get('Rec. Mohos y levaduras', ''),
+
+                Población_diana = row.get('Población diana', ''),
+                uso_esperado = row.get('uso_esperado', ''),
+                Condiciones_conservación = row.get('Condiciones_conservación', ''),
+
+                vida_en_lugar_fresco_y_seco = row.get('vida_en_lugar_fresco_y_seco', ''),
+                vida_en_refrigeración = row.get('vida_en_refrigeración', ''),
+                vida_en_congelación = row.get('vida_en_congelación', '')
+            )
+            fichas_html += ficha
+
     return fichas_html
 
 
@@ -124,11 +151,23 @@ def generar_fichas(df):
 # Generar el HTML completo
 #----------------------------------------------------------------------------------------
 def generar_html(param: InfoTransaccion) -> list:
-    resultado = [f"HTML generado en {RUTA_HTML}"]
+    resultado = []
     param.debug = "generar_html"
+    funcion = "fichas_tecnicas.generar_html"
 
     try:
-        df = leer_excel()
+        param.debug = "rutas"
+        if not param.parametros[0]:
+            param.registrar_error(-1, "No se ha indicado el archivo Excel", f"{funcion}.parametros[0]")
+            raise MadreException(param = param)
+
+        if not param.parametros[1]:
+            salida = os.path.join(RUTA_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")
+        else:
+            salida = os.path.join(RUTA_HTML, param.parametros[1]) # Nombre del archivo HTML viene en el segundo parámetro
+
+        param.debug = f"{param.parametros[0]} - {salida}"
+        df = leer_excel(os.path.join(RUTA_EXCEL, param.parametros[0])) # Nombre del archivo Excel viene en el primer parámetro
         indice = generar_indice(df, ordenar_por='Nombre')
         fichas = generar_fichas(df)
 
@@ -142,9 +181,10 @@ def generar_html(param: InfoTransaccion) -> list:
         html = html.replace("{fecha}", datetime.now().strftime('%d/%m/%Y'))
 
         # Grabamos el HTML en un archivo 
-        with open(RUTA_HTML, "w", encoding="utf-8") as f:
+        with open(salida, "w", encoding="utf-8") as f:
             f.write(html)
 
+        resultado = [f"HTML generado en {salida}"]
         return resultado
 
     except MadreException as e:

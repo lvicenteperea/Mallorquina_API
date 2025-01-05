@@ -8,6 +8,10 @@ import app.services.mallorquina.arqueo_caja as arqueo_caja
 import app.services.mallorquina.arqueo_caja_info as arqueo_caja_info
 import app.services.mallorquina.tarifas_a_TPV as tarifas_a_TPV
 import app.services.mallorquina.fichas_tecnicas as fichas_tecnicas
+import app.services.mallorquina.carga_productos_erp as carga_productos_erp
+
+
+
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
@@ -281,6 +285,43 @@ async def mll_fichas_tecnicas(id_App: int = Query(..., description="Identificado
     except HTTPException as e:
         param.error_sistema()
         graba_log(param, "mll_fichas_tecnicas.HTTPException", e)
+
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "mll_fichas_tecnicas.Exception", e)
+
+    finally:
+        return param
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.get("/mll_carga_prod_erp", response_model=InfoTransaccion)
+async def mll_carga_prod_erp(id_App: int = Query(..., description="Identificador de la aplicación"),
+                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                        ret_code: int = Query(..., description="Código de retorno inicial"),
+                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                        origen_path: str = Query(..., description="Fichero origen"),
+                       ):
+    
+    try:
+        resultado = []
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path])
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path}"
+
+        # --------------------------------------------------------------------------------
+        resultado = carga_productos_erp.proceso(param = param)
+        # --------------------------------------------------------------------------------
+
+        param.debug = f"Retornando: {type(resultado)}"
+        param.resultados = resultado or []
+    
+    except MadreException as e:
+        graba_log(param, "mll_carga_prod_erp.MadreException", e)
+                
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "mll_carga_prod_erp.HTTPException", e)
 
 
     except Exception as e:

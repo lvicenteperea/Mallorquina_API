@@ -22,7 +22,7 @@ class InfoTransaccion(BaseModel):
     def set_resultados(self, datos):
         self.resultados = datos
 
-    def registrar_error(self, ret_code: int, ret_txt: str, debug: str = ""):
+    def registrar_error(self, ret_txt: str, ret_code: int = -1, debug: str = ""):
         self.ret_code = ret_code
         self.ret_txt = ret_txt
         if debug:

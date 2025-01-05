@@ -8,7 +8,7 @@ import pandas as pd
 # Para trabajar con Excel OPENPYXL
 from openpyxl import Workbook
 
-from app.models.mll_cfg import obtener_configuracion_general
+from app.models.mll_cfg import obtener_cfg_general
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
@@ -22,7 +22,7 @@ from app.utils.mis_excepciones import MadreException
 def informe(param: InfoTransaccion) -> list:
     param.debug="Inicio"
     resultado = []
-    config = obtener_configuracion_general()
+    config = obtener_cfg_general(param)
     tienda = param.parametros[1]
 
     param.debug = "get_db_connection_mysql"

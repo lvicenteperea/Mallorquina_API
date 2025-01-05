@@ -7,7 +7,7 @@ from app.utils.functions import graba_log, imprime
 from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver, close_connection_sqlserver
-from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
+from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.InfoTransaccion import InfoTransaccion
@@ -18,12 +18,12 @@ from app.utils.mis_excepciones import MadreException
 def recorre_tiendas(param: InfoTransaccion) -> list:
     funcion = "arqueo_caja.proceso"
     param.debug = "Obtener Conf. Gen"
-    config = obtener_configuracion_general()
     resultado = []
     conn_mysql = None # para que no de error en el finally
     cursor_mysql = None # para que no de error en el finally
 
     try:
+        config = obtener_cfg_general(param)
 
         if not config.get("ID", False):
             param.registrar_error(-1, f'No se han encontrado datos de configuración: config["En_Ejecucion"]', f"{funcion}.config-ID")

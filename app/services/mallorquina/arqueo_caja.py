@@ -3,7 +3,7 @@ from datetime import datetime
 
 import json
 
-from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
+from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
@@ -17,13 +17,14 @@ from app.utils.InfoTransaccion import InfoTransaccion
 def proceso(param: InfoTransaccion) -> list:
     funcion = "arqueo_caja.proceso"
     param.debug="Inicio"
-    config = obtener_configuracion_general()
     resultado = []
     conn_mysql = None # para que no de error en el finally
     cursor_mysql = None # para que no de error en el finally
     fecha = param.parametros[0]
 
     try:
+        config = obtener_cfg_general(param)
+        
         if  config.get("ID", False): 
             param.registrar_error(-1, f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", f"{funcion}.config-ID")
             raise MadreException(param = param)

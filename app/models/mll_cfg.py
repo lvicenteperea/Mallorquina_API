@@ -36,18 +36,18 @@ def obtener_cfg_general(param: InfoTransaccion):
 
 
 #----------------------------------------------------------------------------------------
-def obtener_configuracion_general():
-        # param = InfoTransaccion(id_App=0, user="Sistema", ret_code=0, ret_txt="Ok")
-        # obtener_cfg_general(param):
+# def obtener_configuracion_general():
+#         # param = InfoTransaccion(id_App=0, user="Sistema", ret_code=0, ret_txt="Ok")
+#         # obtener_cfg_general(param):
 
-        conn = get_db_connection_mysql()
+#         conn = get_db_connection_mysql()
 
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM mll_cfg LIMIT 1")
-        config = cursor.fetchone()
+#         cursor = conn.cursor(dictionary=True)
+#         cursor.execute("SELECT * FROM mll_cfg LIMIT 1")
+#         config = cursor.fetchone()
 
-        close_connection_mysql(conn, cursor)
-        return config
+#         close_connection_mysql(conn, cursor)
+#         return config
 
 #----------------------------------------------------------------------------------------
 def actualizar_en_ejecucion(estado):

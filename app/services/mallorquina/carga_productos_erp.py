@@ -1,5 +1,6 @@
 import os
 from fastapi import HTTPException
+from datetime import datetime
 import pandas as pd
 
 from app.models.mll_cfg import obtener_cfg_general, close_connection_mysql
@@ -131,17 +132,48 @@ def carga (param: InfoTransaccion, excel):
 
             # Consultar si el producto ya existe
             param.debug = "select 1"
-            cursor.execute("SELECT updated_at FROM erp_productos WHERE ID = %s", (codigo,))
-            resultado = cursor.fetchone()
+            cursor.execute("SELECT IF(fec_modificacion = '' OR fec_modificacion IS NULL, NOW(), STR_TO_DATE(fec_modificacion, %s)) FROM erp_productos WHERE ID = %s", ('%Y-%m-%d %H:%i:%s', codigo,))
+            resultado_dict = cursor.fetchone()
 
-            if resultado:
-                updated_at = resultado[0]
+            if resultado_dict:
+                for _, v in resultado_dict.items():
+                    fec_modificacion_BBDD = v
+
                 # Actualizar si la fecha de modificación en el Excel es posterior
-                if fec_modificacion and fec_modificacion > updated_at:
+                if fec_modificacion and fec_modificacion > datetime.strptime(fec_modificacion_BBDD, "%d/%m/%Y %H:%M:%S"):
                     param.debug = "update___"
                     campos = ', '.join(f"{v} = %s" for k, v in mapping.items() if k in row)
                     valores = tuple(row[k] for k in mapping.keys() if k in row) + (codigo,)
                     cursor.execute(f"UPDATE erp_productos SET {campos} WHERE ID = %s", valores)
+
+                    # Procesar campos "pvp_*" para modificar en erp_productos_pvp
+                    for col in row.index:
+                        if col.startswith('pvp_') and row[col]:
+                            id_bbdd, tipo = determinar_bbdd_y_tipo(col)
+                            pvp = convertir_a_decimal(row[col])
+                            # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
+                            if pvp > 0:
+                                param.debug = "insert/update 3___"
+                                for x in range(0, len(id_bbdd)):
+                                    cursor.execute(
+                                        """
+                                        INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
+                                        VALUES (%s, %s, %s, %s)
+                                        ON DUPLICATE KEY UPDATE
+                                            pvp = VALUES(pvp)
+                                        """,
+                                        (codigo, id_bbdd[x], tipo, pvp)
+                                    )
+                            else:
+                                param.debug = "delete___"
+                                for x in range(0, len(id_bbdd)):
+                                    cursor.execute(
+                                        """
+                                        delete form erp_productos_pvp 
+                                          where id_producto = %s and id_BBDD = %s and tipo = %s )
+                                        """,
+                                        (codigo, id_bbdd[x], tipo)
+                                    )
             else:
                 # Insertar nuevo registro
                 param.debug = f"insert___ {x}" #{row}"
@@ -149,26 +181,25 @@ def carga (param: InfoTransaccion, excel):
                 marcadores = ', '.join(['%s'] * len(mapping))
                 valores = tuple(row[k] if k in row else '' for k in mapping.keys())
                 valores = tuple(elemento.replace("Si", "Sí") if isinstance(elemento, str) else elemento for elemento in valores)
-                # for k in mapping.keys():
-                #     if k not in row:
-                #         print("NO encuentra ",k)
+
                 cursor.execute(f"INSERT INTO erp_productos ({columnas}) VALUES ({marcadores})", valores)
 
-            # Procesar campos "pvp_*" para insertar en erp_productos_pvp
-            for col in row.index:
-                if col.startswith('pvp_') and row[col]:
-                    id_bbdd, tipo = determinar_bbdd_y_tipo(col)
-                    pvp = convertir_a_decimal(row[col])
-                    # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
-                    param.debug = "insert 2___"
-                    for x in range(0, len(id_bbdd)):
-                        cursor.execute(
-                            """
-                            INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
-                            VALUES (%s, %s, %s, %s)
-                            """,
-                            (codigo, id_bbdd[x], tipo, pvp)
-                        )
+                # Procesar campos "pvp_*" para insertar en erp_productos_pvp
+                for col in row.index:
+                    if col.startswith('pvp_') and row[col]:
+                        id_bbdd, tipo = determinar_bbdd_y_tipo(col)
+                        pvp = convertir_a_decimal(row[col])
+                        # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
+                        param.debug = "insert 2___"
+                        if pvp > 0:
+                            for x in range(0, len(id_bbdd)):
+                                cursor.execute(
+                                    """
+                                    INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
+                                    VALUES (%s, %s, %s, %s)
+                                    """,
+                                    (codigo, id_bbdd[x], tipo, pvp)
+                                )
 
         # Confirmar transacciones y cerrar conexión
         conn_mysql.commit()

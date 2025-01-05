@@ -7,7 +7,7 @@ import pyodbc
 from app.utils.functions import graba_log, row_to_dict, imprime
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
-from app.models.mll_cfg import obtener_configuracion_general, actualizar_en_ejecucion
+from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MadreException
@@ -17,13 +17,13 @@ from app.utils.mis_excepciones import MadreException
 def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
     funcion = "consulta.caja.recorre_consultas_tiendas"
     param.debug="Inicio"
-
-    config = obtener_configuracion_general()
     resultado = []
     conn_mysql = None # para que no de error en el finally
     cursor_mysql = None # para que no de error en el finally
 
     try:
+        config = obtener_cfg_general(param)
+
         if not config.get("ID", False):
             param.registrar_error(-1, f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", f"{funcion}.config-ID")
             raise MadreException(param = param)

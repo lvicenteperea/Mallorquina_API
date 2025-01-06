@@ -273,7 +273,7 @@ async def mll_fichas_tecnicas(id_App: int = Query(..., description="Identificado
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {output_path}"
 
         # --------------------------------------------------------------------------------
-        resultado = fichas_tecnicas.generar_html(param = param)
+        resultado = fichas_tecnicas.proceso(param = param)
         # --------------------------------------------------------------------------------
 
         param.debug = f"Retornando: {type(resultado)}"

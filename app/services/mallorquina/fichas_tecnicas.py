@@ -12,7 +12,7 @@ RUTA_ICONOS = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAG
 LOGO = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
 PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla.html")
 PLANTILLA_FICHA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_producto.html")
-RUTA_HTML = os.path.join(settings.RUTA_DATOS, "alergenos/")
+RUTA_HTML = os.path.join(settings.RUTA_WEB, "alergenos/")
 FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_DATOS, "alergenos/no_imprimibles.csv")
 
 
@@ -21,14 +21,19 @@ FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_DATOS, "alergenos/no_imprimible
 # Comprueba que tenemos descripción de la composición del productos, porque si no tiene, 
 # no se puede imprimir
 #----------------------------------------------------------------------------------------
-def imprimible(param, fila):
+def imprimible(param: InfoTransaccion, fila):
     try:
         composicion = fila.get("composicion_completa", "").strip() or ""
         if not composicion: 
             composicion = fila.get("composicion_etiqueta", "").strip() or ""
             
         if not composicion:
-            with open(FICH_NO_IMPRIMIBLES, "a") as f:
+            if param.ret_code == 0:
+                modo_apertura = "w"
+            else:
+                modo_apertura = "a"
+            param.ret_code += 1
+            with open(FICH_NO_IMPRIMIBLES, modo_apertura) as f:
                 f.write(f"{fila.get('codigo')};{fila.get('nombre')}" + "\n")  # Escribir el registro con salto de línea
 
         return composicion
@@ -103,21 +108,25 @@ def indice(param, productos):
         # Generar las filas de la tabla principal
         familia_actual = None
         for producto in productos:
-            if producto['familia_desc'] != familia_actual:
-                indice_alergenos += f"<tr id='familia'><td colspan='15'><p class='lista-familia'>{producto['familia_desc']}</p></td></tr>\n"
-                familia_actual = producto['familia_desc']
+            composicion = imprimible(param, producto)
+            if composicion: 
+                if producto['familia_desc'] != familia_actual:
+                    indice_alergenos += f"<tr id='familia'><td colspan='15'><p class='lista-familia'>{producto['familia_desc']}</p></td></tr>\n"
+                    familia_actual = producto['familia_desc']
 
-            indice_alergenos += f"<tr id='producto'>"
-            indice_alergenos += f"<td><p class='lista-producto'><a href='#{producto['ID']}'>{producto['nombre']}</a></p></td>"
-            for alergeno in ['huevo', 'leche', 'crustaceos', 'cascara', 'gluten', 'pescado', 'altramuz', 'mostaza', 'cacahuetes', 'apio', 'sulfitos', 'soja', 'moluscos', 'sesamo']:
-                valor = producto.get(alergeno, "")
-                if valor == "Sí":
-                    indice_alergenos += f"<td><p class='lista-X'>X</p></td>"
-                elif valor == "Trazas":
-                    indice_alergenos += f"<td><p class='lista-T'>T</p></td>"
-                else:
-                    indice_alergenos += f"<td><p class='lista-X'>&nbsp;</p></td>"
-            indice_alergenos += "</tr>\n"
+                indice_alergenos += f"<tr id='producto'>"
+                # indice_alergenos += f"<td><p class='lista-producto'><a href='#{producto['ID']}'>{producto['nombre']}</a></p></td>"
+                indice_alergenos += f"<td><p class='lista-producto'><a href='fichas/{producto['ID']}.html' target='_blank' rel='noopener noreferrer'>{producto['nombre']}</a></p></td>"
+
+                for alergeno in ['huevo', 'leche', 'crustaceos', 'cascara', 'gluten', 'pescado', 'altramuz', 'mostaza', 'cacahuetes', 'apio', 'sulfitos', 'soja', 'moluscos', 'sesamo']:
+                    valor = producto.get(alergeno, "")
+                    if valor == "Sí":
+                        indice_alergenos += f"<td><p class='lista-X'>X</p></td>"
+                    elif valor == "Trazas":
+                        indice_alergenos += f"<td><p class='lista-T'>T</p></td>"
+                    else:
+                        indice_alergenos += f"<td><p class='lista-X'>&nbsp;</p></td>"
+                indice_alergenos += "</tr>\n"
 
         return indice_alergenos
     
@@ -129,6 +138,7 @@ def indice(param, productos):
 #----------------------------------------------------------------------------------------
 # Reemplazar FICHAS
 #----------------------------------------------------------------------------------------
+"""
 def fichas(param: InfoTransaccion, productos: list, precios: dict):
     fichas_html = cargar_plantilla(param, PLANTILLA_FICHA)
     fichas_content = ""
@@ -137,6 +147,99 @@ def fichas(param: InfoTransaccion, productos: list, precios: dict):
     try:
         # Generar las fichas técnicas
         for producto in productos:
+            composicion = imprimible(param, producto)
+            if composicion: 
+                id_producto = producto['ID']
+                " ""
+                imprime([producto, type(producto)], "=")
+
+                {'familia_cod': None, 
+                'familia_desc': '4- BOMBONERIA/6. Productos Venta Directa', 
+                'grupo_de_carta': '', 
+                'alta_tpv': 'Sí', 
+                'alta_glovo': '', 
+                'alta_web': '', 
+                'alta_catering': '', 
+                'peso_neto_aprox': '', 
+                'fibra_dietetica_g': '', 
+                'otros': '', 
+                'fec_modificacion': '', 
+                'created_at': datetime.datetime(2025, 1, 5, 19, 15, 18), 
+                'updated_at': None, 
+                'modified_by': None}
+                " ""
+
+                ficha_campos = {
+                    'codigo': id_producto,
+                    'nombre': producto.get("nombre", "").strip() or " ",
+                    'categoria': producto.get("categoria", "").strip() or " ",
+                    'temporada': producto.get("temporada", "").strip() or " ",
+                    'fecha': datetime.now().strftime("%d/%m/%Y"),
+                    'composicion_completa': composicion,
+                    'LOGO': LOGO,
+                    'Gluten': "X" if producto.get('gluten', '') == "Sí" else "Traza" if producto.get('gluten', '') == "Traza" else " ",
+                    'Cascara': "X" if producto.get('cascara', '') == "Sí" else "Traza" if producto.get('cascara', '') == "Traza" else " ",
+                    'Crustaceos': "X" if producto.get('crustaceos', '') == "Sí" else "Traza" if producto.get('crustaceos', '') == "Traza" else " ",
+                    'Apio': "X" if producto.get('apio', '') == "Sí" else "Traza" if producto.get('apio', '') == "Traza" else " ",
+                    'Huevo': "X" if producto.get('huevo', '') == "Sí" else "Traza" if producto.get('huevo', '') == "Traza" else " ",
+                    'Mostaza': "X" if producto.get('mostaza', '') == "Sí" else "Traza" if producto.get('mostaza', '') == "Traza" else " ",
+                    'Pescado': "X" if producto.get('pescado', '') == "Sí" else "Traza" if producto.get('pescado', '') == "Traza" else " ",
+                    'Sesamo': "X" if producto.get('sesamo', '') == "Sí" else "Traza" if producto.get('sesamo', '') == "Traza" else " ",
+                    'Cacahuetes': "X" if producto.get('cacahuetes', '') == "Sí" else "Traza" if producto.get('cacahuetes', '') == "Traza" else " ",
+                    'Sulfitos': "X" if producto.get('sulfitos', '') == "Sí" else "Traza" if producto.get('sulfitos', '') == "Traza" else " ",
+                    'Soja': "X" if producto.get('soja', '') == "Sí" else "Traza" if producto.get('soja', '') == "Traza" else " ",
+                    'Altramuz': "X" if producto.get('altramuz', '') == "Sí" else "Traza" if producto.get('altramuz', '') == "Traza" else " ",
+                    'Leche': "X" if producto.get('leche', '') == "Sí" else "Traza" if producto.get('leche', '') == "Traza" else " ",
+                    'Moluscos': "X" if producto.get('moluscos', '') == "Sí" else "Traza" if producto.get('moluscos', '') == "Traza" else " ",
+
+                    'Valor_energetico_Kcal_Kj': producto.get("valor_energetico_kcal_kj", "").strip() or " ",
+                    'Grasas_g': producto.get("grasas_g", "").strip() or " ",
+                    'De_las_cuales_SATURADAS_g': producto.get("de_las_cuales_saturadas_g", "").strip() or " ",
+                    'Hidratos_de_carbono_g': producto.get("hidratos_de_carbono_g", "").strip() or " ",
+                    'De_los_cuales_AZUCARES_g': producto.get("de_los_cuales_azucares_g", "").strip() or " ",
+                    'Proteinas_g': producto.get("proteinas_g", "").strip() or " ",
+                    'Sal_g': producto.get("sal_g", "").strip() or " ",
+
+                    'Rec_Enterobacterias': producto.get("rec_enterobacterias", "").strip() or " ",
+                    'Rec_Aerobios_totales': producto.get("rec_aerobios_totales", "").strip() or " ",
+                    'Rec_Escherichia_Coli': producto.get("rec_escherichia_coli", "").strip() or " ",
+                    'Rec_Staphylococcus_Aureus': producto.get("rec_staphylococcus_aureus", "").strip() or " ",
+                    'Det_Salmonella_cpp': producto.get("det_salmonella_cpp", "").strip() or " ",
+                    'Rec_Listeria_Monocytogenes': producto.get("rec_listeria_monocytogenes", "").strip() or " ",
+                    'Rec_Mohos_y_levaduras': producto.get("rec_mohos_y_levaduras", "").strip() or " ",
+
+                    'Poblacion_diana': producto.get("poblacion_diana", "").strip() or " ",
+                    'uso_esperado': producto.get("uso_esperado", "").strip() or " ",
+                    'Condiciones_conservacion': producto.get("condiciones_conservación", "").strip() or " ",
+
+                    'vida_en_lugar_fresco_y_seco': producto.get("vida_en_lugar_fresco_y_seco", "").strip() or " ",
+                    'vida_en_refrigeracion': producto.get("vida_en_refrigeracion", "").strip() or " ",
+                    'vida_en_congelacion': producto.get("vida_en_congelacion", "").strip() or " ",
+                }
+                fichas_content += reemplazar_campos(fichas_html, ficha_campos)
+                
+                # Generar la sección de precios
+                if id_producto in precios:
+                    precios_content += f"<h3>Precios para {producto['nombre']}</h3><ul>"
+                    for precio in precios[id_producto]:
+                        precios_content += f"<li>{precio['nombre']} - {precio['tipo']}: {precio['pvp']}</li>"
+                    precios_content += "</ul>"
+                fichas_content = reemplazar_campos(fichas_content, {'precios': precios_content})
+                
+        return fichas_content
+    
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "fichas.Exception", e)
+        raise 
+"""
+def fichas(param: InfoTransaccion, productos: list, precios: dict):
+    fichas_html = cargar_plantilla(param, PLANTILLA_FICHA)
+
+    try:
+        # Generar las fichas técnicas
+        for producto in productos:
+            fichas_content = ""
             composicion = imprimible(param, producto)
             if composicion: 
                 id_producto = producto['ID']
@@ -198,25 +301,31 @@ def fichas(param: InfoTransaccion, productos: list, precios: dict):
                     'Rec_Listeria_Monocytogenes': producto.get("rec_listeria_monocytogenes", "").strip() or " ",
                     'Rec_Mohos_y_levaduras': producto.get("rec_mohos_y_levaduras", "").strip() or " ",
 
-                    'Población_diana': producto.get("poblacion_diana", "").strip() or " ",
+                    'Poblacion_diana': producto.get("poblacion_diana", "").strip() or " ",
                     'uso_esperado': producto.get("uso_esperado", "").strip() or " ",
-                    'Condiciones_conservación': producto.get("Condiciones_conservación", "").strip() or " ",
+                    'Condiciones_conservacion': producto.get("condiciones_conservación", "").strip() or " ",
 
-                    'vida_en_lugar_fresco_y_seco': producto.get("condiciones_conservacion", "").strip() or " ",
-                    'vida_en_refrigeracion': producto.get("condiciones_almacenamiento", "").strip() or " ",
-                    'vida_en_congelacion': producto.get("vida_fri_desde_fabric", "").strip() or " ",
+                    'vida_en_lugar_fresco_y_seco': producto.get("vida_en_lugar_fresco_y_seco", "").strip() or " ",
+                    'vida_en_refrigeracion': producto.get("vida_en_refrigeracion", "").strip() or " ",
+                    'vida_en_congelacion': producto.get("vida_en_congelacion", "").strip() or " ",
                 }
                 fichas_content += reemplazar_campos(fichas_html, ficha_campos)
-                """
+                
                 # Generar la sección de precios
                 if id_producto in precios:
+                    precios_content = ""
                     precios_content += f"<h3>Precios para {producto['nombre']}</h3><ul>"
                     for precio in precios[id_producto]:
-                        precios_content += f"<li>{precio['tipo']}: {precio['pvp']}</li>"
+                        precios_content += f"<li>{precio['nombre']} - {precio['tipo']}: {precio['pvp']}</li>"
                     precios_content += "</ul>"
                 fichas_content = reemplazar_campos(fichas_content, {'precios': precios_content})
-                """
-        return fichas_content
+
+                # Guardar la ficha en el archivo HTML
+                with open(f"{RUTA_HTML}fichas\{id_producto}.html", 'w', encoding='utf-8') as f:
+                    f.write(fichas_content)
+
+
+        return True # fichas_content
     
     except Exception as e:
         param.error_sistema()
@@ -238,14 +347,15 @@ def generar_html(param: InfoTransaccion, productos: list, precios: dict) -> str:
 
         # Secciones dinámicas
         indice_alergenos = indice(param, productos)
-        fichas_content = fichas(param, productos, precios)
 
         # Reemplazar las secciones dinámicas en la plantilla
         html_final = reemplazar_campos(plantilla_html, {
             'indice_alergenos': indice_alergenos,
-            'fichas': fichas_content
+            # 'fichas': fichas_content
         })
 
+        # fichas_content = 
+        fichas(param, productos, precios)
 
         return html_final
     
@@ -279,7 +389,9 @@ def proceso(param: InfoTransaccion) -> list:
         productos = cursor_mysql.fetchall()
 
         # Consultar los precios
-        cursor_mysql.execute("SELECT * FROM erp_productos_pvp")
+        cursor_mysql.execute("""SELECT a.id, a.id_producto, a.id_bbdd, a.tipo, a.pvp , b.nombre 
+                                  FROM erp_productos_pvp a
+                                 inner join mll_cfg_bbdd b on b.id = a.id_bbdd""")
         precios = cursor_mysql.fetchall()
 
         # Crear un diccionario de precios por ID
@@ -299,7 +411,7 @@ def proceso(param: InfoTransaccion) -> list:
         with open(salida, 'w', encoding='utf-8') as f:
             f.write(html)
 
-        resultado = [f"HTML generado correctamente: {salida}"] if html else ["No se ha generado fichero"]
+        resultado = [f"HTML generado correctamente: {salida}"] if html else ["No se ha generado fichero", f"No se han generado {param.ret_code}"]
         return resultado
     
 

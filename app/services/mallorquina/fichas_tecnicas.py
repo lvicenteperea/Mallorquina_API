@@ -235,6 +235,7 @@ def fichas(param: InfoTransaccion, productos: list, precios: dict):
 """
 def fichas(param: InfoTransaccion, productos: list, precios: dict):
     fichas_html = cargar_plantilla(param, PLANTILLA_FICHA)
+    plantilla_fichas = os.path.join(RUTA_HTML, "fichas/")
 
     try:
         # Generar las fichas técnicas
@@ -315,13 +316,15 @@ def fichas(param: InfoTransaccion, productos: list, precios: dict):
                 if id_producto in precios:
                     precios_content = ""
                     precios_content += f"<h3>Precios para {producto['nombre']}</h3><ul>"
+
+                    # datos_ordenados = sorted(datos, key=lambda x: (x['id_producto'], x['id_bbdd'], x['tipo']))
                     for precio in precios[id_producto]:
                         precios_content += f"<li>{precio['nombre']} - {precio['tipo']}: {precio['pvp']}</li>"
                     precios_content += "</ul>"
                 fichas_content = reemplazar_campos(fichas_content, {'precios': precios_content})
 
                 # Guardar la ficha en el archivo HTML
-                with open(f"{RUTA_HTML}fichas\{id_producto}.html", 'w', encoding='utf-8') as f:
+                with open(f"{plantilla_fichas}{id_producto}.html", 'w', encoding='utf-8') as f:
                     f.write(fichas_content)
 
 
@@ -391,7 +394,8 @@ def proceso(param: InfoTransaccion) -> list:
         # Consultar los precios
         cursor_mysql.execute("""SELECT a.id, a.id_producto, a.id_bbdd, a.tipo, a.pvp , b.nombre 
                                   FROM erp_productos_pvp a
-                                 inner join mll_cfg_bbdd b on b.id = a.id_bbdd""")
+                                 inner join mll_cfg_bbdd b on b.id = a.id_bbdd
+                                 order by a.id_producto, a.id_bbdd, a.tipo""")
         precios = cursor_mysql.fetchall()
 
         # Crear un diccionario de precios por ID

@@ -3,6 +3,7 @@
 
 
 # uvicorn app.main:app --reload
+# python -m uvicorn app.main:app --reload
 from fastapi import FastAPI, HTTPException
 import json 
 

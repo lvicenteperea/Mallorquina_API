@@ -8,8 +8,8 @@ from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
 # Rutas de los archivos
-RUTA_ICONOS = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "alergenos/")
-LOGO = os.path.join("D:/Nube/GitHub/Mallorquina_API/", settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
+RUTA_ICONOS = os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "alergenos/")
+LOGO = os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
 PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla.html")
 PLANTILLA_FICHA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_producto.html")
 RUTA_HTML = os.path.join(settings.RUTA_WEB, "alergenos/")

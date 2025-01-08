@@ -78,7 +78,6 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
-
         # --------------------------------------------------------------------------------
         resultado = sync_data.recorre_tiendas(param = param)
         # --------------------------------------------------------------------------------
@@ -91,13 +90,11 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
                 
     except HTTPException as e:
         param.error_sistema()
-        print("HTTPException", param.ret_code, param.ret_txt)
         graba_log(param, "mll_sync_todo.HTTPException", e)
 
 
     except Exception as e:
         param.error_sistema()
-        print("Exception", param.ret_code, param.ret_txt)
         graba_log(param, "mll_sync_todo.Exception", e)
     
     finally:

@@ -63,18 +63,11 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         param.debug = "Fin"
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.HTTPException", e)
-        raise
-
+                  
     except Exception as e:
         param.error_sistema()
         graba_log(param, "recorre_tiendas.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise
 
     finally:
         param.debug = "cierra conn"

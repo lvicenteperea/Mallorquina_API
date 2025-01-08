@@ -256,6 +256,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
             sheet_name = nombre_tienda[:31]
 
             param.debug = "5. Creamos nueva hoja"
+            imprime([param.debug, sheet_name], "=")
             # 5. Creamos una hoja nueva con el nombre de la tienda
             ws = wb.create_sheet(title=sheet_name)
             

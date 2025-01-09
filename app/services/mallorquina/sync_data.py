@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import json
+import re
 
 from app.utils.functions import graba_log, imprime
 
@@ -168,7 +169,8 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
         # Leer datos desde SQL Server
         cursor_sqlserver = conn_sqlserver.cursor()
-        select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos])} FROM {nombre_tabla}"
+        # select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos])} FROM {nombre_tabla}"
+        select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
         cursor_sqlserver.close()
@@ -176,7 +178,8 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
         # Preparar los cursores para MySQL
         cursor_mysql = conn_mysql.cursor()
-        columnas_mysql = [campo["Nombre_Destino"] for campo in campos] + ["Origen_BBDD"]
+        # columnas_mysql = [campo["Nombre_Destino"] for campo in campos] + ["Origen_BBDD"]
+        columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")] + ["Origen_BBDD"]
 
         # Identificar el campo PK basado en mll_cfg_campos
         pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
@@ -193,9 +196,32 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
             VALUES ({', '.join(['%s'] * len(columnas_mysql))})
         """
         campos_update = [campo for campo in campos if campo["Nombre_Destino"] != pk_campo]
+        # update_query = f"""
+        #     UPDATE {nombre_tabla_destino}
+        #     SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos_update])}
+        #     WHERE {pk_campo} = %s AND Origen_BBDD = %s
+        # """
+        """
+        re.match(r"^{.+}$", campo["Nombre"]):
+            - Verifica si campo["Nombre"] comienza con { y termina con }.
+        
+        re.search(r"{(.+?)}", campo["Nombre"]).group(1):
+            - Extrae el contenido entre las llaves {} en campo["Nombre"].
+        
+        Condición en la comprensión de lista:
+            - Si campo["Nombre"] cumple con la condición de llaves, genera Nombre_Destino = contenido_dentro_de_las_llaves.
+            - Si no cumple, genera Nombre_Destino = %s.
+        
+        ', '.join([...]):
+            - Combina todas las asignaciones generadas en una sola cadena separada por comas.
+        """
         update_query = f"""
             UPDATE {nombre_tabla_destino}
-            SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos_update])}
+            SET {', '.join([
+                f'{campo["Nombre_Destino"]} = {re.search(r"{(.+?)}", campo["Nombre"]).group(1)}' if re.match(r"^{.+}$", campo["Nombre"]) 
+                else f'{campo["Nombre_Destino"]} = %s' 
+                for campo in campos_update
+            ])}
             WHERE {pk_campo} = %s AND Origen_BBDD = %s
         """
 
@@ -215,9 +241,10 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
             if existe:
                 # Realizar un UPDATE
-                valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
+                # valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
+                campos_update_filtrado = [campo for campo in campos_update if not (campo['Nombre'].startswith('{') and campo['Nombre'].endswith('}'))]
                 valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
-                                            for campo in campos_update] + [pk_value, tabla["ID_BBDD"]]
+                                             for campo in campos_update_filtrado] + [pk_value, tabla["ID_BBDD"]]
                 cursor_mysql.execute(update_query, valores_update)
             else:
                 # Realizar un INSERT

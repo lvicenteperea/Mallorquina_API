@@ -157,6 +157,45 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql) -> dict:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
+def busca_tvp(param: InfoTransaccion, conn_mysql, id_tienda,  id_tpv) -> int:
+    resultado = 0
+    param.debug = "busca_tvp Inicio"
+
+    try: 
+
+        cursor_mysql = conn_mysql.cursor(dictionary=True)
+
+        param.debug = "Select"
+        # query = f"""SELECT mtpv.nombre, pf.* FROM mll_mae_tpv mtpv 
+        #              inner join tpv_puestos_facturacion pf on mtpv.ID = pf.id_mae_tpv
+        #              where pf.id_puesto={id_tpv}
+        #                and pf.Origen_BBDD = {id_tienda}
+        #          """
+        query = f"""SELECT pf.id_mae_tpv FROM tpv_puestos_facturacion pf
+                     where pf.id_puesto={id_tpv}
+                       and pf.Origen_BBDD = {id_tienda}
+                 """
+        param.debug="execute del cursor"
+        cursor_mysql.execute(query)
+        datos = cursor_mysql.fetchall()
+        if datos:
+            # imprime([type(datos), datos], "=")
+            param.debug= "en el FOR, solo debería tener un registro"
+            resultado = datos[0]['id_mae_tpv']
+
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "busca_tvp.Exception", e)
+ 
+
+    finally:
+        return resultado
+
+    
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
     resultado = {}
     param.debug = "Inicio"
@@ -196,14 +235,17 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
             orden = orden ^ 1  # Alternar entre 0 y 1
             param.debug = "insert"
             ID_Apertura = key[2]
+            # esto igual es mejor meterlo en un array todo y aquí buscar en el array
+            id_mae_tpv = busca_tvp(param, conn_mysql, data["id_tienda"],  data["id_tpv"])
 
             insert_diarias = """
-                INSERT INTO mll_rec_ventas_diarias (id_tienda, id_tpv, fecha, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
-                VALUES (%s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s)
+                INSERT INTO mll_rec_ventas_diarias (id_tienda, id_tpv, id_mae_tpv, fecha, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
+                VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s)
             """
             cursor_mysql.execute( insert_diarias,
                                   (data["id_tienda"],
                                    data["id_tpv"],
+                                   id_mae_tpv,
                                    data["fecha"],
                                    data["ventas"],
                                    data["operaciones"],

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import json
 
@@ -46,17 +46,31 @@ def proceso(param: InfoTransaccion) -> list:
 
         for bbdd in lista_bbdd:
             imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
-
+            fechas = []
             if not fecha: # si no tiene parametro fecha
-                #mi.imprime([type(json.loads(bbdd['Conexion'])['ultimo_cierre'])],'.')
                 if bbdd['ultimo_cierre']: # si tiene último cierre
-                    fecha = bbdd['ultimo_cierre']
+                    fecha_inicial = datetime.strptime(bbdd['ultimo_cierre'].isoformat(), "%Y-%m-%d")
+                    fecha_final = datetime.now()
+                    imprime(["Uno:", type(bbdd['ultimo_cierre']),  bbdd['ultimo_cierre'], fecha_inicial, fecha_final], "=")
                 else:
-                    fecha = datetime.now().strftime('%Y-%m-%d')
+                    # Crear una lista de fechas
+                    fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
+                    fecha_final = datetime.now()
+                    imprime(["Dos:", fecha_inicial, fecha_final], "=")
+
+                while fecha_inicial <= fecha_final:
+                    fechas.append(fecha_inicial.strftime("%Y-%m-%d"))
+                    fecha_inicial += timedelta(days=1)
+            else:
+                imprime( ["tres:",fecha, param.parametros[0]], "=")
+                fechas = [fecha]
+
 
             # Aquí va la lógica específica para cada bbdd
-            resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql)
-            resultado.append(resultado_dict)
+            for fecha in fechas:
+                print(fecha)
+                resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql, fecha)
+                resultado.append(resultado_dict)
 
             param.debug = "update"
             cursor_mysql.execute(
@@ -86,7 +100,7 @@ def proceso(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql) -> dict:
+def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql, fecha) -> dict:
     resultado = {}
     param.debug = "Inicio"
 
@@ -108,8 +122,9 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql) -> dict:
                                 FROM [Cierres de Caja] WHERE CAST(Fecha AS DATE) = ?
                     """
             param.debug = "Ejecución select 1"
-            cursor_sqlserver.execute(select_query, param.parametros) # parametros es la fecha
+            cursor_sqlserver.execute(select_query, fecha) #param.parametros) # parametros es la fecha
             apertura_ids_lista = cursor_sqlserver.fetchall()
+            imprime([apertura_ids_lista], "=")
             ids_cierre = [item[0] for item in apertura_ids_lista]
             
             if ids_cierre:

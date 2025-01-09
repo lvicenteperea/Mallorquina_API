@@ -2,9 +2,8 @@ import pandas as pd
 # from openpyxl import Workbook, load_workbook
 # from openpyxl.styles import Alignment
 from datetime import datetime
-from fastapi import HTTPException
 
-import os
+# import os
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
@@ -51,18 +50,10 @@ def proceso(param: InfoTransaccion) -> list:
         
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "proceso.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 
         
 
 # -----------------------------------------------------------------------------------------------------
@@ -126,20 +117,10 @@ def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
         resultado = [num_registros_origen , num_registros_destino]
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "proceso.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
-
-        
+        raise         
 
 
 '''

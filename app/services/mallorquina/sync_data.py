@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from datetime import datetime, timedelta
 import json
 
@@ -26,15 +25,15 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         config = obtener_cfg_general(param)
 
         if not config.get("ID", False):
-            param.registrar_error(-1, f'No se han encontrado datos de configuración: config["En_Ejecucion"]', f"{funcion}.config-ID")
+            param.registrar_error(ret_txt=f'No se han encontrado datos de configuración: config["En_Ejecucion"]', debug=f"{funcion}.config-ID")
             raise MadreException(param = param)
                 
         if config["En_Ejecucion"]:
-                param.registrar_error(-1, "El proceso ya está en ejecución.", f"{funcion}.config.en_ejecucion")
+                param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
                 raise MadreException(param = param)
 
         param.debug = "actualiza ejec 1"
-        actualizar_en_ejecucion(1)
+        actualizar_en_ejecucion(param, 1)
 
         param.debug = "conn. MySql"
         conn_mysql = get_db_connection_mysql()
@@ -74,7 +73,7 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         close_connection_mysql(conn_mysql, cursor_mysql)
 
         param.debug = "Actualiza Ejec 0"
-        actualizar_en_ejecucion(0)
+        actualizar_en_ejecucion(param, 0)
         enviar_email(config["Lista_emails"],
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
@@ -116,18 +115,10 @@ def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
         
         return []
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tablas.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "recorre_tablas.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)  
+        raise 
             
     finally:
         param.debug = "Cierra Cursor"
@@ -190,7 +181,8 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         # Identificar el campo PK basado en mll_cfg_campos
         pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
         if not pk_campos:
-            raise ValueError(f"No se encontró ningún campo PK en {nombre_tabla}.")
+            param.registrar_error(ret_txt=f"No se encontró ningún campo PK en {nombre_tabla}.", debug=f"Campos: {campos}")
+            raise MadreException(param = param)
 
         # Usamos el primer campo PK encontrado
         pk_campo = pk_campos[0]["Nombre_Destino"]
@@ -236,18 +228,10 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
         return []
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "procesar_tabla.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "procesar_tabla.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)   
+        raise 
 
     finally:
         param.debug = "cierra conexión sqlserver"

@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class InfoTransaccion(BaseModel):
-    id_App: int
-    user: str
+    id_App: int = 0
+    user: str = 'Sistema_'
     ret_code: int = 0
     ret_txt: str = "Ok"
     debug: str = "" # solo por si se necesita saber por donde ha pasado la ejecución

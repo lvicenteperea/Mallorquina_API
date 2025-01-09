@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from datetime import datetime
 
 import json
@@ -25,16 +24,16 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
         config = obtener_cfg_general(param)
 
         if not config.get("ID", False):
-            param.registrar_error(-1, f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", f"{funcion}.config-ID")
+            param.registrar_error(ret_txt= f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", debug=f"{funcion}.config-ID")
             raise MadreException(param = param)
         
         if config["En_Ejecucion"]:
-            param.registrar_error(-1, "El proceso ya está en ejecución.", f"{funcion}.config.en_ejecucion")
+            param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
             raise MadreException(param = param)
 
 
         donde="actualizar_en_ejecucion"
-        actualizar_en_ejecucion(1)
+        actualizar_en_ejecucion(param, 1)
 
         donde = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
@@ -61,13 +60,13 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
        
     except Exception as e:
         param.error_sistema()
-        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción consulta_caja.recorre_consultas_tiendas-{donde}", e)
+        graba_log(param, f"Excepción consulta_caja.recorre_consultas_tiendas-{donde}", e)
         raise
 
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
 
-        actualizar_en_ejecucion(0)
+        actualizar_en_ejecucion(param, 0)
         enviar_email(config["Lista_emails"],
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
@@ -144,7 +143,7 @@ def procesar_consulta(param: InfoTransaccion, tabla, conn_mysql) -> list:
 
     except Exception as e:
         param.error_sistema()
-        graba_log({"ret_code": param.ret_code, "ret_txt": param.ret_txt}, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
+        graba_log(param, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
         raise
 
     finally:

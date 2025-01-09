@@ -1,11 +1,10 @@
-from fastapi import HTTPException
-
 # Para MySql
 import mysql.connector
 from mysql.connector import Error
 from app.config.settings import settings
 
 from app.utils.functions import graba_log
+from app.utils.InfoTransaccion import InfoTransaccion
 
 # Para SQL Server
 import pyodbc
@@ -13,6 +12,7 @@ import pyodbc
 
 #----------------------------------------------------------------------------------------
 def get_db_connection_mysql():
+    param = InfoTransaccion(debug=f"Conectando con: {settings.MYSQL_DB_URL_MLL}/{settings.MYSQL_DB_USER_MLL}/{settings.MYSQL_DB_DATABASE_MLL}")
     try:
         connection = mysql.connector.connect(
             host=settings.MYSQL_DB_URL_MLL,
@@ -23,12 +23,9 @@ def get_db_connection_mysql():
         return connection
     
     except Exception as e:
-        graba_log({"ret_code": -1, "ret_txt": f"Error al conectar: {settings.MYSQL_DB_URL_MLL}/{settings.MYSQL_DB_USER_MLL}/{settings.MYSQL_DB_DATABASE_MLL}/"},
-                   "Excepción get_db_connection_mysql", e)
-        raise HTTPException(status_code=400, detail= {"ret_code": -1,
-                                                      "ret_txt": str(e),
-                                                     }
-                           )
+        param.error_sistema()
+        graba_log(param, "db_mallorquina.get_db_connection_mysql", e)
+        raise
 
 #----------------------------------------------------------------------------------------
 def close_connection_mysql(conn, cursor):
@@ -39,10 +36,7 @@ def close_connection_mysql(conn, cursor):
             conn.close()
     
     except Error as e:
-        raise HTTPException(status_code=400, detail= {"ret_code": -1,
-                                                      "ret_txt": str(e),
-                                                     }
-                           )
+        raise 
 
 #----------------------------------------------------------------------------------------
 def get_db_connection_sqlserver(conexion_json):

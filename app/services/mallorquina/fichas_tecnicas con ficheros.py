@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 from datetime import datetime
-from fastapi import HTTPException
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
@@ -166,7 +165,7 @@ def generar_html(param: InfoTransaccion) -> list:
     try:
         param.debug = "rutas"
         if not param.parametros[0]:
-            param.registrar_error(-1, "No se ha indicado el archivo Excel", f"{funcion}.parametros[0]")
+            param.registrar_error(ret_txt= "No se ha indicado el archivo Excel", debug=f"{funcion}.parametros[0]")
             raise MadreException(param = param)
 
         if not param.parametros[1]:
@@ -213,15 +212,7 @@ def generar_html(param: InfoTransaccion) -> list:
         resultado = [f"HTML generado en {salida}"]
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "generar_html.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "generar_html.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 

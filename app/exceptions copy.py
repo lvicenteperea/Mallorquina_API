@@ -55,7 +55,7 @@ from app.utils.InfoTransaccion import InfoTransaccion
 # -----------------------------------------------------------------------------------------------
 def imprime_mi_log(tipo_excepcion, exc):
     print(f"--------------------------------------{tipo_excepcion}-----------------------------------------------")
-    print("Argumentos de la excepción:", exc.args)
+    print("Argumentos de la excepción:", type(exc.args), exc.args)
     print(f"--------------------------------------------------------------------------------------------------------")
     print(f"Detalle: {exc.detail}")
     print(f"Estado: {exc.status_code}")
@@ -92,27 +92,9 @@ async def madre_exception_handler(request: Request, exc: MadreException):
 
 # -----------------------------------------------------------------------------------------------
 async def http_exception_handler(request: Request, exc: HTTPException):
-    '''
-    if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
-        mi_mensaje = {"ret_code": exc.detail['ret_code'],
-                      "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),
-                     }
-    else:
-        mi_mensaje = {"ret_code": -1,
-                      "ret_txt": exc.detail,
-                     }
-
-    graba_log(mi_mensaje, 
-                "HTTPException", 
-                exc # str(exc.detail.get("excepcion", exc.detail.get('ret_txt',"Sin texto asociado")))
-                )
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"codigo_error": exc.status_code, "mensaje": mi_mensaje},
-    )
-    '''
 # -----------------------------------------------------------------------------------------------
+    imprime_mi_log("http_exception_handler", exc)
+
     if hasattr(exc, "status_code"):
         status_code = getattr(exc, "status_code", 500)
     else:
@@ -123,8 +105,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     else:
         detalle = "Detalle no ha llegado"
 
-    print(status_code, detalle)
-
     return {
         "status_code": status_code,
         "message": detalle
@@ -132,60 +112,27 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 # -----------------------------------------------------------------------------------------------
 async def generic_exception_handler(request: Request, exc: Exception):
-    '''
-    imprime_mi_log("generic_exception_handler", exc)
-
-        if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
-            mi_mensaje = {"ret_code": exc.detail['ret_code'],
-                        "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),
-                        }
-            graba_log(mi_mensaje, "GenericException", exc.detail.get("excepcion", "Sin texto asociado"))
-        else:
-            mi_mensaje = {"ret_code": -1,
-                        "ret_txt": str(exc),
-                        #   "ret_txt": exc.detail,
-                        }
-            graba_log(mi_mensaje, "GenericException", exc)
-
-        return JSONResponse(
-            status_code=500,
-            content={"codigo_error": -1, "mensaje": str(exc)},
-        )
-    '''    
 # -----------------------------------------------------------------------------------------------
+    imprime_mi_log("generic_exception_handler", exc)
     param = InfoTransaccion(id_App = 0, user="system", ret_code=-1, ret_txt="", parametros=[], resultados=[])
-
-    print("Argumentos de la excepción:", type(exc.args), exc.args)
-    print("exc:", getattr(exc, "status_code", 503), getattr(exc, "detail", "Sin detalle"))
-    #print("Claves del diccionario:", list(exc.args[0].keys()))
 
     # Si es una HTTPException, obtenemos el código de estado
     if hasattr(exc, "status_code"):
-        print("--------------------------------------76 primera vez-----------------------------------------------")
         status_code = getattr(exc, "status_code", 500)
     else:
         status_code = 550  # Estatus predeterminado para errores genéricos
 
     if exc.args and isinstance(exc.args, str):
-        print("--------------------------------------77 primera vez-----------------------------------------------")
         param.ret_txt = str(exc.args) # o solo tiene un argumento os es cero
     else:
         if exc.args and isinstance(exc.args, tuple):
             if "detalle" in exc.args[0]:
-                print("--------------------------------------generic_exception_handler-----------------------------------------------")
                 param = exc.args[0]["detalle"]
-                print("1", param)
             else:
-                print("--------------------------------------otro1 primera vez-----------------------------------------------")
                 param.ret_txt =  f"Error desconocido: {type(exc.args)}"
         else:
             param.ret_txt = "Error desconocido"
-            print("--------------------------------------otro2 primera vez-----------------------------------------------")
 
-    print("-------------------------------------------------------------------------------------")
-    print(param.ret_txt, status_code)
-
-    # -----------------------------------------------------------
     graba_log(param, "GenericException", exc)
 
     return {
@@ -197,6 +144,8 @@ async def generic_exception_handler(request: Request, exc: Exception):
 # -----------------------------------------------------------------------------------------------
 async def type_error_handler(request: Request, exc: TypeError):
 # -----------------------------------------------------------------------------------------------
+    imprime_mi_log("type_error_handler", exc)
+
     graba_log({"Detalle:": exc,"method:": request.method, "url:": request.url}, "TypeErrorException", exc)
 
     return {

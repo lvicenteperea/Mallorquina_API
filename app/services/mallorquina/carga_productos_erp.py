@@ -1,5 +1,4 @@
 import os
-from fastapi import HTTPException
 from datetime import datetime
 import pandas as pd
 
@@ -35,18 +34,10 @@ def proceso(param: InfoTransaccion) -> list:
 
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "proceso.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 
         
     finally:
         enviar_email(config["Lista_emails"],
@@ -206,18 +197,11 @@ def carga (param: InfoTransaccion, excel):
 
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "carga.HTTPException", e)
-        raise
 
     except Exception as e:
         param.error_sistema()
         graba_log(param, "carga.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 
 
     finally:
         close_connection_mysql(conn_mysql, cursor)

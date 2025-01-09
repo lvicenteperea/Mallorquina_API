@@ -10,9 +10,6 @@ import app.services.mallorquina.tarifas_a_TPV as tarifas_a_TPV
 import app.services.mallorquina.fichas_tecnicas as fichas_tecnicas
 import app.services.mallorquina.carga_productos_erp as carga_productos_erp
 
-
-
-
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
@@ -52,13 +49,11 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
                 
     except HTTPException as e:
         param.error_sistema()
-        print("HTTPException", param.ret_code, param.ret_txt)
         graba_log(param, "mll_sync_todo.HTTPException", e)
 
 
     except Exception as e:
         param.error_sistema()
-        print("Exception", param.ret_code, param.ret_txt)
         graba_log(param, "mll_sync_todo.Exception", e)
     
     finally:
@@ -127,13 +122,11 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
                 
     except HTTPException as e:
         param.error_sistema()
-        print("HTTPException", param.ret_code, param.ret_txt)
         graba_log(param, "mll_arqueo_caja.HTTPException", e)
 
 
     except Exception as e:
         param.error_sistema()
-        print("Exception", param.ret_code, param.ret_txt)
         graba_log(param, "mll_arqueo_caja.Exception", e)
 
     finally:
@@ -142,38 +135,6 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
     
 
 #----------------------------------------------------------------------------------
-'''
-SELECT * FROM mallorquina.mll_rec_ventas_diarias;
-SELECT * FROM mallorquina.mll_rec_ventas_medio_pago;
-
-SELECT 
-    vd.id_tienda,
-    t.nombre Tienda,
-    vd.id_tpv,
-    tpv.descripcion Nombre_TPV,
-    vd.fecha,
-    vd.cierre_tpv_id,
-    vd.cierre_tpv_desc,
-    vmp.id_medios_pago,
-    mp.nombre Nombre_MdP,
-    SUM(vmp.ventas) AS total_ventas,
-    SUM(vmp.operaciones) AS total_operaciones
-FROM mll_rec_ventas_diarias vd
-     JOIN  mll_rec_ventas_medio_pago vmp ON vd.id = vmp.id_ventas_diarias
-LEFT JOIN mll_cfg_bbdd t         ON vd.id_tienda = t.id
-LEFT JOIN tpv_puestos_facturacion tpv        ON vd.id_tpv = tpv.id_puesto and vd.id_tienda = tpv.Origen_BBDD
-LEFT JOIN mll_mae_medios_pago mp ON vmp.id_medios_pago = mp.id
-GROUP BY 
-    vd.id_tienda,
-    t.nombre,
-    vd.id_tpv,
-    tpv.descripcion,
-    vd.fecha,
-    vd.cierre_tpv_id,
-    vd.cierre_tpv_desc,
-    vmp.id_medios_pago,
-    mp.nombre;
-'''
 #----------------------------------------------------------------------------------
 @router.get("/mll_inf_arqueo_caja", response_model=InfoTransaccion)
 async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificador de la aplicación"),

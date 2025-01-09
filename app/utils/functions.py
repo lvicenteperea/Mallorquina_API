@@ -53,7 +53,7 @@ time_logger = logging.getLogger('time_logger')
 
 # ------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------
-def graba_log(mi_mensaje:dict, origen, e, logger = app_logger):
+def graba_log(mi_mensaje:dict, origen: str, e, logger = app_logger):
     try:
         loc = "no disponible"
 

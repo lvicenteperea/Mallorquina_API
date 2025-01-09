@@ -2,7 +2,7 @@ from app.utils.functions import imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 class MadreException(Exception):
-    param: dict = InfoTransaccion(id_App=0, user="Sistema")
+    param: dict = InfoTransaccion(debug="Tenemos un excepción MadreException")
     status_code: int = 0
     detail: str = ""
 

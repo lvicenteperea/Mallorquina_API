@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from datetime import datetime, date
 import json
 
@@ -52,18 +51,11 @@ def informe(param: InfoTransaccion) -> list:
 
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "proceso.HTTPException", e)
-        raise
 
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 
 
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
@@ -126,18 +118,10 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
 
         return resultado
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "proceso.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 
 
 
 
@@ -186,18 +170,10 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "proceso.HTTPException", e)
-        raise
-
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 
 
 #----------------------------------------------------------------------------------------
 # Creamos el escritor de Excel con la librería PANDA
@@ -306,15 +282,8 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         # 9. Guardamos el archivo
         wb.save(f"{path}resultado_openpyxl.xlsx")
 
-    except MadreException as e:
-        raise
-                    
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "proceso.HTTPException", e)
-        raise
 
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+        raise 

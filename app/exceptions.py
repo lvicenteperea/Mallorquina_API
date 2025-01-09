@@ -1,11 +1,10 @@
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 import json
-import traceback
 
 from app.utils.mis_excepciones import MadreException
 from app.utils.functions import graba_log, imprime
-from app.utils.InfoTransaccion import InfoTransaccion
+
 
 '''
 # -----------------------------------------------------------------------------------------------

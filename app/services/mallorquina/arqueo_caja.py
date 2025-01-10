@@ -48,16 +48,18 @@ def proceso(param: InfoTransaccion) -> list:
             imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
             fechas = []
             if not fecha: # si no tiene parametro fecha
-                if bbdd['ultimo_cierre']: # si tiene último cierre
-                    fecha_inicial = datetime.strptime(bbdd['ultimo_cierre'].isoformat(), "%Y-%m-%d")
-                    fecha_final = datetime.now()
-                    imprime(["Uno:", type(bbdd['ultimo_cierre']),  bbdd['ultimo_cierre'], fecha_inicial, fecha_final], "=")
-                else:
-                    # Crear una lista de fechas
-                    fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
-                    fecha_final = datetime.now()
-                    imprime(["Dos:", fecha_inicial, fecha_final], "=")
+                # if bbdd['ultimo_cierre']: # si tiene último cierre
+                #     fecha_inicial = datetime.strptime(bbdd['ultimo_cierre'].isoformat(), "%Y-%m-%d")
+                #     fecha_final = datetime.now()
+                #     imprime(["Uno:", type(bbdd['ultimo_cierre']),  bbdd['ultimo_cierre'], fecha_inicial, fecha_final], "=")
+                # else:
+                #     # Crear una lista de fechas
+                #     fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
+                #     fecha_final = datetime.now()
+                #     imprime(["Dos:", fecha_inicial, fecha_final], "=")
 
+                fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
+                fecha_final = datetime.now()
                 while fecha_inicial <= fecha_final:
                     fechas.append(fecha_inicial.strftime("%Y-%m-%d"))
                     fecha_inicial += timedelta(days=1)

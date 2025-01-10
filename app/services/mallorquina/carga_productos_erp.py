@@ -3,8 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 from app.models.mll_cfg import obtener_cfg_general, close_connection_mysql
-from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
-from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
+from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.mis_excepciones import MadreException

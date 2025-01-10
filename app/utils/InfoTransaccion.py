@@ -43,6 +43,24 @@ class InfoTransaccion(BaseModel):
     def to_list(self):
         return [self.id_App, self.user, self.ret_code, self.ret_txt]
 
+    def to_list_proc_bbdd(self):
+
+        lista = [self.id_App, self.user, self.ret_code, self.ret_txt]
+
+        for item in self.parametros:
+            lista.append(item)
+
+        return lista
+
+
+    def to_infotrans_proc_bbdd(self, list):
+        return InfoTransaccion(id_App=list[0], 
+                               user=list[1], 
+                               ret_code=list[2], 
+                               ret_txt=list[3], 
+                               parametros=list[4:]
+                              )
+
     def to_dict(self):
         return {"id_app": self.id_App, "Usuario": self.user, "ret_code": self.ret_code, "ret_txt": self.ret_txt, "debug": self.debug}
         #return {"id_app": self.id_App, "Usuario": self.user, "ret_code": self.ret_code, "ret_txt": self.ret_txt, "debug": self.debug, "parametros": self.parametros, "resultados": self.resultados}

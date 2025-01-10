@@ -6,7 +6,7 @@ import traceback
 # ------------------------------------------------------------------------------------------------
 # Expande una lista que tenga dentro un elemento InfoTransaccion
 # ------------------------------------------------------------------------------------------------
-def expande_lista(lista:list):
+def expande_lista(lista:list) -> list:
         new_list = []
 
         for item in lista:

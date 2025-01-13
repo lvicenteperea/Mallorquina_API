@@ -28,6 +28,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
     :param.parametros[1]  -->  name: Nombre descriptivo del token.
     :param.parametros[2]  -->  token: El token a encriptar.
     :param.parametros[3]  -->  abilities: Lista de habilidades del token.
+
     :return: Mensaje de éxito o error en param.ret_txt y ret_code
 
     Notas:
@@ -42,6 +43,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         # nombre = param.parametros[1] 
         token = param.parametros[2] 
         # abilities = param.parametros[3] 
+        # ID = param.parametros[4] 
 
         # Obtener la clave de encriptación desde una variable de entorno
         encryption_key = settings.ENCRYPTION_KEY
@@ -55,6 +57,8 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         param.debug = token
         encrypted_token = fernet.encrypt(token.encode())
         param.parametros[2] = encrypted_token  # lo cambiamos por el token ya encriptado
+
+        param.parametros.append(0) # añadimos a parametros un cero, ya que es el del registro creado en caso de OK que retornamos en PARAM
 
         param = call_proc_bbdd(param=param, procedimiento="w_mail_graba_access_token")
 
@@ -77,5 +81,3 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         graba_log(param, f"Error no controlado en {funcion}", e)
         raise
 
-    # finally:
-    #     close_connection_mysql(conn, cursor)

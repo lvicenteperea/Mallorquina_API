@@ -1,5 +1,5 @@
 import re
-#from app.utils.functions import imprime
+from app.utils.functions import imprime
 
 def obtener_campos_tabla(conn, id_tabla):
 
@@ -33,7 +33,8 @@ def crear_tabla_destino(conn_mysql, nombre_tabla, campos):
         f"{campo['Nombre_Destino']} {campo['Tipo']} {'default ' + re.search(r'{(.+?)}', campo['Nombre']).group(1) if re.search(r'{(.+?)}', campo['Nombre']) else ''}".strip()
         for campo in campos
     ])
-
+    if not columnas:
+        x=1/0
 
     columnas += ", Origen_BBDD VARCHAR(100)"
     query = f"""CREATE TABLE IF NOT EXISTS {nombre_tabla} 
@@ -44,7 +45,7 @@ def crear_tabla_destino(conn_mysql, nombre_tabla, campos):
                      modified_by varchar(45) DEFAULT NULL,
                      PRIMARY KEY (`ID`))
                 ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4"""
-    #imprime(query, "=")
+
     cursor.execute(query)
     conn_mysql.commit()
     cursor.close()

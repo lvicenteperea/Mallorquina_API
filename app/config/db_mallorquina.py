@@ -3,7 +3,7 @@ import mysql.connector
 from mysql.connector import Error
 from app.config.settings import settings
 
-from app.utils.functions import graba_log
+from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 # Para SQL Server
@@ -41,7 +41,8 @@ def close_connection_mysql(conn, cursor):
 #----------------------------------------------------------------------------------------
 def get_db_connection_sqlserver(conexion_json):
     try:
-        conexion = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']}"
+        conexion = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']},{conexion_json['port']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']}"
+        imprime([conexion],"=")
         donde = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD='XXXXXXX'"
         connection =  pyodbc.connect(conexion)
 

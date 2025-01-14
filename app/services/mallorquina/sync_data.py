@@ -268,13 +268,14 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos):
+def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos) -> list:
     param.debug="Inicio"
     conn_sqlserver = None # para que no de error en el finally
     cursor_sqlserver = None # para que no de error en el finally
+    registros = []
 
     try:
-        imprime([nombre_tabla, campos], "=")
+        # imprime([nombre_tabla, campos], "=")
         param.debug = "conn origen"
         # conextamos con esta bbdd origen
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
@@ -282,14 +283,13 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
         # Leer datos desde SQL Server
         cursor_sqlserver = conn_sqlserver.cursor()
         select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
-        imprime([select_query], "=")
+        # imprime([select_query], "=")
         x = construir_consulta(campos, nombre_tabla)
         imprime([x], "@")
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
         cursor_sqlserver.close()
         cursor_sqlserver = None
-
 
         return registros
 
@@ -311,24 +311,33 @@ def construir_consulta(campos, nombre_tabla):
     # Construcción del WHERE
     condiciones_where = []
     for campo in campos:
+        imprime(["-----",campo,"-----"], "@")
         if campo.get('PK') == 1 and campo.get('ult_valor') is not None:
             tipo = campo['Tipo'].lower()
             valor = campo['ult_valor']
             imprime([campo.get('Nombre'), type(campo.get('PK')), campo.get('PK'), tipo, valor, campo.get('ult_valor')],"-")
             
-            # if tipo in ('int', 'numeric'):
-            #     try:
-            #         valor = int(valor) if 'int' in tipo else float(valor)
-            #     except ValueError:
-            #         continue  # Saltar si no es un valor válido
-            # elif 'date' in tipo:
-            #     try:
-            #         valor = datetime.strptime(valor, '%d-%m-%Y %H:%M:%S') if ':' in valor else datetime.strptime(valor, '%d-%m-%Y')
-            #         valor = valor.strftime('%Y-%m-%d %H:%M:%S')  # Formato estándar para SQL
-            #     except ValueError:
-            #         continue  # Saltar si no es un valor válido
+            if tipo == 'int':
+                try:
+                    valor = int(valor)
+                except ValueError:
+                    imprime(["Error de valor int", valor],"-")
+                    continue  # Saltar si no es un valor válido
+            elif tipo == 'numeric':
+                try:
+                    valor = float(valor)
+                except ValueError:
+                    imprime(["Error de valor numeric", valor],"-")
+                    continue  # Saltar si no es un valor válido
+            elif 'date' in tipo:
+                try:
+                    valor = datetime.strptime(valor, '%d-%m-%Y %H:%M:%S') if ':' in valor else datetime.strptime(valor, '%d-%m-%Y')
+                    valor = valor.strftime('%Y-%m-%d %H:%M:%S')  # Formato estándar para SQL
+                except ValueError:
+                    imprime(["Error de valor fecha", valor],"-")
+                    continue  # Saltar si no es un valor válido
 
-            condiciones_where.append(f"{campo['Nombre']} >= '{valor}'")
+            condiciones_where.append(f"{campo['Nombre']} >= {valor}")
             imprime(condiciones_where,"{")
 
     # Generar la consulta SQL

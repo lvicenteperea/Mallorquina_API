@@ -42,13 +42,9 @@ def close_connection_mysql(conn, cursor):
 def get_db_connection_sqlserver(conexion_json):
     try:
         conexion = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']},{conexion_json['port']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']}"
-        imprime([conexion],"=")
         donde = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD='XXXXXXX'"
         connection =  pyodbc.connect(conexion)
 
-        #connection =  pyodbc.connect(f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={conexion_json['host']};"
-        #                             f"DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']}"
-        #                            )
         return connection
     
     except Exception as e:

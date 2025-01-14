@@ -12,6 +12,7 @@ pydantic
 pydantic-extra-types
 pydantic-settings
 cryptography>=41.0.0
+python-jose
 
 starlette
 mysql-connector-python

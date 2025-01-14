@@ -105,13 +105,15 @@ def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
             if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
                 param.debug = f"Procesando tabla: {tabla}"
                 # Aquí va la lógica específica para cada tabla
-                procesar_tabla(param, tabla, conn_mysql)
+                max_val = procesar_tabla(param, tabla, conn_mysql)
 
                 param.debug = "Execute fec_ult_act"
-                cursor_mysql.execute(
-                    "UPDATE mll_cfg_tablas_bbdd SET Fecha_Ultima_Actualizacion = %s WHERE ID = %s",
-                    (datetime.now(), tabla["ID"])
-                )
+                cursor_mysql.execute("""UPDATE mll_cfg_tablas_bbdd 
+                                           SET Fecha_Ultima_Actualizacion = %s, 
+                                               ult_valor = %s 
+                                         WHERE ID = %s""",
+                                     (datetime.now(), max_val, tabla["ID"])
+                                    )
                 conn_mysql.commit()
         
         return []
@@ -132,8 +134,7 @@ def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
 def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
     param.debug="Inicio"
     cursor_mysql = None # para que no de error en el finally
-    # conn_sqlserver = None # para que no de error en el finally
-    # cursor_sqlserver = None # para que no de error en el finally
+    valor_max = None
 
     try:
         param.debug = "Obtener cursor"
@@ -231,6 +232,7 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
             # Obtener el valor del campo PK desde el registro
             pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
             pk_value = registro[pk_index]
+            valor_max =  pk_value
 
             select = f"""SELECT COUNT(*) 
                            FROM {nombre_tabla_destino} 
@@ -240,22 +242,23 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
             # Comprobar si el registro ya existe en la tabla destino
             cursor_mysql.execute(select, (pk_value,))
             existe = cursor_mysql.fetchone()[0] > 0  # Si existe, devuelve True
-
             if existe:
                 # Realizar un UPDATE
                 # valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
                 campos_update_filtrado = [campo for campo in campos_update if not (campo['Nombre'].startswith('{') and campo['Nombre'].endswith('}'))]
                 valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
                                              for campo in campos_update_filtrado] + [pk_value, tabla["ID_BBDD"]]
+                # imprime(["update:......", pk_value, update_query, valores_update], "=")
                 cursor_mysql.execute(update_query, valores_update)
             else:
                 # Realizar un INSERT
                 registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
+                # imprime(["INSERT:......",insert_query, registro_destino], "=")
                 cursor_mysql.execute(insert_query, registro_destino)
 
         conn_mysql.commit()
 
-        return []
+        return valor_max
 
     except Exception as e:
         param.error_sistema()
@@ -282,14 +285,17 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
 
         # Leer datos desde SQL Server
         cursor_sqlserver = conn_sqlserver.cursor()
-        select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
-        # imprime([select_query], "=")
-        x = construir_consulta(campos, nombre_tabla)
-        imprime([x], "@")
+
+        # Contruimos la SELECT que va a recoger los datos de ORIGEN
+        # select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
+        select_query = construir_consulta(campos, nombre_tabla)
+        # imprime([select_query], "@")
+
+        # Ejecución del cursor
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
+
         cursor_sqlserver.close()
-        cursor_sqlserver = None
 
         return registros
 
@@ -310,39 +316,47 @@ def construir_consulta(campos, nombre_tabla):
     
     # Construcción del WHERE
     condiciones_where = []
+    condiciones_order = []
     for campo in campos:
-        imprime(["-----",campo,"-----"], "@")
-        if campo.get('PK') == 1 and campo.get('ult_valor') is not None:
-            tipo = campo['Tipo'].lower()
-            valor = campo['ult_valor']
-            imprime([campo.get('Nombre'), type(campo.get('PK')), campo.get('PK'), tipo, valor, campo.get('ult_valor')],"-")
-            
-            if tipo == 'int':
-                try:
-                    valor = int(valor)
-                except ValueError:
-                    imprime(["Error de valor int", valor],"-")
-                    continue  # Saltar si no es un valor válido
-            elif tipo == 'numeric':
-                try:
-                    valor = float(valor)
-                except ValueError:
-                    imprime(["Error de valor numeric", valor],"-")
-                    continue  # Saltar si no es un valor válido
-            elif 'date' in tipo:
-                try:
-                    valor = datetime.strptime(valor, '%d-%m-%Y %H:%M:%S') if ':' in valor else datetime.strptime(valor, '%d-%m-%Y')
-                    valor = valor.strftime('%Y-%m-%d %H:%M:%S')  # Formato estándar para SQL
-                except ValueError:
-                    imprime(["Error de valor fecha", valor],"-")
-                    continue  # Saltar si no es un valor válido
+        # imprime(["-----",campo,"-----"], "@")
+        if campo.get('PK') == 1:
+            if campo.get('ult_valor') is not None:
+                tipo = campo['Tipo'].lower()
+                valor = campo['ult_valor']
+                # imprime([campo.get('Nombre'), type(campo.get('PK')), campo.get('PK'), tipo, valor, campo.get('ult_valor')],"-")
+                
+                if tipo == 'int':
+                    try:
+                        valor = int(valor)
+                    except ValueError:
+                        # imprime(["Error de valor int", valor],"-")
+                        continue  # Saltar si no es un valor válido
+                elif tipo == 'numeric':
+                    try:
+                        valor = float(valor)
+                    except ValueError:
+                        # imprime(["Error de valor numeric", valor],"-")
+                        continue  # Saltar si no es un valor válido
+                elif 'date' in tipo:   # SIN PROBAR
+                    try:
+                        valor = datetime.strptime(valor, '%d-%m-%Y %H:%M:%S') if ':' in valor else datetime.strptime(valor, '%d-%m-%Y')
+                        valor = valor.strftime('%Y-%m-%d %H:%M:%S')  # Formato estándar para SQL
+                    except ValueError:
+                        # imprime(["Error de valor fecha", valor],"-")
+                        continue  # Saltar si no es un valor válido
+                else:
+                    valor = f"'{valor}'"
 
-            condiciones_where.append(f"{campo['Nombre']} >= {valor}")
-            imprime(condiciones_where,"{")
+                condiciones_where.append(f"{campo['Nombre']} > {valor}")
+
+            condiciones_order.append(f"{campo['Nombre']}")
+            # imprime(condiciones_order,"{")
 
     # Generar la consulta SQL
     query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla}"
     if condiciones_where:
         query += f" WHERE {' AND '.join(condiciones_where)}"
+    if condiciones_order:
+        query += f" ORDER BY {' , '.join(condiciones_order)}"
 
     return query

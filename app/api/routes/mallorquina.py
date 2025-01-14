@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException, Query
-from datetime import datetime
+from fastapi import APIRouter, HTTPException, Query, Depends
+# from fastapi.security import HTTPAuthorizationCredentials
+from app.middleware.auth import AuthMiddleware
+
+from datetime import datetime, timedelta, timezone
+
 
 # mias
 import app.services.mallorquina.sync_data as sync_data
@@ -22,44 +26,74 @@ router = APIRouter()
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
+@router.get("/endpoint_sin_auth")
+async def endpoint_sin_auth():
+    return {"message": "Esta es una ruta pública."}
+
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.post("/create_token")
+async def create_token(user: str, id_App: int):
+    try:
+        print(f"Creando token para user: {user}, id_App: {id_App}")
+        token = AuthMiddleware.create_token({
+            "user": user,
+            "id_App": id_App,
+            "exp": datetime.now(timezone.utc) + timedelta(hours=1)  # Expira en 1 hora
+        })
+        return {"token": token}
+    except Exception as e:
+        # Registrar el error para debug
+        print(f"Error al generar token: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al generar el token")
+
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
 @router.get("/mll_consultas", response_model=InfoTransaccion)
 async def mll_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                         fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
+                        # credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
                        ):
-
     try:
-        resultado = []
+        # Verificar la autenticación
+        # authenticated_user = AuthMiddleware.get_current_user(credentials)
+
+        # Si no se proporciona `fecha`, usar la actual
         if not fecha:
-            # Si la variable es None o está vacía, asignar la fecha y hora actuales
             fecha = datetime.now().strftime('%Y-%m-%d')
 
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
+        param = InfoTransaccion(
+            id_App=id_App,
+            user=user,
+            ret_code=ret_code,
+            ret_txt=ret_txt,
+            parametros=[fecha]
+        )
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
 
         # --------------------------------------------------------------------------------
-        resultado = consulta_caja.recorre_consultas_tiendas(param = param)
+        resultado = consulta_caja.recorre_consultas_tiendas(param=param)
         # --------------------------------------------------------------------------------
 
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
 
-    except MadreException as e:
-        graba_log(param, "mll_sync_todo.MadreException", e)
-                
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_sync_todo.HTTPException", e)
 
+    except MadreException as e:
+        graba_log(param, "mll_consultas.MadreException", e)
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "mll_sync_todo.Exception", e)
-    
+        graba_log(param, "mll_consultas.Exception", e)
+
     finally:
         return param
+
 
 
 #----------------------------------------------------------------------------------

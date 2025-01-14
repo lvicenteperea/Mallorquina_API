@@ -4,23 +4,18 @@
 
 # uvicorn app.main:app --reload
 # python -m uvicorn app.main:app --reload
-from fastapi import FastAPI, HTTPException
+
+from fastapi import FastAPI, HTTPException  #, Depends
+# from app.api.routes.mallorquina import router as mallorquina_router
+from app.middleware.auth import AuthMiddleware
 import json 
+
 
 from app.exceptions import http_exception_handler, json_decode_error_handler, generic_exception_handler, madre_exception_handler, type_error_handler
 from app.api.routes import router as api_router
 from app.config.settings import settings
 from app.utils.mis_excepciones import MadreException
 from app.middleware.log_tiempos_respuesta import log_tiempos_respuesta
-
-'''
-from fastapi.middleware.cors import CORSMiddleware
-
-from app.middleware.logging import LoggingMiddleware
-from app.middleware.exception import ExceptionMiddleware
-from app.middleware.auth import AuthMiddleware
-'''
-
 
 
 # -----------------------------------------------------------------------------------------------
@@ -29,10 +24,8 @@ from app.middleware.auth import AuthMiddleware
 app = FastAPI(title=settings.PROJECT_NAME)
 
 
-
-
 # -----------------------------------------------------------------------------------------------
-# MIDDLEWARES
+# LOGS
 # -----------------------------------------------------------------------------------------------
 # Importar y registrar el middleware
 app.middleware("http")(log_tiempos_respuesta)
@@ -42,10 +35,12 @@ app.middleware("http")(log_tiempos_respuesta)
 # RUTAS
 # -----------------------------------------------------------------------------------------------
 app.include_router(api_router)
+# app.include_router(mallorquina_router)
 
-@app.get("/")
-async def read_root():
-    return {"message": "Welcome to the API MADRE"}
+# -----------------------------------------------------------------------------------------------
+# AUTENTICACIÓN
+# -----------------------------------------------------------------------------------------------
+app.add_middleware(AuthMiddleware)
 
 
 # -----------------------------------------------------------------------------------------------
@@ -56,6 +51,8 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(json.JSONDecodeError, json_decode_error_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 app.add_exception_handler(TypeError, type_error_handler)
+
+
 
 '''
 # -----------------------------------------------------------------------------------------------

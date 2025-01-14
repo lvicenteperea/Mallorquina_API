@@ -3,6 +3,7 @@ import logging
 import logging.config
 import traceback
 
+
 # ------------------------------------------------------------------------------------------------
 # Expande una lista que tenga dentro un elemento InfoTransaccion
 # ------------------------------------------------------------------------------------------------

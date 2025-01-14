@@ -1,6 +1,7 @@
 
 from pydantic import BaseModel
 from datetime import datetime
+from typing import List, Optional, Any
 
 class InfoTransaccion(BaseModel):
     id_App: int = 0
@@ -11,9 +12,9 @@ class InfoTransaccion(BaseModel):
 
     # Datos cuando las funciones de BBDD retornar un valor Ok, Dos listas diferentes
     # En "parametros" retorna la lista de parametros que son de salida o entrada/salida
-    parametros: list = None
+    parametros: Optional[List[Any]] = None  # Especificar lista opcional con elementos de cualquier tipo
     # En "resultados" es para procedimientos que retornar un listado de registros "una select"
-    resultados: list = []
+    resultados: List[Any] = []  # Lista vacía predeterminada para resultados
     
 
     def set_parametros(self, datos):
@@ -53,13 +54,13 @@ class InfoTransaccion(BaseModel):
         return lista
 
 
-    def to_infotrans_proc_bbdd(self, list):
-        return InfoTransaccion(id_App=list[0], 
-                               user=list[1], 
-                               ret_code=list[2], 
-                               ret_txt=list[3], 
-                               parametros=list[4:]
-                              )
+    def to_infotrans_proc_bbdd(self, list: list):
+        return InfoTransaccion( id_App      = list[0], 
+                                user        = list[1], 
+                                ret_code    = list[2], 
+                                ret_txt     = list[3] if list[3] else "", 
+                                parametros  = list[4:]
+                           )
 
     def to_dict(self):
         return {"id_app": self.id_App, "Usuario": self.user, "ret_code": self.ret_code, "ret_txt": self.ret_txt, "debug": self.debug}

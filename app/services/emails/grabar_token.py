@@ -62,13 +62,11 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
 
         param = call_proc_bbdd(param=param, procedimiento="w_mail_graba_access_token")
 
-        imprime([param], "=")
         # Verificar si el procedimiento devolvió un error
         if param.ret_code < 0:
             param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_access_token")
             raise MadreException(param=param)
         
-
         return param
 
     except MadreException as e:

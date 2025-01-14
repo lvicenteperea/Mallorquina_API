@@ -130,11 +130,10 @@ def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
-    funcion = "sync_data.procesar_tabla"
     param.debug="Inicio"
     cursor_mysql = None # para que no de error en el finally
-    conn_sqlserver = None # para que no de error en el finally
-    cursor_sqlserver = None # para que no de error en el finally
+    # conn_sqlserver = None # para que no de error en el finally
+    # cursor_sqlserver = None # para que no de error en el finally
 
     try:
         param.debug = "Obtener cursor"
@@ -153,7 +152,7 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
         param.debug = "obtener campos"
         # Obtener campos de la tabla
-        campos = obtener_campos_tabla(conn_mysql, tabla["ID_Tabla"])
+        campos = obtener_campos_tabla(conn_mysql, tabla["ID_BBDD"], tabla["ID_Tabla"])
 
         param.debug = "crea_tabla_dest"
         # Crear tabla si no existe
@@ -163,6 +162,7 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         # Buscamos la conexión que necesitamos para esta bbdd origen
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla["ID_BBDD"])
 
+        '''
         param.debug = "conn origen"
         # conextamos con esta bbdd origen
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
@@ -175,6 +175,8 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         registros = cursor_sqlserver.fetchall()
         cursor_sqlserver.close()
         cursor_sqlserver = None
+        '''
+        registros = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos)
 
         # Preparar los cursores para MySQL
         cursor_mysql = conn_mysql.cursor()
@@ -231,9 +233,9 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
             pk_value = registro[pk_index]
 
             select = f"""SELECT COUNT(*) 
-                                       FROM {nombre_tabla_destino} 
-                                      WHERE {pk_campo} = %s
-                                        AND Origen_BBDD = {tabla["ID_BBDD"]}"""
+                           FROM {nombre_tabla_destino} 
+                          WHERE {pk_campo} = %s
+                            AND Origen_BBDD = {tabla["ID_BBDD"]}"""
 
             # Comprobar si el registro ya existe en la tabla destino
             cursor_mysql.execute(select, (pk_value,))
@@ -260,7 +262,78 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         graba_log(param, "procesar_tabla.Exception", e)
         raise 
 
+    # finally:
+    #     param.debug = "cierra conexión sqlserver"
+    #     close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos):
+    param.debug="Inicio"
+    conn_sqlserver = None # para que no de error en el finally
+    cursor_sqlserver = None # para que no de error en el finally
+
+    try:
+        imprime([nombre_tabla, campos], "=")
+        param.debug = "conn origen"
+        # conextamos con esta bbdd origen
+        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+
+        # Leer datos desde SQL Server
+        cursor_sqlserver = conn_sqlserver.cursor()
+        select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
+        imprime([select_query], "=")
+        x = construir_consulta(campos, nombre_tabla)
+        imprime([x], "@")
+        cursor_sqlserver.execute(select_query)
+        registros = cursor_sqlserver.fetchall()
+        cursor_sqlserver.close()
+        cursor_sqlserver = None
+
+
+        return registros
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "Obtener_datos_origen.Exception", e)
+        raise 
+
     finally:
         param.debug = "cierra conexión sqlserver"
         close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
 
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def construir_consulta(campos, nombre_tabla):
+    # Construcción de la lista de campos para la SELECT
+    campos_select = [campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')]
+    
+    # Construcción del WHERE
+    condiciones_where = []
+    for campo in campos:
+        if campo.get('PK') == 1 and campo.get('ult_valor') is not None:
+            tipo = campo['Tipo'].lower()
+            valor = campo['ult_valor']
+            imprime([campo.get('Nombre'), type(campo.get('PK')), campo.get('PK'), tipo, valor, campo.get('ult_valor')],"-")
+            
+            # if tipo in ('int', 'numeric'):
+            #     try:
+            #         valor = int(valor) if 'int' in tipo else float(valor)
+            #     except ValueError:
+            #         continue  # Saltar si no es un valor válido
+            # elif 'date' in tipo:
+            #     try:
+            #         valor = datetime.strptime(valor, '%d-%m-%Y %H:%M:%S') if ':' in valor else datetime.strptime(valor, '%d-%m-%Y')
+            #         valor = valor.strftime('%Y-%m-%d %H:%M:%S')  # Formato estándar para SQL
+            #     except ValueError:
+            #         continue  # Saltar si no es un valor válido
+
+            condiciones_where.append(f"{campo['Nombre']} >= '{valor}'")
+            imprime(condiciones_where,"{")
+
+    # Generar la consulta SQL
+    query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla}"
+    if condiciones_where:
+        query += f" WHERE {' AND '.join(condiciones_where)}"
+
+    return query

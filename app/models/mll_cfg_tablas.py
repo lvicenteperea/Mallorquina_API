@@ -1,15 +1,30 @@
 import re
 from app.utils.functions import imprime
 
-def obtener_campos_tabla(conn, id_tabla):
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def obtener_campos_tabla(conn, id_bbdd, id_tabla):
 
+    # cursor = conn.cursor(dictionary=True)
+    # cursor.execute("SELECT * FROM mll_cfg_campos WHERE ID_Tabla = %s", (id_tabla,))
+    # campos = cursor.fetchall()
+    # cursor.close()
+
+    query = """SELECT a.*, b.ult_valor FROM mll_cfg_campos a
+                inner join mll_cfg_tablas_bbdd b on a.id_tabla = b.id_tabla and id_bbdd = %s
+                WHERE a.ID_Tabla = %s
+            """
+    # imprime([id_bbdd, id_tabla, query], '$')
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM mll_cfg_campos WHERE ID_Tabla = %s", (id_tabla,))
+    cursor.execute(query, (id_bbdd, id_tabla))
     campos = cursor.fetchall()
+    # imprime([campos], '%')
     cursor.close()
 
     return campos
 
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 def crear_tabla_destino(conn_mysql, nombre_tabla, campos):
     cursor = conn_mysql.cursor()
 
@@ -50,6 +65,8 @@ def crear_tabla_destino(conn_mysql, nombre_tabla, campos):
     conn_mysql.commit()
     cursor.close()
     
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 def drop_tabla(conn_mysql, tabla):
     cursor_mysql = conn_mysql.cursor()
     cursor_mysql.execute(f"DROP TABLE IF EXISTS {tabla}")

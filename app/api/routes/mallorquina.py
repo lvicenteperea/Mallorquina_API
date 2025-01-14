@@ -197,7 +197,7 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
         resultado = tarifas_a_TPV.proceso(param = param)
         # --------------------------------------------------------------------------------
 
-        param.debug = f"Retornando: {type(resultado)}"
+        param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
     
     except MadreException as e:
@@ -236,7 +236,7 @@ async def mll_fichas_tecnicas(id_App: int = Query(..., description="Identificado
         resultado = fichas_tecnicas.proceso(param = param)
         # --------------------------------------------------------------------------------
 
-        param.debug = f"Retornando: {type(resultado)}"
+        param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
     
     except MadreException as e:
@@ -266,14 +266,15 @@ async def mll_carga_prod_erp(id_App: int = Query(..., description="Identificador
     
     try:
         resultado = []
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path])
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path}"
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
+                                parametros=[origen_path],
+                                debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path}")
 
         # --------------------------------------------------------------------------------
         resultado = carga_productos_erp.proceso(param = param)
         # --------------------------------------------------------------------------------
 
-        param.debug = f"Retornando: {type(resultado)}"
+        param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
     
     except MadreException as e:
@@ -302,16 +303,14 @@ async def mll_encargos_navidad(id_App: int = Query(..., description="Identificad
                        ):
     
     try:
-        resultado = []
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt)
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
+                                debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}")
 
         # --------------------------------------------------------------------------------
-        resultado = encargos_navidad.proceso(param = param)
+        param_resultado = encargos_navidad.proceso(param = param)
         # --------------------------------------------------------------------------------
 
-        param.debug = f"Retornando: {type(resultado)}"
-        param.resultados = resultado or []
+        param.debug = f"Esto debería ser <infoTransaccion>: {type(param_resultado)}"
     
     except MadreException as e:
         graba_log(param, "mll_carga_prod_erp.MadreException", e)
@@ -326,7 +325,7 @@ async def mll_encargos_navidad(id_App: int = Query(..., description="Identificad
         graba_log(param, "mll_fichas_tecnicas.Exception", e)
 
     finally:
-        return param
+        return param_resultado
 
 
 
@@ -344,16 +343,15 @@ async def eml_grabar_token(id_App: int = Query(..., description="Identificador d
                        ):
     
     try:
-        resultado = []
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[tokenable, nombre, token, abilities])
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {tokenable} - {nombre} - {token} - {abilities}"
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
+                                parametros=[tokenable, nombre, token, abilities],
+                                debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {tokenable} - {nombre} - {token} - {abilities}")
 
         # --------------------------------------------------------------------------------
-        resultado = grabar_token.proceso(param = param)
+        param_resultado = grabar_token.proceso(param = param) # ya retorna un infoTransaccion
         # --------------------------------------------------------------------------------
 
-        param.debug = f"Retornando: {type(resultado)}"
-        param.resultados = resultado or []
+        param.debug = f"Esto debería ser <infoTransaccion>: {type(resultado)}"
     
     except MadreException as e:
         graba_log(param, "mll_carga_prod_erp.MadreException", e)
@@ -368,4 +366,4 @@ async def eml_grabar_token(id_App: int = Query(..., description="Identificador d
         graba_log(param, "mll_fichas_tecnicas.Exception", e)
 
     finally:
-        return param
+        return param_resultado

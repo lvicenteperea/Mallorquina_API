@@ -67,14 +67,11 @@ def call_proc_bbdd(param: InfoTransaccion, procedimiento:str, conn_mysql = None,
         #param_expanded = expande_lista(param)
         param_proc = param.to_list_proc_bbdd()
 
-        imprime([param_proc], "|")
         cursor = conn_mysql.cursor()
         response = cursor.callproc(procedimiento, param_proc)
 
-        imprime(response, "!")
         # Se crea yba variable infoTrans pque es la respuesta con con los datos de infoTrans que es una lista que retorna el procedimiento en variables
         infoTrans = InfoTransaccion().to_infotrans_proc_bbdd(response)
-        
         if infoTrans.ret_code < 0:
             return infoTrans
     
@@ -90,8 +87,6 @@ def call_proc_bbdd(param: InfoTransaccion, procedimiento:str, conn_mysql = None,
         # Convertir la lista de diccionarios a JSON
         json_rows = json.dumps(rows)
         infoTrans.set_resultados(json.loads(json_rows))
-
-        imprime([infoTrans], "@")
 
         if commit and not llega_con_connexion: # si llega con conexión no haceamos commit porque no sabemos que ha pasado antes.....
             conn_mysql.commit()

@@ -1,0 +1,37 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "Seguridad",
+    "collectionId": "d0e10018-b963-4ffa-9884-72fe0ab477bd",
+    "dateExported": "2025-01-15T22:36:45.318Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "ba898e77-6b46-4dde-b6ea-37beea933f5f",
+            "colId": "d0e10018-b963-4ffa-9884-72fe0ab477bd",
+            "containerId": "",
+            "name": "create_token",
+            "url": "http://localhost:8000/create_token",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2025-01-15T22:35:55.077Z",
+            "modified": "2025-01-15T22:36:15.903Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "x-api-key",
+                    "value": "mi_clave_secreta"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\"user\": \"Pruebas\", \"id_App\": 1,\n  \"username\": \"admin\", \"password\":\"password123\"\n}",
+                "form": []
+            }
+        }
+    ],
+    "ref": "BxvmTx84C4N7Bfpc3HSf2oj8qOu2lgrXB3Y_0kme9Fa0OlVpmRCNqVv6D363tv9Yxq9lgIhUpjw2goiYHS3zWg"
+}

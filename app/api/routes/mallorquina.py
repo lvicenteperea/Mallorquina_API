@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
-# from fastapi.security import HTTPAuthorizationCredentials
-from app.middleware.auth import AuthMiddleware
 
-from datetime import datetime, timedelta, timezone
+from fastapi.security import HTTPAuthorizationCredentials
+from app.middleware.auth import AuthMiddleware
+from datetime import datetime
 
 
 # mias
@@ -16,6 +16,7 @@ import app.services.mallorquina.carga_productos_erp as carga_productos_erp
 import app.services.mallorquina.encargos_navidad as encargos_navidad
 import app.services.emails.grabar_token as grabar_token
 
+
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
@@ -26,42 +27,18 @@ router = APIRouter()
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/endpoint_sin_auth")
-async def endpoint_sin_auth():
-    return {"message": "Esta es una ruta pública."}
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.post("/create_token")
-async def create_token(user: str, id_App: int):
-    try:
-        print(f"Creando token para user: {user}, id_App: {id_App}")
-        token = AuthMiddleware.create_token({
-            "user": user,
-            "id_App": id_App,
-            "exp": datetime.now(timezone.utc) + timedelta(hours=1)  # Expira en 1 hora
-        })
-        return {"token": token}
-    except Exception as e:
-        # Registrar el error para debug
-        print(f"Error al generar token: {e}")
-        raise HTTPException(status_code=500, detail="Error interno al generar el token")
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
 @router.get("/mll_consultas", response_model=InfoTransaccion)
 async def mll_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                         fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
-                        # credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
+                        credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
                        ):
     try:
         # Verificar la autenticación
-        # authenticated_user = AuthMiddleware.get_current_user(credentials)
+        authenticated_user = AuthMiddleware.get_current_user(credentials)
+        print(f"Usuario autenticado: {authenticated_user}")
 
         # Si no se proporciona `fecha`, usar la actual
         if not fecha:

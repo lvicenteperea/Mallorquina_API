@@ -1,0 +1,62 @@
+{
+    "info": {
+        "_postman_id": "a93d44e7-04ec-4a14-b5c5-d2825f6ccaa3",
+        "name": "Emails",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "eml_grabar_token",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/eml_grabar_token?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"&tokenable=no_se_que va aquí&nombre=Token de prueba&token=mi_token_1234@ABC@cde&abilities=[\"mail\"]",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "1"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Pruebas"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "tokenable",
+                            "value": "no_se_que va aquí"
+                        },
+                        {
+                            "key": "nombre",
+                            "value": "Token de prueba"
+                        },
+                        {
+                            "key": "token",
+                            "value": "mi_token_1234@ABC@cde"
+                        },
+                        {
+                            "key": "abilities",
+                            "value": "[\"mail\"]"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "eml_grabar_token"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        }
+    ]
+}

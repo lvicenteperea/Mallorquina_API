@@ -3,6 +3,7 @@ from starlette.requests import Request
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from fastapi import HTTPException
+from fastapi.security import HTTPBearer
 
 
 """
@@ -20,9 +21,14 @@ ALGORITHM = "HS256"
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
+    # Esquema de autenticación
+    security = HTTPBearer()
+
+    #----------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------    
     async def dispatch(self, request: Request, call_next):
         # Excluir ciertas rutas de autenticación
-        if request.url.path in ["/login", "/open-endpoint", "/docs", "/redoc", "/create_token"]:
+        if request.url.path in ["/login", "/open-endpoint", "/docs", "/redoc", "/auth/create_token"]:
             return await call_next(request)
 
         # Obtener token del encabezado Authorization
@@ -50,3 +56,29 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
 
         return await call_next(request)
+
+
+    #----------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------    
+    @staticmethod
+    def get_current_user(credentials):
+        try:
+            payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+            return payload.get("user")
+        except JWTError as e:
+            raise HTTPException(status_code=401, detail="Token inválido o expirado")
+        
+    #----------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------    
+    @staticmethod
+    def create_token(data: dict) -> str:
+        """
+        Genera un token JWT con los datos proporcionados.
+        
+        Args:
+            data (dict): Datos a incluir en el token (ejemplo: user, id_App, exp).
+            
+        Returns:
+            str: Token JWT firmado.
+        """
+        return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)

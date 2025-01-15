@@ -1,0 +1,65 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "Emails",
+    "collectionId": "4b63b7fb-7f90-4d63-b091-14bb5ed42efa",
+    "dateExported": "2025-01-15T22:37:13.842Z",
+    "version": "1.2",
+    "folders": [],
+    "requests": [
+        {
+            "_id": "fd89571c-8390-4dd8-b3a5-77a1f7a0cfeb",
+            "colId": "4b63b7fb-7f90-4d63-b091-14bb5ed42efa",
+            "containerId": "",
+            "name": "eml_grabar_token",
+            "url": "http://localhost:8000/eml_grabar_token?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"&tokenable=no_se_que va aquí&nombre=Token de prueba&token=mi_token_1234@ABC@cde&abilities=[\"mail\"]",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2025-01-10T08:55:30.387Z",
+            "modified": "2025-01-10T08:58:27.874Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "id_App",
+                    "value": "1",
+                    "isPath": false
+                },
+                {
+                    "name": "user",
+                    "value": "Pruebas",
+                    "isPath": false
+                },
+                {
+                    "name": "ret_code",
+                    "value": "0",
+                    "isPath": false
+                },
+                {
+                    "name": "ret_txt",
+                    "value": "\"\"",
+                    "isPath": false
+                },
+                {
+                    "name": "tokenable",
+                    "value": "no_se_que va aquí",
+                    "isPath": false
+                },
+                {
+                    "name": "nombre",
+                    "value": "Token de prueba",
+                    "isPath": false
+                },
+                {
+                    "name": "token",
+                    "value": "mi_token_1234@ABC@cde",
+                    "isPath": false
+                },
+                {
+                    "name": "abilities",
+                    "value": "[\"mail\"]",
+                    "isPath": false
+                }
+            ]
+        }
+    ],
+    "ref": "4y7xnqhlO05rsGghmeiOMllaH0_aWUoFWq6AxWkJF5AGfbpCAiRR3ICeecNZOmtaRVFeSemPkQZ8fVIfXahPyA"
+}

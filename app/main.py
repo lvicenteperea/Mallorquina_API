@@ -6,13 +6,16 @@
 # python -m uvicorn app.main:app --reload
 
 from fastapi import FastAPI, HTTPException  #, Depends
-# from app.api.routes.mallorquina import router as mallorquina_router
+# from app.api.routes import router as api_router
+from app.api.routes.mallorquina import router as mallorquina_router
+from app.api.routes.auth_routes import router as auth_router
+
+
 from app.middleware.auth import AuthMiddleware
 import json 
 
 
 from app.exceptions import http_exception_handler, json_decode_error_handler, generic_exception_handler, madre_exception_handler, type_error_handler
-from app.api.routes import router as api_router
 from app.config.settings import settings
 from app.utils.mis_excepciones import MadreException
 from app.middleware.log_tiempos_respuesta import log_tiempos_respuesta
@@ -34,8 +37,9 @@ app.middleware("http")(log_tiempos_respuesta)
 # -----------------------------------------------------------------------------------------------
 # RUTAS
 # -----------------------------------------------------------------------------------------------
-app.include_router(api_router)
-# app.include_router(mallorquina_router)
+# app.include_router(api_router)
+app.include_router(mallorquina_router, prefix="/mallorquina", tags=["Mallorquina"])
+app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 
 # -----------------------------------------------------------------------------------------------
 # AUTENTICACIÓN

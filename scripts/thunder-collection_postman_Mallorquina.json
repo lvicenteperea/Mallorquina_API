@@ -1,0 +1,339 @@
+{
+    "info": {
+        "_postman_id": "891b38df-7fe2-4711-bf64-b070ea903e9f",
+        "name": "Mallorquina",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "mll_carga_prod_erp",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/mll_carga_prod_erp?id_App=63&user=Prueba&ret_code=0&ret_txt=\"OK\"&origen_path=productos.xlsx",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Prueba"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"OK\""
+                        },
+                        {
+                            "key": "origen_path",
+                            "value": "productos.xlsx"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mll_carga_prod_erp"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "mll_fichas_tecnicas",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/mll_fichas_tecnicas?id_App=63&user=Prueba&ret_code=0&ret_txt=\"OK\"&output_path=fichas_tecnicas.html",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Prueba"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"OK\""
+                        },
+                        {
+                            "key": "output_path",
+                            "value": "fichas_tecnicas.html"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mll_fichas_tecnicas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "mll_inf_arqueo_caja",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/mll_inf_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&fecha=2024-10-05&tienda=0",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Pruebas"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-10-05"
+                        },
+                        {
+                            "key": "tienda",
+                            "value": "0"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mll_inf_arqueo_caja"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "arqueo_caja",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/mll_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Pruebas"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mll_arqueo_caja"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "mll_convierte_tarifas",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/mll_convierte_tarifas?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&origen_path=export_sqlpyme.xlsx&output_path=importa_TPV.xlsx",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Pruebas"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "origen_path",
+                            "value": "export_sqlpyme.xlsx"
+                        },
+                        {
+                            "key": "output_path",
+                            "value": "importa_TPV.xlsx"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mll_convierte_tarifas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "mll_sync_todo",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/mll_sync_todo?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "1"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Pruebas"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mll_sync_todo"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "mll_consultas",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/mallorquina/mll_consultas?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&fecha=2024-10-05",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Pruebas"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-10-05"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mallorquina",
+                        "mll_consultas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiUHJ1ZWJhcyIsImlkX0FwcCI6MSwiZXhwIjoxNzM2OTg1NTIzfQ.VBi1mrdLnpJpHD7cO31rUOWaOlxc4P-4limaJ5OOWA4"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "mll_encargos_navidad",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/mll_encargos_navidad?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "Pruebas"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mll_encargos_navidad"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        }
+    ]
+}

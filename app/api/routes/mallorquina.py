@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
-
+from starlette.requests import Request
 from fastapi.security import HTTPAuthorizationCredentials
 from app.middleware.auth import AuthMiddleware
 from datetime import datetime
@@ -28,18 +28,19 @@ router = APIRouter()
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/mll_consultas", response_model=InfoTransaccion)
-async def mll_consultas(id_App: int = Query(..., description="Identificador de la aplicación"),
+async def mll_consultas(
+                        request: Request,  # Para acceder a request.state.user
+                        id_App: int = Query(..., description="Identificador de la aplicación"),
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                         fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
-                        credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
+                        # credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
                        ):
     try:
-        # Verificar la autenticación
-        authenticated_user = AuthMiddleware.get_current_user(credentials)
-        print(f"Usuario autenticado: {authenticated_user}")
-
+        # --------------------------------------------------------------------------------
+        # Validaciones y construcción Básica
+        # --------------------------------------------------------------------------------
         # Si no se proporciona `fecha`, usar la actual
         if not fecha:
             fecha = datetime.now().strftime('%Y-%m-%d')
@@ -54,12 +55,23 @@ async def mll_consultas(id_App: int = Query(..., description="Identificador de l
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
 
         # --------------------------------------------------------------------------------
-        resultado = consulta_caja.recorre_consultas_tiendas(param=param)
+        # Control de autenticación de usuario
         # --------------------------------------------------------------------------------
+        # Verificar la autenticación
+        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
+        if user != authenticated_user:
+            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+            raise MadreException(param,"Los usuarios no corresponden", -1)
+        # else:
+        #     print(f"Usuario autenticado: {authenticated_user}")
+
+        # --------------------------------------------------------------------------------
+        # Servicio
+        # --------------------------------------------------------------------------------
+        resultado = consulta_caja.recorre_consultas_tiendas(param=param)
 
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
-
 
     except MadreException as e:
         graba_log(param, "mll_consultas.MadreException", e)
@@ -80,6 +92,7 @@ async def mll_sync_todo(id_App: int = Query(..., description="Identificador de l
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                        credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
                        ):
 
     try:

@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from fastapi import HTTPException
 from fastapi.security import HTTPBearer
+from app.config.settings import settings
+
 
 
 """
@@ -27,9 +29,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
     #----------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------    
     async def dispatch(self, request: Request, call_next):
+        print("01. asdasdfasdfas231542342")
         # Excluir ciertas rutas de autenticación
         if request.url.path in ["/login", "/open-endpoint", "/docs", "/redoc", "/auth/create_token"]:
             return await call_next(request)
+
+
+        print(f"Headers recibidos: {request.headers}")
 
         # Obtener token del encabezado Authorization
         auth_header = request.headers.get("Authorization")
@@ -43,16 +49,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             print(f"Fallo de autenticación en {request.url.path}: encabezado Authorization ausente o incorrecto")
             return JSONResponse({"detail": "Autenticación requerida2"}, status_code=401)
 
-        try:
-            # Verificar el token
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            request.state.user = payload.get("user")
-
-        except JWTError as e:
-            print(f"Error de token en {request.url.path}: {e}")
-            return JSONResponse({"detail": "Token inválido o expirado"}, status_code=401)
-
-
+        request.state.user = self.get_current_user(token)
 
 
         return await call_next(request)
@@ -61,12 +58,17 @@ class AuthMiddleware(BaseHTTPMiddleware):
     #----------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------    
     @staticmethod
-    def get_current_user(credentials):
+    def get_current_user(token): #credentials):
         try:
-            payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-            return payload.get("user")
+            if settings.AUTH_ENABLED:
+                payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]) #credentials.credentials
+                # print(payload.get("user"), payload)
+                return payload.get("user")
+            else:
+                return "usuario_dev"
+            
         except JWTError as e:
-            raise HTTPException(status_code=401, detail="Token inválido o expirado")
+            raise HTTPException(status_code=401, detail="Token inválido o expirado2")
         
     #----------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------    

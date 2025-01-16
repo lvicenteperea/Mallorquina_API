@@ -5,7 +5,7 @@ from typing import List, Optional, Any
 
 class InfoTransaccion(BaseModel):
     id_App: int = 0
-    user: str = 'Sistema_'
+    user: str = 'Sistema_' # Usuario de sistema que se conecta: Fronta, BackOfficce, un servicio específico, webs de terceros...
     ret_code: int = 0
     ret_txt: str = "Ok"
     debug: str = "" # solo por si se necesita saber por donde ha pasado la ejecución

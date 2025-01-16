@@ -265,10 +265,6 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         graba_log(param, "procesar_tabla.Exception", e)
         raise 
 
-    # finally:
-    #     param.debug = "cierra conexión sqlserver"
-    #     close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos) -> list:
@@ -284,18 +280,19 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
         # Leer datos desde SQL Server
+        param.debug = "crear cursor"
         cursor_sqlserver = conn_sqlserver.cursor()
 
         # Contruimos la SELECT que va a recoger los datos de ORIGEN
         # select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
+        param.debug = "Construir Select"
         select_query = construir_consulta(campos, nombre_tabla)
         # imprime([select_query], "@")
 
         # Ejecución del cursor
+        param.debug = "Ejecutar Select"
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
-
-        cursor_sqlserver.close()
 
         return registros
 
@@ -305,7 +302,7 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
         raise 
 
     finally:
-        param.debug = "cierra conexión sqlserver"
+        param.debug = f"cierra conexión sqlserver: {param.debug}"
         close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
 
 #----------------------------------------------------------------------------------------

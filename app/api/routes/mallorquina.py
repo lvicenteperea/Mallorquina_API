@@ -28,14 +28,12 @@ router = APIRouter()
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/mll_consultas", response_model=InfoTransaccion)
-async def mll_consultas(
-                        request: Request,  # Para acceder a request.state.user
+async def mll_consultas(request: Request,  # Para acceder a request.state.user
                         id_App: int = Query(..., description="Identificador de la aplicación"),
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                         fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
-                        # credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
                        ):
     try:
         # --------------------------------------------------------------------------------

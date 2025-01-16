@@ -13,10 +13,15 @@ app = FastAPI()
 @app.middleware("http")
 async def log_tiempos_respuesta(request: Request, call_next):
     # Middleware para registrar los tiempos de entrada, salida y duración total de cada solicitud.
-    imprime([request, call_next], "=")
 
     # Registrar el tiempo de entrada
     start_time = time.time()
+
+    # Obtener información adicional
+    ip = request.client.host  # IP del cliente
+    servicio = request.url.path  # Ruta del endpoint llamado
+    usuario = request.headers.get('X-User')  # Cambiar 'X-User' según tu sistema de autenticación
+
 
     # Registrar la solicitud (opcional)
     # logger.info(f"Solicitud entrante: {request.method} {request.url}")
@@ -36,6 +41,9 @@ async def log_tiempos_respuesta(request: Request, call_next):
             f"Tiempo de entrada: {start_time:.4f} ms, "
             f"Tiempo de salida: {end_time:.4f} ms, "
             f"Duración total: {duration:.2f} ms - "
+            f"IP: {ip} - "
+            f"Servicio: {servicio} - "
+            f"Usuario: {usuario or 'No especificado'} - "
             f"Estado: {response.status_code} - "
             f"Respuesta: {body}"
         )

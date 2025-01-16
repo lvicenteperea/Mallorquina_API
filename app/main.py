@@ -30,35 +30,6 @@ app = FastAPI(title=settings.PROJECT_NAME)
 
 
 # -----------------------------------------------------------------------------------------------
-# Control de Acceso opr IP
-# -----------------------------------------------------------------------------------------------
-'''
-    Si la aplicación está detrás de un proxy o balanceador de carga, como Nginx, la IP del cliente 
-    puede no ser precisa. En este caso, utiliza el header X-Forwarded-For:
-
-        @app.middleware("http")
-        async def restrict_ip_middleware(request: Request, call_next):
-            forwarded_for = request.headers.get("x-forwarded-for")
-            client_ip = forwarded_for.split(",")[0] if forwarded_for else request.client.host
-
-            allowed_ips = ["127.0.0.1", "192.168.1.100"]
-            if client_ip not in allowed_ips:
-                return JSONResponse({"detail": "Acceso denegado"}, status_code=403)
-
-            return await call_next(request)
-'''
-@app.middleware("http")
-async def restrict_ip_middleware(request: Request, call_next):
-    allowed_ips = ["127.0.0.1", "192.168.1.100"]  # Lista de IPs permitidas
-    client_ip = request.client.host
-
-    if client_ip not in allowed_ips:
-        return JSONResponse({"detail": "Acceso denegado"}, status_code=403)
-
-    return await call_next(request)
-
-
-# -----------------------------------------------------------------------------------------------
 # LOGS
 # -----------------------------------------------------------------------------------------------
 # Importar y registrar el middleware

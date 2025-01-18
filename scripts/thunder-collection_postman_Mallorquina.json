@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "891b38df-7fe2-4711-bf64-b070ea903e9f",
+        "_postman_id": "a2dac09a-7dc0-43d7-a23b-260301d28102",
         "name": "Mallorquina",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -221,7 +221,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mll_sync_todo?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
+                    "raw": "http://localhost:8000/mallorquina/mll_sync_todo?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
                     "query": [
                         {
                             "key": "id_App",
@@ -242,6 +242,7 @@
                     ],
                     "variable": [],
                     "path": [
+                        "mallorquina",
                         "mll_sync_todo"
                     ],
                     "protocol": "http",
@@ -249,7 +250,13 @@
                         "localhost"
                     ],
                     "port": "8000"
-                }
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiUHJ1ZWJhcyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDIxNjM5fQ.HrrzPqj7-p48yActAWxIe6fFMWlqHoNmgUTXE8FtDzQ"
+                    }
+                ]
             }
         },
         {
@@ -257,15 +264,15 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mallorquina/mll_consultas?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&fecha=2024-10-05",
+                    "raw": "http://localhost:8000/mallorquina/mll_consultas?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"\"&fecha=2024-10-05",
                     "query": [
                         {
                             "key": "id_App",
-                            "value": "63"
+                            "value": "1"
                         },
                         {
                             "key": "user",
-                            "value": "Pruebas"
+                            "value": "usuario_dev"
                         },
                         {
                             "key": "ret_code",
@@ -294,7 +301,7 @@
                 "header": [
                     {
                         "key": "Authorization",
-                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiUHJ1ZWJhcyIsImlkX0FwcCI6MSwiZXhwIjoxNzM2OTg1NTIzfQ.VBi1mrdLnpJpHD7cO31rUOWaOlxc4P-4limaJ5OOWA4"
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
                     }
                 ]
             }

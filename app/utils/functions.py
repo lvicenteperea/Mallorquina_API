@@ -101,23 +101,29 @@ Esta función es una ayuda para el desarrollo para hacer print de información
 #------------------------------------------------------------------------------------------------
 def imprime(textos: list, relleno: str = "", modo: int = 1):
 
-    # Determinar el ancho de las líneas de relleno
-    if relleno and relleno.strip() != "":
-        ancho = max(len(str(texto)) for texto in textos) + 10  # Añade un extra para que se vea mejor
-        linea_relleno = relleno * ancho
- 
-         # Imprimir la línea de relleno al inicio
-        print(linea_relleno)
+    if len(textos) > 0:
+        # Determinar el ancho de las líneas de relleno
+        if relleno and relleno.strip() != "":
+            ancho = max(len(str(texto)) for texto in textos) + 10  # Añade un extra para que se vea mejor
+            linea_relleno = relleno * ancho
+    
+            # Imprimir la línea de relleno al inicio
+            print(linea_relleno)
 
-    # Imprimir los textos
-    if modo == 1:
-        # print(" ".join(textos))  # Todos los textos en la misma línea
-        resultado = "<" + "> - <".join(str(elemento) for elemento in textos) + ">"
-        print(resultado)
+        # Imprimir los textos
+        if modo == 1:
+            # print(" ".join(textos))  # Todos los textos en la misma línea
+            resultado = "<" + "> - <".join(str(elemento) for elemento in textos) + ">"
+            print(resultado)
+        else:
+            for texto in textos:  # Cada texto en una línea separada
+                print(texto)
+
+        if relleno:
+            # Imprimir la línea de relleno al final
+            print(linea_relleno)
     else:
-        for texto in textos:  # Cada texto en una línea separada
-            print(texto)
+        print(relleno * 20)
+        print("Lista vacia")
+        print(relleno * 20)
 
-    if relleno:
-        # Imprimir la línea de relleno al final
-        print(linea_relleno)

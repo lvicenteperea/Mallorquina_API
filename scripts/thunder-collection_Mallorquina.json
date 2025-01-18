@@ -2,7 +2,7 @@
     "clientName": "Thunder Client",
     "collectionName": "Mallorquina",
     "collectionId": "1e7c61d6-ebf4-4e56-be37-d93e3563d8f5",
-    "dateExported": "2025-01-15T22:59:40.839Z",
+    "dateExported": "2025-01-17T06:54:12.367Z",
     "version": "1.2",
     "folders": [],
     "requests": [
@@ -211,12 +211,17 @@
             "colId": "1e7c61d6-ebf4-4e56-be37-d93e3563d8f5",
             "containerId": "",
             "name": "mll_sync_todo",
-            "url": "http://localhost:8000/mll_sync_todo?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
+            "url": "http://localhost:8000/mallorquina/mll_sync_todo?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
             "method": "GET",
             "sortNum": 1250,
             "created": "2024-12-30T12:32:00.601Z",
-            "modified": "2025-01-13T22:29:37.695Z",
-            "headers": [],
+            "modified": "2025-01-16T09:12:05.542Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiUHJ1ZWJhcyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDIxNjM5fQ.HrrzPqj7-p48yActAWxIe6fFMWlqHoNmgUTXE8FtDzQ"
+                }
+            ],
             "params": [
                 {
                     "name": "id_App",
@@ -245,26 +250,26 @@
             "colId": "1e7c61d6-ebf4-4e56-be37-d93e3563d8f5",
             "containerId": "",
             "name": "mll_consultas",
-            "url": "http://localhost:8000/mallorquina/mll_consultas?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&fecha=2024-10-05",
+            "url": "http://localhost:8000/mallorquina/mll_consultas?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"\"&fecha=2024-10-05",
             "method": "GET",
             "sortNum": 40000,
             "created": "2024-12-30T12:33:46.818Z",
-            "modified": "2025-01-15T22:59:20.821Z",
+            "modified": "2025-01-16T11:05:52.840Z",
             "headers": [
                 {
                     "name": "Authorization",
-                    "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiUHJ1ZWJhcyIsImlkX0FwcCI6MSwiZXhwIjoxNzM2OTg1NTIzfQ.VBi1mrdLnpJpHD7cO31rUOWaOlxc4P-4limaJ5OOWA4"
+                    "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
                 }
             ],
             "params": [
                 {
                     "name": "id_App",
-                    "value": "63",
+                    "value": "1",
                     "isPath": false
                 },
                 {
                     "name": "user",
-                    "value": "Pruebas",
+                    "value": "usuario_dev",
                     "isPath": false
                 },
                 {
@@ -319,5 +324,5 @@
             ]
         }
     ],
-    "ref": "YZOjrXjdybClV9r5hhOeviRrQtmTIoep46yhYhIXcy9TbyOACQGr2cUuw9NNMReuLkPBKS1lPwchzUUw4-dLbA"
+    "ref": "YZOjrXjdybClV9r5hhOevshmrzFyYF0K48DIeq-xz_51SUYAb3o3_vEw7GP7IFhZVXXoOPBaMmOd5Rm1Q0O5xA"
 }

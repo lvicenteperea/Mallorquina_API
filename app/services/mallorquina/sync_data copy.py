@@ -45,7 +45,7 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database']], "=")
+            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database']], "-")
 
             param.debug = "por tablas"
             # Aquí va la lógica específica para cada bbdd
@@ -101,26 +101,19 @@ def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
         for tabla in tablas_bbdd:
             ultima_actualizacion = tabla["Fecha_Ultima_Actualizacion"]
             intervalo = tabla["Cada_Cuanto_Ejecutar"]
+
             if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
-                imprime(["Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
                 param.debug = f"Procesando tabla: {tabla}"
                 # Aquí va la lógica específica para cada tabla
                 max_val = procesar_tabla(param, tabla, conn_mysql)
 
                 param.debug = "Execute fec_ult_act"
-                if max_val:
-                    cursor_mysql.execute("""UPDATE mll_cfg_tablas_bbdd 
-                                            SET Fecha_Ultima_Actualizacion = %s, 
-                                                ult_valor = %s 
-                                            WHERE ID = %s""",
-                                        (datetime.now(), max_val, tabla["ID"])
-                                        )
-                else:
-                    cursor_mysql.execute("""UPDATE mll_cfg_tablas_bbdd 
-                                            SET Fecha_Ultima_Actualizacion = %s
-                                            WHERE ID = %s""",
-                                        (datetime.now(), tabla["ID"])
-                                        )
+                cursor_mysql.execute("""UPDATE mll_cfg_tablas_bbdd 
+                                           SET Fecha_Ultima_Actualizacion = %s, 
+                                               ult_valor = %s 
+                                         WHERE ID = %s""",
+                                     (datetime.now(), max_val, tabla["ID"])
+                                    )
                 conn_mysql.commit()
         
         return []
@@ -160,7 +153,7 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
         param.debug = "obtener campos"
         # Obtener campos de la tabla
-        campos = obtener_campos_tabla(conn_mysql, tabla["ID_BBDD"],tabla["ID_Tabla"])
+        campos = obtener_campos_tabla(conn_mysql, tabla["ID_BBDD"], tabla["ID_Tabla"])
 
         param.debug = "crea_tabla_dest"
         # Crear tabla si no existe
@@ -168,7 +161,7 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
         param.debug = "obt. Origen"
         # Buscamos la conexión que necesitamos para esta bbdd origen
-        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, tabla["ID_BBDD"])
+        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla["ID_BBDD"])
 
         '''
         param.debug = "conn origen"
@@ -184,7 +177,12 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         cursor_sqlserver.close()
         cursor_sqlserver = None
         '''
-        registros,lista_pk = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], tabla["ult_valor"])
+        registros = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos)
+
+        # Preparar los cursores para MySQL
+        cursor_mysql = conn_mysql.cursor()
+        # columnas_mysql = [campo["Nombre_Destino"] for campo in campos] + ["Origen_BBDD"]
+        columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")] + ["Origen_BBDD"]
 
         # Identificar el campo PK basado en mll_cfg_campos
         pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
@@ -194,27 +192,47 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
         # Usamos el primer campo PK encontrado
         pk_campo = pk_campos[0]["Nombre_Destino"]
+
+        # Generar consultas dinámicas
+        insert_query = f"""
+            INSERT INTO {nombre_tabla_destino} ({', '.join(columnas_mysql)})
+            VALUES ({', '.join(['%s'] * len(columnas_mysql))})
+        """
         campos_update = [campo for campo in campos if campo["Nombre_Destino"] != pk_campo]
+        # update_query = f"""
+        #     UPDATE {nombre_tabla_destino}
+        #     SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos_update])}
+        #     WHERE {pk_campo} = %s AND Origen_BBDD = %s
+        # """
+        """
+        re.match(r"^{.+}$", campo["Nombre"]):
+            - Verifica si campo["Nombre"] comienza con { y termina con }.
+        
+        re.search(r"{(.+?)}", campo["Nombre"]).group(1):
+            - Extrae el contenido entre las llaves {} en campo["Nombre"].
+        
+        Condición en la comprensión de lista:
+            - Si campo["Nombre"] cumple con la condición de llaves, genera Nombre_Destino = contenido_dentro_de_las_llaves.
+            - Si no cumple, genera Nombre_Destino = %s.
+        
+        ', '.join([...]):
+            - Combina todas las asignaciones generadas en una sola cadena separada por comas.
+        """
+        update_query = f"""
+            UPDATE {nombre_tabla_destino}
+            SET {', '.join([
+                f'{campo["Nombre_Destino"]} = {re.search(r"{(.+?)}", campo["Nombre"]).group(1)}' if re.match(r"^{.+}$", campo["Nombre"]) 
+                else f'{campo["Nombre_Destino"]} = %s' 
+                for campo in campos_update
+            ])}
+            WHERE {pk_campo} = %s AND Origen_BBDD = %s
+        """
 
-        # Generar consultas INSERT y UPDATE de forma dinamica
-        insert_query = comando_insert(conn_mysql, campos, nombre_tabla_destino)
-        update_query = comando_update(campos_update, pk_campo, nombre_tabla_destino)
-
-        # Preparar los cursores para MySQL
-        cursor_mysql = conn_mysql.cursor()
         for registro in registros:
             # Obtener el valor del campo PK desde el registro
             pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
             pk_value = registro[pk_index]
-            # valor_max =  pk_value
-            
-            valor_max = ", ".join(str(registro[i]) for i in lista_pk)
-            # imprime([pk_index, pk_value, lista_pk, valor_max], '=')
-            # imprime([type(registro), registro], '=')
-            # print("")
-            # print("")
-            # print("")
-            # print(1/0)
+            valor_max =  pk_value
 
             select = f"""SELECT COUNT(*) 
                            FROM {nombre_tabla_destino} 
@@ -249,12 +267,11 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor) -> list: # el primer dato son los registros y el segundo la lista de PKs de la tabla
+def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos) -> list:
     param.debug="Inicio"
     conn_sqlserver = None # para que no de error en el finally
     cursor_sqlserver = None # para que no de error en el finally
     registros = []
-    lista_pk = []
 
     try:
         # imprime([nombre_tabla, campos], "=")
@@ -269,15 +286,15 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
         # Contruimos la SELECT que va a recoger los datos de ORIGEN
         # select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
         param.debug = "Construir Select"
-        select_query, lista_pk = construir_consulta(campos, nombre_tabla, campos_PK, ult_valor)
-        imprime([select_query], "Q")
+        select_query = construir_consulta(campos, nombre_tabla)
+        # imprime([select_query], "@")
 
         # Ejecución del cursor
-        param.debug = "Ejecutar select"
+        param.debug = "Ejecutar Select"
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
-        # imprime([registros], "()")
-        return [registros, lista_pk]
+
+        return registros
 
     except Exception as e:
         param.error_sistema()
@@ -290,54 +307,28 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def construir_consulta(campos, nombre_tabla, campos_PK, ult_valor) -> list: # el primer elemento la query y el segundo la lista de PKs
+def construir_consulta(campos, nombre_tabla):
     # Construcción de la lista de campos para la SELECT
     campos_select = [campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')]
     
-    lista_pk_campos = [item.strip('" ') for item in campos_PK.split(", ")]   
-    lista_pk_valores = [item.strip('" ') for item in ult_valor.split(", ")]
-    lista_pk_formato = ("{v1} >= '{v2}'", "{v1} >= CONVERT(DATETIME, '{v2}', 121) ", "{v1} >= '{v2}'", "{v1} >= {v2}", "{v1} >= {v2}")
-    where = generar_where(lista_pk_campos, lista_pk_valores, lista_pk_formato)
-
     # Construcción del WHERE
     condiciones_where = []
     condiciones_order = []
-    lista_pk = list()
-    formato=""
     for campo in campos:
         # imprime(["-----",campo,"-----"], "@")
-        if campo.get('PK') != 0:
-            # lista_pk = carga_lista_pk(lista_pk, campo['Nombre'], campo.get('PK')-1)
-            tipo = campo['Tipo'].lower()
-            if tipo.startswith(("int", "tinyint", "big")):
-                formato += 'entero'
-            elif tipo.startswith("decimal"):
-                formato += 'decimal'
-            elif tipo == "date":
-                formato += 'fecha'
-            elif tipo == "":
-                formato += 'fecha'
-            else:
-                formato += 'str'
-            # imprime([type(campo.get('PK')), campo.get('PK'), type(lista_pk), lista_pk],'*')
-            lista_pk.append(campo.get('PK')-1 ) #carga_lista_pk(lista_pk, formato, campo.get('PK')-1)
-            
-            condiciones_order.append(f"{campo['Nombre']}")
-            # # imprime(condiciones_order,"{")
-
         if campo.get('PK') == 1:
             if campo.get('ult_valor') is not None:
                 tipo = campo['Tipo'].lower()
                 valor = campo['ult_valor']
                 # imprime([campo.get('Nombre'), type(campo.get('PK')), campo.get('PK'), tipo, valor, campo.get('ult_valor')],"-")
                 
-                if tipo.startswith(("int", "tinyint", "big")):
+                if tipo == 'int':
                     try:
                         valor = int(valor)
                     except ValueError:
                         # imprime(["Error de valor int", valor],"-")
                         continue  # Saltar si no es un valor válido
-                elif tipo.startswith("decimal"):
+                elif tipo == 'numeric':
                     try:
                         valor = float(valor)
                     except ValueError:
@@ -354,99 +345,15 @@ def construir_consulta(campos, nombre_tabla, campos_PK, ult_valor) -> list: # el
                     valor = f"'{valor}'"
 
                 condiciones_where.append(f"{campo['Nombre']} > {valor}")
-            # condiciones_order.append(f"{campo['Nombre']}")
-            # # imprime(condiciones_order,"{")
+
+            condiciones_order.append(f"{campo['Nombre']}")
+            # imprime(condiciones_order,"{")
 
     # Generar la consulta SQL
-    query = f"SELECT TOP 100 {', '.join(campos_select)} FROM {nombre_tabla}"
-    query += (" " + where)
-
+    query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla}"
+    if condiciones_where:
+        query += f" WHERE {' AND '.join(condiciones_where)}"
     if condiciones_order:
         query += f" ORDER BY {' , '.join(condiciones_order)}"
 
-    return [query, lista_pk]
-
-
-#----------------------------------------------------------------------------------------
-# generamos el where de origen con los datos de las tres lista de elementos que tengo:
-#   - Campos de la tabla original que son PK
-#   - Ultimos valores utilizados, debemos empezar a trabajar desde ahí
-#   - Posible conversión de datos, a fechas,....
-#----------------------------------------------------------------------------------------
-def generar_where(l1, l2, l3):
-    # Verificar que todas las listas tengan la misma longitud
-    if not (len(l1) == len(l2) == len(l3)):
-        raise ValueError("Las listas deben tener la misma longitud.")
-    
-    # Construir la cláusula WHERE
-    where_clause = []
-    for col, val, template in zip(l1, l2, l3):
-        if not template:  # Si l3 no tiene valor, usar el formato básico
-            if isinstance(val, str):  # Si el valor es una cadena, mantener las comillas
-                where_clause.append(f"{col} >= \"{val}\"")
-            else:  # Si no es una cadena, usar el valor tal cual
-                where_clause.append(f"{col} >= {val}")
-        else:  # Si l3 tiene valor, usar el formato proporcionado
-            formatted_value = template.replace("{v1}", str(col)).replace("{v2}", str(val))
-            where_clause.append(formatted_value)
-    
-    # Unir las condiciones con AND
-    return f"WHERE {' AND '.join(where_clause)}"
-
-
-
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def carga_lista_pk(lista, valor, posicion, relleno=None):
-    # Rellenar la lista si la posición está fuera de rango
-    while len(lista) <= posicion:
-        lista.append(relleno)
-    
-    # Insertar el valor en la posición indicada
-    lista[posicion] = valor
-
-    return lista
-
-
-
-def comando_insert(conn_mysql, campos, nombre_tabla_destino):
-    columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")] + ["Origen_BBDD"]
-
-    return f"""
-            INSERT INTO {nombre_tabla_destino} ({', '.join(columnas_mysql)})
-            VALUES ({', '.join(['%s'] * len(columnas_mysql))})
-            """
-
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def comando_update(campos_update, pk_campo, nombre_tabla_destino):
-    # update_query = f"""
-    #     UPDATE {nombre_tabla_destino}
-    #     SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos_update])}
-    #     WHERE {pk_campo} = %s AND Origen_BBDD = %s
-    # """
-    """
-    re.match(r"^{.+}$", campo["Nombre"]):
-        - Verifica si campo["Nombre"] comienza con { y termina con }.
-    
-    re.search(r"{(.+?)}", campo["Nombre"]).group(1):
-        - Extrae el contenido entre las llaves {} en campo["Nombre"].
-    
-    Condición en la comprensión de lista:
-        - Si campo["Nombre"] cumple con la condición de llaves, genera Nombre_Destino = contenido_dentro_de_las_llaves.
-        - Si no cumple, genera Nombre_Destino = %s.
-    
-    ', '.join([...]):
-        - Combina todas las asignaciones generadas en una sola cadena separada por comas.
-    """
-    update_query = f"""
-        UPDATE {nombre_tabla_destino}
-        SET {', '.join([
-            f'{campo["Nombre_Destino"]} = {re.search(r"{(.+?)}", campo["Nombre"]).group(1)}' if re.match(r"^{.+}$", campo["Nombre"]) 
-            else f'{campo["Nombre_Destino"]} = %s' 
-            for campo in campos_update
-        ])}
-        WHERE {pk_campo} = %s AND Origen_BBDD = %s
-    """
-
-    return update_query
+    return query

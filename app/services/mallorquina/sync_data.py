@@ -94,7 +94,7 @@ def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
         param.debug = "Inicio"
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        param.debug = "execute cfg_tablas"
+        param.debug = "execute mll_cfg_tablas_bbdd"
         cursor_mysql.execute("SELECT * FROM mll_cfg_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
         tablas_bbdd = cursor_mysql.fetchall()
 
@@ -184,7 +184,7 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         cursor_sqlserver.close()
         cursor_sqlserver = None
         '''
-        registros,lista_pk = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], tabla["ult_valor"])
+        registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], tabla["ult_valor"])
 
         # Identificar el campo PK basado en mll_cfg_campos
         pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
@@ -197,8 +197,10 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         campos_update = [campo for campo in campos if campo["Nombre_Destino"] != pk_campo]
 
         # Generar consultas INSERT y UPDATE de forma dinamica
-        insert_query = comando_insert(conn_mysql, campos, nombre_tabla_destino)
-        update_query = comando_update(campos_update, pk_campo, nombre_tabla_destino)
+        if "I" in tabla_config["insert_update"]:
+            insert_query = comando_insert(conn_mysql, campos, nombre_tabla_destino)
+        if "U" in tabla_config["insert_update"]:
+            update_query = comando_update(campos_update, pk_campo, nombre_tabla_destino)
 
         # Preparar los cursores para MySQL
         cursor_mysql = conn_mysql.cursor()
@@ -206,27 +208,24 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
             # Obtener el valor del campo PK desde el registro
             pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
             pk_value = registro[pk_index]
-            # valor_max =  pk_value
-            
-            valor_max = ", ".join(str(registro[i]) for i in lista_pk)
-            # imprime([pk_index, pk_value, lista_pk, valor_max], '=')
-            # imprime([type(registro), registro], '=')
-            # print("")
-            # print("")
-            # print("")
-            # print(1/0)
 
-            select = f"""SELECT COUNT(*) 
-                           FROM {nombre_tabla_destino} 
-                          WHERE {pk_campo} = %s
-                            AND Origen_BBDD = {tabla["ID_BBDD"]}"""
+            if "U" in tabla_config["insert_update"]:
+                select = f"""SELECT COUNT(*) 
+                            FROM {nombre_tabla_destino} 
+                            WHERE {pk_campo} = %s
+                                AND Origen_BBDD = {tabla["ID_BBDD"]}"""
 
-            # Comprobar si el registro ya existe en la tabla destino
-            cursor_mysql.execute(select, (pk_value,))
-            existe = cursor_mysql.fetchone()[0] > 0  # Si existe, devuelve True
+                # Comprobar si el registro ya existe en la tabla destino
+                cursor_mysql.execute(select, (pk_value,))
+                existe = cursor_mysql.fetchone()[0] > 0  # Si existe, devuelve True
+            else:
+                # Solo actualizo último valor recogido cuando es una tabla de insert, porque se entiende que inserta desde el registro que se ha quedado
+                valor_max = ", ".join(str(registro[i]) for i in lista_max_valor)
+    
+                existe = False # no se comprueba que exista, ya que no se hacaen updates
+
             if existe:
                 # Realizar un UPDATE
-                # valores_update = list(registro) + [tabla["ID_BBDD"], pk_value]  # Campos + Origen + PK
                 campos_update_filtrado = [campo for campo in campos_update if not (campo['Nombre'].startswith('{') and campo['Nombre'].endswith('}'))]
                 valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
                                              for campo in campos_update_filtrado] + [pk_value, tabla["ID_BBDD"]]
@@ -269,15 +268,17 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
         # Contruimos la SELECT que va a recoger los datos de ORIGEN
         # select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
         param.debug = "Construir Select"
-        select_query, lista_pk = construir_consulta(campos, nombre_tabla, campos_PK, ult_valor)
+        select_query, lista_pk, lista_max_valor = construir_consulta(campos, nombre_tabla, campos_PK, ult_valor)
+
         imprime([select_query], "Q")
 
         # Ejecución del cursor
         param.debug = "Ejecutar select"
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
-        # imprime([registros], "()")
-        return [registros, lista_pk]
+        imprime([select_query,len(registros)], "Q", 2)
+
+        return [registros, lista_pk, lista_max_valor]
 
     except Exception as e:
         param.error_sistema()
@@ -288,6 +289,85 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
         param.debug = f"cierra conexión sqlserver: {param.debug}"
         close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
 
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def construir_consulta(campos, nombre_tabla, campos_PK, ult_valor) -> list: # el primer elemento la query y el segundo la lista de PKs
+    # Construcción de la lista de campos para la SELECT
+    campos_select = [campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')]
+    
+    lista_pk_valores = [item.strip('" ') for item in ult_valor.split(", ")]
+    # lista_pk_campos = [item.strip('" ') for item in campos_PK.split(", ")]   
+    # lista_pk_formato = ("{v1} >= '{v2}'", "{v1} >= CONVERT(DATETIME, '{v2}', 121) ", "{v1} >= '{v2}'", "{v1} >= {v2}", "{v1} >= {v2}")
+    lista_pk_campos, lista_pk_formato, lista_pk_para_where = separar_campos_pk(campos_PK)
+    condiciones_where = generar_where(lista_pk_campos, lista_pk_valores, lista_pk_formato, lista_pk_para_where)
+    lista_max_valor = []
+
+    # Construcción del WHERE
+    condiciones_order = []
+    lista_pk = list()
+    for campo in campos:
+        if campo.get('PK') != 0: # Sabemos su es un indice
+            lista_max_valor.append(campo.get('PK') - 1) # Este lo vamos a utiliar para luego guardar el max_valor cargado
+
+            if campo.get('PK') in lista_pk_para_where: # se debe solo estos se deben utilizar para el order y el where
+                lista_pk.append(campo.get('PK') ) #carga_lista_pk(lista_pk, formato, campo.get('PK')-1)         
+                condiciones_order.append(f"{campo['Nombre']}")
+
+    # Generar la consulta SQL
+    query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla} {condiciones_where}"
+    if condiciones_order:
+        query += f" ORDER BY {' , '.join(condiciones_order)}"
+
+    return [query, lista_pk, lista_max_valor]
+
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def separar_campos_pk(cadena):
+    """
+        cfg_tables.campos_pk debe tener un formato de 3 partes encerradas entre parentesis:
+        - La primera parte son los nombres de los campos entre comillas (")
+        - La segunda es como transformar cada uno de esos campos para hacer el where, 
+            teniendo en cuenta que {V1} es el nombre del campo (de la zona anterior) y {V2} va a ser el valor del campo
+        - La tercera será los campos que realmente van a formar parte del where
+            
+        ejemplo de la cadena mostrada en tres lineas para identificarlo mejor:
+            ("stIdEnt"; "Fecha"; "[Serie Puesto Facturacion]"; "[Factura Num]"; "[Id Relacion]") 
+            ("{v1} >= '{v2}'"; "{v1} >= CONVERT(DATETIME, '{v2}', 121) "; "{v1} >= '{v2}'"; "{v1} >= {v2}"; "{v1} >= {v2}") 
+            (1)   --> tener en cuenta que los elementos empiezan en el 0
+
+        
+    """
+    # Separar las dos partes
+    partes = cadena.split(") (")
+    if len(partes) != 3:
+        raise ValueError("La cadena debe contener dos partes separadas por ') ('.")
+    
+    # Limpiar paréntesis iniciales y finales
+    parte1 = partes[0].strip("()")
+    parte2 = partes[1].strip("()")
+    parte3 = partes[2].strip("()")
+    
+    # Convertir cada parte en listas separando por comas
+    lista1 = [item.strip().strip('"') for item in parte1.split(";")]
+    lista2 = [item.strip().strip('"') for item in parte2.split(";")]
+    lista3_str = [item.strip().strip('"') for item in parte3.split(";")] # deben ser números pero crea la lista de str
+
+    lista3 = []
+    for cadena in lista3_str:
+        try:
+            lista3.append(int(cadena))
+        except ValueError:
+            print(f"No se puede convertir '{cadena}' a número.")
+
+    if len(lista1) != len(lista2):
+        raise ValueError(f"Las dos listas han de tener el mismo número de elementos y tienen {len(lista1)} y {len(lista2)} elementos")
+    
+    return lista1, lista2, lista3
+
+
+
+'''
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def construir_consulta(campos, nombre_tabla, campos_PK, ult_valor) -> list: # el primer elemento la query y el segundo la lista de PKs
@@ -307,23 +387,8 @@ def construir_consulta(campos, nombre_tabla, campos_PK, ult_valor) -> list: # el
     for campo in campos:
         # imprime(["-----",campo,"-----"], "@")
         if campo.get('PK') != 0:
-            # lista_pk = carga_lista_pk(lista_pk, campo['Nombre'], campo.get('PK')-1)
-            tipo = campo['Tipo'].lower()
-            if tipo.startswith(("int", "tinyint", "big")):
-                formato += 'entero'
-            elif tipo.startswith("decimal"):
-                formato += 'decimal'
-            elif tipo == "date":
-                formato += 'fecha'
-            elif tipo == "":
-                formato += 'fecha'
-            else:
-                formato += 'str'
-            # imprime([type(campo.get('PK')), campo.get('PK'), type(lista_pk), lista_pk],'*')
-            lista_pk.append(campo.get('PK')-1 ) #carga_lista_pk(lista_pk, formato, campo.get('PK')-1)
-            
+            lista_pk.append(campo.get('PK')-1 ) #carga_lista_pk(lista_pk, formato, campo.get('PK')-1)         
             condiciones_order.append(f"{campo['Nombre']}")
-            # # imprime(condiciones_order,"{")
 
         if campo.get('PK') == 1:
             if campo.get('ult_valor') is not None:
@@ -358,37 +423,37 @@ def construir_consulta(campos, nombre_tabla, campos_PK, ult_valor) -> list: # el
             # # imprime(condiciones_order,"{")
 
     # Generar la consulta SQL
-    query = f"SELECT TOP 100 {', '.join(campos_select)} FROM {nombre_tabla}"
-    query += (" " + where)
-
+    query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla} {where}"
+    
     if condiciones_order:
         query += f" ORDER BY {' , '.join(condiciones_order)}"
 
     return [query, lista_pk]
 
-
+'''
 #----------------------------------------------------------------------------------------
 # generamos el where de origen con los datos de las tres lista de elementos que tengo:
 #   - Campos de la tabla original que son PK
 #   - Ultimos valores utilizados, debemos empezar a trabajar desde ahí
 #   - Posible conversión de datos, a fechas,....
 #----------------------------------------------------------------------------------------
-def generar_where(l1, l2, l3):
+def generar_where(l1, l2, l3, lista_pk_para_where):
     # Verificar que todas las listas tengan la misma longitud
     if not (len(l1) == len(l2) == len(l3)):
         raise ValueError("Las listas deben tener la misma longitud.")
     
     # Construir la cláusula WHERE
     where_clause = []
-    for col, val, template in zip(l1, l2, l3):
-        if not template:  # Si l3 no tiene valor, usar el formato básico
-            if isinstance(val, str):  # Si el valor es una cadena, mantener las comillas
-                where_clause.append(f"{col} >= \"{val}\"")
-            else:  # Si no es una cadena, usar el valor tal cual
-                where_clause.append(f"{col} >= {val}")
-        else:  # Si l3 tiene valor, usar el formato proporcionado
-            formatted_value = template.replace("{v1}", str(col)).replace("{v2}", str(val))
-            where_clause.append(formatted_value)
+    for i, (col, val, template) in enumerate(zip(l1, l2, l3)):
+        if i in lista_pk_para_where:
+            if not template:  # Si l3 no tiene valor, usar el formato básico
+                if isinstance(val, str):  # Si el valor es una cadena, mantener las comillas
+                    where_clause.append(f"{col} >= \"{val}\"")
+                else:  # Si no es una cadena, usar el valor tal cual
+                    where_clause.append(f"{col} >= {val}")
+            else:  # Si l3 tiene valor, usar el formato proporcionado
+                formatted_value = template.replace("{v1}", str(col)).replace("{v2}", str(val))
+                where_clause.append(formatted_value)
     
     # Unir las condiciones con AND
     return f"WHERE {' AND '.join(where_clause)}"
@@ -450,3 +515,4 @@ def comando_update(campos_update, pk_campo, nombre_tabla_destino):
     """
 
     return update_query
+

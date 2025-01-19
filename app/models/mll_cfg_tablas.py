@@ -53,7 +53,7 @@ def crear_tabla_destino(conn_mysql, nombre_tabla, campos):
         for campo in campos
     ])
     if not columnas:
-        x=1/0
+        raise f"No hay columnas definidas para la tabla {nombre_tabla}"
 
     columnas += ", Origen_BBDD VARCHAR(100)"
     query = f"""CREATE TABLE IF NOT EXISTS {nombre_tabla} 

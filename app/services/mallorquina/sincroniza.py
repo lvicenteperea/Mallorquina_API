@@ -13,6 +13,9 @@ from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MadreException
 
+
+PAGINACION: int = 100
+
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def recorre_tiendas(param: InfoTransaccion) -> list:
@@ -45,7 +48,7 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database']], "=")
+            (["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database']], "=")
 
             param.debug = "por tablas"
             # Aquí va la lógica específica para cada bbdd
@@ -103,26 +106,11 @@ def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
             intervalo = tabla["Cada_Cuanto_Ejecutar"]
             if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
                 imprime(["Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
+                
                 param.debug = f"Procesando tabla: {tabla}"
                 # Aquí va la lógica específica para cada tabla
-                max_val = procesar_tabla(param, tabla, conn_mysql)
+                procesar_tabla(param, tabla, conn_mysql)
 
-                param.debug = "Execute fec_ult_act"
-                if max_val:
-                    cursor_mysql.execute("""UPDATE mll_cfg_tablas_bbdd 
-                                            SET Fecha_Ultima_Actualizacion = %s, 
-                                                ult_valor = %s 
-                                            WHERE ID = %s""",
-                                        (datetime.now(), max_val, tabla["ID"])
-                                        )
-                else:
-                    cursor_mysql.execute("""UPDATE mll_cfg_tablas_bbdd 
-                                            SET Fecha_Ultima_Actualizacion = %s
-                                            WHERE ID = %s""",
-                                        (datetime.now(), tabla["ID"])
-                                        )
-                conn_mysql.commit()
-        
         return []
 
     except Exception as e:
@@ -169,75 +157,75 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
         param.debug = "obt. Origen"
         # Buscamos la conexión que necesitamos para esta bbdd origen
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, tabla["ID_BBDD"])
+        x= 0
+        salto = 0
+        while True:
+            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], tabla["ult_valor"], salto)
+            if len(registros) == 0:
+                break
 
-        '''
-        param.debug = "conn origen"
-        # conextamos con esta bbdd origen
-        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+            salto += PAGINACION
 
-        # Leer datos desde SQL Server
-        cursor_sqlserver = conn_sqlserver.cursor()
-        # select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos])} FROM {nombre_tabla}"
-        select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
-        cursor_sqlserver.execute(select_query)
-        registros = cursor_sqlserver.fetchall()
-        cursor_sqlserver.close()
-        cursor_sqlserver = None
-        '''
-        registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], tabla["ult_valor"])
+            # Identificar el campo PK basado en mll_cfg_campos
+            pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
+            if not pk_campos:
+                param.registrar_error(ret_txt=f"No se encontró ningún campo PK en {nombre_tabla}.", debug=f"Campos: {campos}")
+                raise MadreException(param = param)
 
-        # Identificar el campo PK basado en mll_cfg_campos
-        pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
-        if not pk_campos:
-            param.registrar_error(ret_txt=f"No se encontró ningún campo PK en {nombre_tabla}.", debug=f"Campos: {campos}")
-            raise MadreException(param = param)
+            # Usamos el primer campo PK encontrado
+            pk_campo = pk_campos[0]["Nombre_Destino"]
+            campos_update = [campo for campo in campos if campo["Nombre_Destino"] != pk_campo]
 
-        # Usamos el primer campo PK encontrado
-        pk_campo = pk_campos[0]["Nombre_Destino"]
-        campos_update = [campo for campo in campos if campo["Nombre_Destino"] != pk_campo]
-
-        # Generar consultas INSERT y UPDATE de forma dinamica
-        if "I" in tabla_config["insert_update"]:
-            insert_query = comando_insert(conn_mysql, campos, nombre_tabla_destino)
-        if "U" in tabla_config["insert_update"]:
-            update_query = comando_update(campos_update, pk_campo, nombre_tabla_destino)
-
-        # Preparar los cursores para MySQL
-        cursor_mysql = conn_mysql.cursor()
-        for registro in registros:
-            # Obtener el valor del campo PK desde el registro
-            pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
-            pk_value = registro[pk_index]
-
+            # Generar consultas INSERT y UPDATE de forma dinamica
+            if "I" in tabla_config["insert_update"]:
+                insert_query = comando_insert(campos, nombre_tabla_destino)
             if "U" in tabla_config["insert_update"]:
-                select = f"""SELECT COUNT(*) 
-                            FROM {nombre_tabla_destino} 
-                            WHERE {pk_campo} = %s
-                                AND Origen_BBDD = {tabla["ID_BBDD"]}"""
+                update_query = comando_update(campos_update, pk_campo, nombre_tabla_destino)
 
-                # Comprobar si el registro ya existe en la tabla destino
-                cursor_mysql.execute(select, (pk_value,))
-                existe = cursor_mysql.fetchone()[0] > 0  # Si existe, devuelve True
-            else:
-                # Solo actualizo último valor recogido cuando es una tabla de insert, porque se entiende que inserta desde el registro que se ha quedado
-                valor_max = ", ".join(str(registro[i]) for i in lista_max_valor)
-    
-                existe = False # no se comprueba que exista, ya que no se hacaen updates
+            # Preparar los cursores para MySQL
+            cursor_mysql = conn_mysql.cursor()
+            for registro in registros:
+                # Obtener el valor del campo PK desde el registro
+                pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
+                pk_value = registro[pk_index]
 
-            if existe:
-                # Realizar un UPDATE
-                campos_update_filtrado = [campo for campo in campos_update if not (campo['Nombre'].startswith('{') and campo['Nombre'].endswith('}'))]
-                valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
-                                             for campo in campos_update_filtrado] + [pk_value, tabla["ID_BBDD"]]
-                # imprime(["update:......", pk_value, update_query, valores_update], "=")
-                cursor_mysql.execute(update_query, valores_update)
-            else:
-                # Realizar un INSERT
-                registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
-                # imprime(["INSERT:......",insert_query, registro_destino], "=")
-                cursor_mysql.execute(insert_query, registro_destino)
+                if "U" in tabla_config["insert_update"]:
+                    select = f"""SELECT COUNT(*) 
+                                FROM {nombre_tabla_destino} 
+                                WHERE {pk_campo} = %s
+                                    AND Origen_BBDD = {tabla["ID_BBDD"]}"""
 
-        conn_mysql.commit()
+                    # Comprobar si el registro ya existe en la tabla destino
+                    cursor_mysql.execute(select, (pk_value,))
+                    existe = cursor_mysql.fetchone()[0] > 0  # Si existe, devuelve True
+                else:
+                    # Solo actualizo último valor recogido cuando es una tabla de insert, porque se entiende que inserta desde el registro que se ha quedado
+                    valor_max = ", ".join(str(registro[i]) for i in lista_max_valor)
+        
+                    existe = False # no se comprueba que exista, ya que no se hacaen updates
+
+                if existe:
+                    # Realizar un UPDATE
+                    campos_update_filtrado = [campo for campo in campos_update if not (campo['Nombre'].startswith('{') and campo['Nombre'].endswith('}'))]
+                    valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
+                                                for campo in campos_update_filtrado] + [pk_value, tabla["ID_BBDD"]]
+                    # imprime(["update:......", pk_value, update_query, valores_update], "=")
+                    cursor_mysql.execute(update_query, valores_update)
+                else:
+                    # Realizar un INSERT
+                    registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
+                    # imprime(["INSERT:......",insert_query, registro_destino], "=")
+                    cursor_mysql.execute(insert_query, registro_destino)
+
+
+            param.debug = "Execute fec_ult_act"
+            cursor_mysql.execute("""UPDATE mll_cfg_tablas_bbdd 
+                                    SET Fecha_Ultima_Actualizacion = %s, 
+                                        ult_valor = COALESCE(%s, ult_valor)
+                                    WHERE ID = %s""",
+                                (datetime.now(), valor_max, tabla["ID"])
+                                )
+            conn_mysql.commit()
 
         return valor_max
 
@@ -248,7 +236,7 @@ def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor) -> list: # el primer dato son los registros y el segundo la lista de PKs de la tabla
+def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor, salto) -> list: # el primer dato son los registros y el segundo la lista de PKs de la tabla
     param.debug="Inicio"
     conn_sqlserver = None # para que no de error en el finally
     cursor_sqlserver = None # para que no de error en el finally
@@ -256,7 +244,6 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
     lista_pk = []
 
     try:
-        # imprime([nombre_tabla, campos], "=")
         param.debug = "conn origen"
         # conextamos con esta bbdd origen
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
@@ -266,17 +253,13 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
         cursor_sqlserver = conn_sqlserver.cursor()
 
         # Contruimos la SELECT que va a recoger los datos de ORIGEN
-        # select_query = select_query = f"SELECT {', '.join([campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')])} FROM {nombre_tabla}"
         param.debug = "Construir Select"
-        select_query, lista_pk, lista_max_valor = construir_consulta(campos, nombre_tabla, campos_PK, ult_valor)
-
-        imprime([select_query], "Q")
+        select_query, lista_pk, lista_max_valor = construir_consulta(param, campos, nombre_tabla, campos_PK, ult_valor, salto)
 
         # Ejecución del cursor
         param.debug = "Ejecutar select"
         cursor_sqlserver.execute(select_query)
         registros = cursor_sqlserver.fetchall()
-        imprime([select_query,len(registros)], "Q", 2)
 
         return [registros, lista_pk, lista_max_valor]
 
@@ -291,34 +274,42 @@ def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, camp
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def construir_consulta(campos, nombre_tabla, campos_PK, ult_valor) -> list: # el primer elemento la query y el segundo la lista de PKs
-    # Construcción de la lista de campos para la SELECT
-    campos_select = [campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')]
-    
-    lista_pk_valores = [item.strip('" ') for item in ult_valor.split(", ")]
-    # lista_pk_campos = [item.strip('" ') for item in campos_PK.split(", ")]   
-    # lista_pk_formato = ("{v1} >= '{v2}'", "{v1} >= CONVERT(DATETIME, '{v2}', 121) ", "{v1} >= '{v2}'", "{v1} >= {v2}", "{v1} >= {v2}")
-    lista_pk_campos, lista_pk_formato, lista_pk_para_where = separar_campos_pk(campos_PK)
-    condiciones_where = generar_where(lista_pk_campos, lista_pk_valores, lista_pk_formato, lista_pk_para_where)
-    lista_max_valor = []
+def construir_consulta(param: InfoTransaccion, campos, nombre_tabla, campos_PK, ult_valor,salto) -> list: # el primer elemento la query y el segundo la lista de PKs
+    try:
+        # Construcción de la lista de campos para la SELECT
+        campos_select = [campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')]
+        
+        lista_pk_valores = [item.strip('" ') for item in ult_valor.split(", ")]
+        lista_pk_campos, lista_pk_formato, lista_pk_para_where = separar_campos_pk(campos_PK)
+        condiciones_where = generar_where(lista_pk_campos, lista_pk_valores, lista_pk_formato, lista_pk_para_where)
+        lista_max_valor = []
 
-    # Construcción del WHERE
-    condiciones_order = []
-    lista_pk = list()
-    for campo in campos:
-        if campo.get('PK') != 0: # Sabemos su es un indice
-            lista_max_valor.append(campo.get('PK') - 1) # Este lo vamos a utiliar para luego guardar el max_valor cargado
+        # Construcción del WHERE
+        condiciones_order = []
+        lista_pk = list()
+        for campo in campos:
+            if campo.get('PK') != 0: # Sabemos su es un indice
+                lista_max_valor.append(campo.get('PK') - 1) # Este lo vamos a utiliar para luego guardar el max_valor cargado
 
-            if campo.get('PK') in lista_pk_para_where: # se debe solo estos se deben utilizar para el order y el where
-                lista_pk.append(campo.get('PK') ) #carga_lista_pk(lista_pk, formato, campo.get('PK')-1)         
-                condiciones_order.append(f"{campo['Nombre']}")
+                if campo.get('PK') in lista_pk_para_where: # se debe solo estos se deben utilizar para el order y el where
+                    lista_pk.append(campo.get('PK') ) #carga_lista_pk(lista_pk, formato, campo.get('PK')-1)         
+                    condiciones_order.append(f"{campo['Nombre']}")
 
-    # Generar la consulta SQL
-    query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla} {condiciones_where}"
-    if condiciones_order:
-        query += f" ORDER BY {' , '.join(condiciones_order)}"
+        # Generar la consulta SQL
+        query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla} {condiciones_where}"
+        if condiciones_order:
+            query += f" ORDER BY {' , '.join(condiciones_order)}"
+        query = f"""{query} 
+                    OFFSET {salto} ROWS            -- Salta 0 filas
+                    FETCH NEXT {PAGINACION} ROWS ONLY; -- Toma las siguientes 100
+                """
 
-    return [query, lista_pk, lista_max_valor]
+        return [query, lista_pk, lista_max_valor]
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "Obtener_datos_origen.Exception", e)
+        raise 
 
 
 #----------------------------------------------------------------------------------------
@@ -459,7 +450,6 @@ def generar_where(l1, l2, l3, lista_pk_para_where):
     return f"WHERE {' AND '.join(where_clause)}"
 
 
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def carga_lista_pk(lista, valor, posicion, relleno=None):
@@ -474,7 +464,7 @@ def carga_lista_pk(lista, valor, posicion, relleno=None):
 
 
 
-def comando_insert(conn_mysql, campos, nombre_tabla_destino):
+def comando_insert(campos, nombre_tabla_destino):
     columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")] + ["Origen_BBDD"]
 
     return f"""
@@ -485,11 +475,6 @@ def comando_insert(conn_mysql, campos, nombre_tabla_destino):
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def comando_update(campos_update, pk_campo, nombre_tabla_destino):
-    # update_query = f"""
-    #     UPDATE {nombre_tabla_destino}
-    #     SET {', '.join([f'{campo["Nombre_Destino"]} = %s' for campo in campos_update])}
-    #     WHERE {pk_campo} = %s AND Origen_BBDD = %s
-    # """
     """
     re.match(r"^{.+}$", campo["Nombre"]):
         - Verifica si campo["Nombre"] comienza con { y termina con }.

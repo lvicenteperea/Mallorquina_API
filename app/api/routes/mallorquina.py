@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 # mias
-import app.services.mallorquina.sync_data as sync_data
+import app.services.mallorquina.sincroniza as sincroniza
 import app.services.mallorquina.consulta_caja as consulta_caja
 import app.services.mallorquina.arqueo_caja as arqueo_caja
 import app.services.mallorquina.arqueo_caja_info as arqueo_caja_info
@@ -85,20 +85,19 @@ async def mll_consultas(request: Request,  # Para acceder a request.state.user
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_sync_todo", response_model=InfoTransaccion)
-async def mll_sync_todo(id_App: int = Query(..., description="Identificador de la aplicación"),
-                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                        ret_code: int = Query(..., description="Código de retorno inicial"),
-                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                        credentials: HTTPAuthorizationCredentials = Depends(AuthMiddleware.security)
-                       ):
+@router.get("/mll_sincroniza", response_model=InfoTransaccion)
+async def mll_sincroniza(id_App: int = Query(..., description="Identificador de la aplicación"),
+                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                         ret_code: int = Query(..., description="Código de retorno inicial"),
+                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                        ):
 
     try:
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
         # --------------------------------------------------------------------------------
-        resultado = sync_data.recorre_tiendas(param = param)
+        resultado = sincroniza.recorre_tiendas(param = param)
         # --------------------------------------------------------------------------------
 
         param.debug = f"Retornando: {type(resultado)}"
@@ -127,7 +126,7 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
                             user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                             ret_code: int = Query(..., description="Código de retorno inicial"),
                             ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                            fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
+                            fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD'"),
                          ):
     try:
         resultado = []

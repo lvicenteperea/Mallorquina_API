@@ -64,7 +64,6 @@ def proceso(param: InfoTransaccion) -> list:
                     fechas.append(fecha_inicial.strftime("%Y-%m-%d"))
                     fecha_inicial += timedelta(days=1)
             else:
-                imprime( ["tres:",fecha, param.parametros[0]], "=")
                 fechas = [fecha]
 
 

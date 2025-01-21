@@ -5,8 +5,8 @@
 # uvicorn app.main:app --reload
 # python -m uvicorn app.main:app --reload
 
-from fastapi import FastAPI, HTTPException, Request  #, Depends
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException #, Request  #, Depends
+# from fastapi.responses import JSONResponse
 
 # from app.api.routes import router as api_router
 from app.api.routes.mallorquina import router as mallorquina_router

@@ -67,7 +67,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in ["/login", "/open-endpoint", "/docs", "/redoc", "/auth/create_token"]:
             return await call_next(request)
 
-
         # Obtener token del encabezado Authorization
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
@@ -82,7 +81,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         request.state.user = self.get_current_user(token)
 
-
         return await call_next(request)
 
 
@@ -90,6 +88,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     #----------------------------------------------------------------------------------    
     @staticmethod
     def get_current_user(token): #credentials):
+
         try:
             if settings.AUTH_ENABLED:
                 payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]) #credentials.credentials

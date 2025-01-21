@@ -10,6 +10,35 @@ from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
+PATH: str = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
+TIENDAS: str = {
+                "SOL": {
+                    "Barra": "PVP TIENDA SOL,QUEVEDO",
+                    "Comedor": "PVP SALON TIENDAS",
+                    "Terraza": "PVP TERRAZA QUEVEDO"
+                },
+                "QUEVEDO": {
+                    "Barra": "PVP TIENDA SOL,QUEVEDO",
+                    "Comedor": "PVP SALON TIENDAS",
+                    "Terraza": "PVP TERRAZA QUEVEDO"
+                },
+                "MG": {
+                    "Barra": "PVP TIENDA SOL,QUEVEDO",
+                    "Comedor": "PVP SALON TIENDAS",
+                    "Terraza": None
+                },
+                "VELAZQUEZ": {
+                    "Barra": "PVP TIENDA VELAZ,MORAL.",
+                    "Comedor": "PVP SALON TIENDAS",
+                    "Terraza": None
+                },
+                "SALON_SOL": {
+                    "Barra": "PVP TIENDA SOL,QUEVEDO",
+                    "Comedor": "PVP SALON SOL",
+                    "Terraza": None
+                }
+               }
+
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> list:
@@ -27,26 +56,18 @@ def proceso(param: InfoTransaccion) -> list:
     param.debug = "proceso"
 
     try:
-        path = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
-        
         if param.parametros and param.parametros[0]:
-            origen_path = f"{path}{param.parametros[0]}"
+            origen_path = f"{PATH}{param.parametros[0]}"
         else:
             param.ret_code = -1
             param.ret_txt = "No ha llegado fichero origen para crear el nuevo fichero"
             return
                 
-        if len(param.parametros) >= 2  and param.parametros[1]:
-            output_path = f"{path}{param.parametros[1]}"
-        else:
-            output_path = f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        
+        output_path = f"{PATH}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}_"
 
         param.debug = "convierte_con_pd"
         resultado = convierte_con_pd(param, origen_path, output_path)
-        
-        # param.debug = "convierte_con_openpyxl" 
-        # if param.ret_code == 0:
-        #   resulta do.append(convierte_con_openpyxl(param, f"{origen_path}", f"{path}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}"))
         
         return resultado
 
@@ -57,6 +78,133 @@ def proceso(param: InfoTransaccion) -> list:
         
 
 # -----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------
+def convierte_con_pd(param: InfoTransaccion, origen_path, output_path):
+    resultado = []
+    param.debug = "convierte_con_pd"
+    
+    try:
+        error_log_path = f"{PATH}errores.log"
+        errores = []
+
+        origen_df = pd.read_excel(origen_path)
+        num_registros_origen = origen_df.shape[0]
+
+        origen_df["GRUPO DE CARTA VALIDADO"] = origen_df.apply(
+            lambda row: row["GRUPO DE CARTA"] if validar_grupo_carta(row["GRUPO DE CARTA"], errores, row["Código"], row["Nombre"]) else None,
+            axis=1
+        )
+        origen_df.dropna(subset=["GRUPO DE CARTA VALIDADO"], inplace=True)
+
+        columns_destino = [
+                            "Id Plato", "Descripcion", "Barra", "Comedor", "Terraza", "Hotel", 
+                            "Reservado", "Menú", "Orden Factura", "Orden Cocina", "OrdenTactil",
+                            "Grupo Carta 1", "Grupo Carta 2", "Grupo Carta 3", "Grupo Carta 4",
+                            "Familia", "Código Barras", "Centro", "Centro 2", "Centro 3"
+                          ]
+        converted_df = pd.DataFrame(columns=columns_destino)
+        #converted_df = pd.DataFrame()
+
+        converted_df["Id Plato"] = origen_df["Código"]
+        converted_df["Descripcion"] = origen_df["Nombre"]
+
+        # converted_df["Código Barras"] = validar_codigo_barras(origen_df["Código de barras"], origen_df["Código"]) # origen_df["Código de barras"].apply(validar_codigo_barras)
+        converted_df["Código Barras"] = origen_df["Código de barras"].apply(lambda x: str(x).split('.')[0] if pd.notna(x) else "")
+
+        converted_df["Hotel"] = ""
+        converted_df["Reservado"] = ""
+        converted_df["Menú"] = ""
+        converted_df["Orden Factura"] = ""
+        converted_df["Orden Cocina"] = ""
+        converted_df["OrdenTactil"] = ""
+        converted_df["Grupo Carta 1"] = origen_df["GRUPO DE CARTA"]
+        converted_df["Grupo Carta 2"] = ""
+        converted_df["Grupo Carta 3"] = ""
+        converted_df["Grupo Carta 4"] = ""
+        converted_df["Familia"] = ""
+        converted_df["Centro"] = origen_df["CENTRO PREPARACION CAFETERA"] # .apply(lambda x: "X" if not pd.isna(x) else "")
+        converted_df["Centro 2"] = origen_df["CENTRO PREPARACION PLANCHA"] # .apply(lambda x: "X" if not pd.isna(x) else "")
+        converted_df["Centro 3"] = origen_df["CENTRO PREPARACION COCINA"] # .apply(lambda x: "X" if not pd.isna(x) else "")
+
+        for tienda, config in TIENDAS.items():
+            df_tienda = converted_df.copy()
+
+            # df_tienda["Barra"] = origen_df[config["Barra"]].apply(limpiar_ceros) if config["Barra"] else ""
+            # df_tienda["Comedor"] = origen_df[config["Comedor"]].apply(limpiar_ceros) if config["Comedor"] else ""
+            # df_tienda["Terraza"] = origen_df[config["Terraza"]].apply(limpiar_ceros) if config["Terraza"] else ""
+
+            df_tienda["Barra"] = origen_df[config["Barra"]].apply(lambda x: limpiar_ceros(str(x)).replace(',', '.')) if config["Barra"] else ""
+            df_tienda["Comedor"] = origen_df[config["Comedor"]].apply(lambda x: limpiar_ceros(str(x)).replace(',', '.')) if config["Comedor"] else ""
+            df_tienda["Terraza"] = origen_df[config["Terraza"]].apply(lambda x: limpiar_ceros(str(x)).replace(',', '.')) if config["Terraza"] else ""
+
+
+
+
+            df_tienda = df_tienda[
+                (df_tienda["Barra"] != "") |
+                (df_tienda["Comedor"] != "") |
+                (df_tienda["Terraza"] != "")
+            ]
+
+            fic_salida = f"{output_path}{tienda}.xlsx"
+            if not df_tienda.empty:
+                df_tienda.to_excel(fic_salida, index=False)
+                resultado.append(f"Archivo generado para tienda: {tienda} con {df_tienda.shape[0]} registros de un total de {num_registros_origen}")
+
+        if errores:
+            with open(error_log_path, "w") as error_file:
+                for error in errores:
+                    error_file.write(error + "\n")
+
+        return resultado
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "proceso.Exception", e)
+        raise
+
+# -----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------
+def limpiar_ceros(valor):
+    if pd.isna(valor) or str(valor).strip() == "" or str(valor).strip() == "0" or valor == 0:
+        return ""
+    return valor
+
+# -----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------
+def validar_codigo_barras(codigo_barras, codigo_erp):
+    # if pd.isna(codigo_barras) or len(str(codigo_barras).strip()) <= 6:
+    if isinstance(codigo_barras, pd.Series):
+        return codigo_barras.apply(lambda x: "" if pd.isna(x) or len(str(x).strip()) <= 6 else str(x))
+    
+    if pd.isna(codigo_barras) or len(str(codigo_barras).strip()) <= 6:
+        return ""
+
+    return codigo_barras
+
+# -----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------
+def validar_grupo_carta(grupo, errores, id_plato, nombre):
+    try:
+        grupo = int(grupo)  # Convertir a entero para comparación correcta
+    except (ValueError, TypeError):
+        errores.append(f"{id_plato} - {nombre} - Producto sin número de carta")
+        return False
+
+    if grupo not in range(1, 9):
+        errores.append(f"{id_plato} - {nombre} - Producto con nº de carta fuera de rango")
+        return False
+    
+    return True
+
+
+
+
+'''
+# -----------------------------------------------------------------------------------------------------
+# Salon Sol: Barra y comedor
+# Sol Quevedo: Barra, comedor y teerraza
+# Velazquez la moraleja: Barra y comedor
 # -----------------------------------------------------------------------------------------------------
 def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
     resultado = []
@@ -78,8 +226,8 @@ def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
         param.debug = "# Mapear las columnas según las indicaciones"
         converted_df["Id Plato"] = origen_df["Código"]
         converted_df["Descripcion"] = origen_df["Nombre"]
-        converted_df["Barra"] = origen_df["PVP TIENDA"]
-        converted_df["Comedor"] = origen_df["PVP SALON TIENDAS"]
+        converted_df["Barra"] = origen_df["PVP TIENDA SOL,QUEVEDO"] # ["PVP TIENDA VELAZ,MORAL."]
+        converted_df["Comedor"] = origen_df["PVP SALON TIENDAS"]  # ["PVP SALON SOL"]
         converted_df["Terraza"] = origen_df["PVP TERRAZA QUEVEDO"]
         converted_df["Hotel"] = ""
         converted_df["Reservado"] = ""
@@ -122,96 +270,4 @@ def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
         graba_log(param, "proceso.Exception", e)
         raise         
 
-
 '''
-# -----------------------------------------------------------------------------------------------------
-# -----------------------------------------------------------------------------------------------------
-def convierte_con_openpyxl (param: InfoTransaccion, origen_path, output_path):
-    resultado = []
-
-    try:
-        # Cargar el archivo de origen con openpyxl
-        wb_origen = load_workbook(origen_path)
-        ws_origen = wb_origen.active  # Suponemos que los datos están en la primera hoja
-
-        # Crear un nuevo archivo para el destino
-        wb_destino = Workbook()
-        ws_destino = wb_destino.active
-        ws_destino.title = "Datos Convertidos"
-
-        # Definir las columnas del archivo destino
-        columns_destino = [
-            "Id Plato", "Descripcion", "Barra", "Comedor", "Terraza", "Hotel", 
-            "Reservado", "Menú", "Orden Factura", "Orden Cocina", "OrdenTactil",
-            "Grupo Carta 1", "Grupo Carta 2", "Grupo Carta 3", "Grupo Carta 4",
-            "Familia", "Código Barras", "Centro", "Centro 2", "Centro 3"
-        ]
-        ws_destino.append(columns_destino)  # Escribir los encabezados
-
-        # Mapeo de columnas de origen a destino
-        for row in ws_origen.iter_rows(min_row=2, values_only=True):  # Saltar la fila de encabezados
-            id_plato = row[0]  # "Código"
-            descripcion = row[2]  # "Nombre"
-            barra = row[5] if row[5] not in (None, "", 0) else ""  # "PVP TIENDA"
-            comedor = row[6] if row[6] not in (None, "", 0) else ""  # "PVP SALON TIENDAS"
-            terraza = row[7] if row[7] not in (None, "", 0) else ""  # "PVP TERRAZA QUEVEDO"
-            hotel = ""
-            reservado = ""
-            menu = ""
-            orden_factura = ""
-            orden_cocina = ""
-            orden_tactil = ""
-            grupo_carta_1 = row[14]  # "GRUPO DE CARTA"
-            grupo_carta_2 = ""
-            grupo_carta_3 = ""
-            grupo_carta_4 = ""
-            familia = ""
-            codigo_barras = row[1]  # "Código de barras"
-            centro = "X" if row[15] else ""  # "CENTRO PREPARACION CAFETERA"
-            centro_2 = "X" if row[16] else ""  # "CENTRO PREPARACION PLANCHA"
-            centro_3 = "X" if row[17] else ""  # "CENTRO PREPARACION COCINA"
-
-            # Crear la fila destino
-            fila_destino = [
-                id_plato, descripcion, barra, comedor, terraza, hotel,
-                reservado, menu, orden_factura, orden_cocina, orden_tactil,
-                grupo_carta_1, grupo_carta_2, grupo_carta_3, grupo_carta_4,
-                familia, codigo_barras, centro, centro_2, centro_3
-            ]
-            ws_destino.append(fila_destino)
-
-        # Ajustar alineación de celdas
-        for row in ws_destino.iter_rows():
-            for cell in row:
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-
-        # Guardar el archivo destino
-        wb_destino.save(output_path)
-        print(f"Archivo final generado con formato guardado en: {output_path}")
-
-        # Contar registros
-        num_registros_origen = ws_origen.max_row - 1
-        num_registros_destino = ws_destino.max_row - 1
-        print(f"El archivo de origen tiene {num_registros_origen} registros.")
-        print(f"El archivo final generado tiene {num_registros_destino} registros.")
-
-
-        param.debug = "Comparando registros"       
-        if num_registros_origen == num_registros_destino:
-            param.ret_code = 0
-            param.ret_txt = f"Ok: Ambos archivos tienen {num_registros_origen} registros"
-        else:
-            param.ret_code = -1
-            param.ret_txt = f"Error: El archivo origen tiene {num_registros_origen} registros. El archivo generado tiene {num_registros_destino} registros."
-        
-        resultado = [param.ret_txt]
-
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param.to_dict(), f"Excepción tarifas_a_TPV.proceso", e)
-       
-
-    finally:
-        return resultado
-'''
-

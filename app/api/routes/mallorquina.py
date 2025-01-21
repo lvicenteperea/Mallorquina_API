@@ -206,14 +206,13 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                         origen_path: str = Query(..., description="Fichero origen"),
-                        output_path: str = Query(..., description="Fichero destino")
                        ):
     
     try:
         resultado = []
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path, output_path])
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path} - {output_path}"
-
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[origen_path]) #, output_path])
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path}" # - {output_path}"
+        
         # --------------------------------------------------------------------------------
         resultado = tarifas_a_TPV.proceso(param = param)
         # --------------------------------------------------------------------------------

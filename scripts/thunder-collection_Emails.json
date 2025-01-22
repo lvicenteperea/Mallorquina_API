@@ -2,7 +2,7 @@
     "clientName": "Thunder Client",
     "collectionName": "Emails",
     "collectionId": "4b63b7fb-7f90-4d63-b091-14bb5ed42efa",
-    "dateExported": "2025-01-15T22:37:13.842Z",
+    "dateExported": "2025-01-22T07:12:31.888Z",
     "version": "1.2",
     "folders": [],
     "requests": [
@@ -59,7 +59,85 @@
                     "isPath": false
                 }
             ]
+        },
+        {
+            "_id": "c37e0f8f-d966-4f72-b3b5-c58973edd114",
+            "colId": "4b63b7fb-7f90-4d63-b091-14bb5ed42efa",
+            "containerId": "",
+            "name": "eml_grabar_email",
+            "url": "http://127.0.0.1:8000/email/eml_grabar_email?id_App=1&user=usuario_dev&ret_code=0&ret_txt=OK&de=sender@example.com&clave_externa=12345&asunto=Test&cuerpo=Hola&lenguaje=es&prioridad=1",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2025-01-22T07:11:47.779Z",
+            "modified": "2025-01-22T07:11:47.779Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Authorization",
+                    "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                }
+            ],
+            "params": [
+                {
+                    "name": "id_App",
+                    "value": "1",
+                    "isPath": false
+                },
+                {
+                    "name": "user",
+                    "value": "usuario_dev",
+                    "isPath": false
+                },
+                {
+                    "name": "ret_code",
+                    "value": "0",
+                    "isPath": false
+                },
+                {
+                    "name": "ret_txt",
+                    "value": "OK",
+                    "isPath": false
+                },
+                {
+                    "name": "de",
+                    "value": "sender@example.com",
+                    "isPath": false
+                },
+                {
+                    "name": "clave_externa",
+                    "value": "12345",
+                    "isPath": false
+                },
+                {
+                    "name": "asunto",
+                    "value": "Test",
+                    "isPath": false
+                },
+                {
+                    "name": "cuerpo",
+                    "value": "Hola",
+                    "isPath": false
+                },
+                {
+                    "name": "lenguaje",
+                    "value": "es",
+                    "isPath": false
+                },
+                {
+                    "name": "prioridad",
+                    "value": "1",
+                    "isPath": false
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n    \"para\": [\"destino1@example.com\", \"destino2@example.com\"],\n    \"cc\": [\"copia1@example.com\", \"copia2@example.com\"],\n    \"bcc\": [\"copia_oculta@example.com\"],\n    \"parametros\": {\n        \"nombre\": \"Juan\",\n        \"empresa\": \"Empresa XYZ\"\n    }\n}",
+                "form": []
+            }
         }
     ],
-    "ref": "4y7xnqhlO05rsGghmeiOMllaH0_aWUoFWq6AxWkJF5AGfbpCAiRR3ICeecNZOmtaRVFeSemPkQZ8fVIfXahPyA"
+    "ref": "4y7xnqhlO05rsGghmeiOMvE7j1UZjDBC49n3MyQLGJw4V3NcfwtI6EBQNI7Bx4x-alZJdLlfp-Kz63fKlZrtkg"
 }

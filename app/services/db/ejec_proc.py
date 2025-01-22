@@ -67,6 +67,9 @@ def call_proc_bbdd(param: InfoTransaccion, procedimiento:str, conn_mysql = None,
         #param_expanded = expande_lista(param)
         param_proc = param.to_list_proc_bbdd()
 
+        imprime(param_proc, "*")
+        print(param_proc)
+
         cursor = conn_mysql.cursor()
         response = cursor.callproc(procedimiento, param_proc)
 

@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "a2dac09a-7dc0-43d7-a23b-260301d28102",
+        "_postman_id": "11fef627-e0ef-4b82-b916-065d6bfad8d8",
         "name": "Mallorquina",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -177,7 +177,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mll_convierte_tarifas?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&origen_path=export_sqlpyme.xlsx&output_path=importa_TPV.xlsx",
+                    "raw": "http://localhost:8000/mallorquina/mll_convierte_tarifas?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"\"&origen_path=Productos SQLPyme-TPV.xlsx",
                     "query": [
                         {
                             "key": "id_App",
@@ -185,7 +185,7 @@
                         },
                         {
                             "key": "user",
-                            "value": "Pruebas"
+                            "value": "usuario_dev"
                         },
                         {
                             "key": "ret_code",
@@ -197,15 +197,12 @@
                         },
                         {
                             "key": "origen_path",
-                            "value": "export_sqlpyme.xlsx"
-                        },
-                        {
-                            "key": "output_path",
-                            "value": "importa_TPV.xlsx"
+                            "value": "Productos SQLPyme-TPV.xlsx"
                         }
                     ],
                     "variable": [],
                     "path": [
+                        "mallorquina",
                         "mll_convierte_tarifas"
                     ],
                     "protocol": "http",
@@ -213,7 +210,13 @@
                         "localhost"
                     ],
                     "port": "8000"
-                }
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ]
             }
         },
         {
@@ -221,7 +224,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mallorquina/mll_sync_todo?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
+                    "raw": "http://localhost:8000/mallorquina/mll_sincroniza?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
                     "query": [
                         {
                             "key": "id_App",
@@ -243,7 +246,7 @@
                     "variable": [],
                     "path": [
                         "mallorquina",
-                        "mll_sync_todo"
+                        "mll_sincroniza"
                     ],
                     "protocol": "http",
                     "host": [

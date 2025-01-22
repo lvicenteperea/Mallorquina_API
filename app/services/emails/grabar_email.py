@@ -7,17 +7,6 @@ from app.config.settings import settings
 from app.services.db.ejec_proc import call_proc_bbdd
 
 
-"""
-GENERAR UNA CLAVE 64B para FERNET
-from cryptography.fernet import Fernet
-
-# Generar una nueva clave
-new_key = Fernet.generate_key()
-print(new_key.decode())  # Muestra la clave para configurarla como variable de entorno
-
-"""
-
-
 def proceso(param: InfoTransaccion) -> InfoTransaccion: 
     """
     Graba un registro en la tabla mail_access_token con el token encriptado.
@@ -34,36 +23,36 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
     - La clave de encriptación debe almacenarse de manera segura (por ejemplo, como variable de entorno).
     - Utiliza `os.environ` para cargar la clave desde el entorno y evitar exponerla en el código fuente.
     """
-    funcion = "grabar_token.proceso"
+    funcion = "grabar_email.proceso"
 
 
     try:
-        # tokenable = param.parametros[0] 
-        # nombre = param.parametros[1] 
-        token = param.parametros[2] 
-        # abilities = param.parametros[3] 
-        # ID = param.parametros[4] 
+        # id_servidor= param.parametros[0]
+        # id_participante= param.parametros[1]
+        # para= param.parametros[2]
+        # para_nombre= param.parametros[3]
+        # de= param.parametros[4]
+        # de_nombre= param.parametros[5]
+        # cc= param.parametros[6]
+        # bcc= param.parametros[7]
+        # prioridad= param.parametros[8]
+        # reply_to= param.parametros[9]
+        # clave_externa= param.parametros[10]
+        # asunto= param.parametros[11]
+        # cuerpo= param.parametros[12]
+        # lenguaje= param.parametros[13]
+        # parametros= param.parametros[14]
+        # fecha_envio= param.parametros[15]
+        # identificador_externo= param.parametros[16]
 
-        # Obtener la clave de encriptación desde una variable de entorno
-        encryption_key = settings.ENCRYPTION_KEY
-        if not encryption_key:
-            param.registrar_error(ret_txt= "La clave de encriptación no está configurada en las variables de entorno.", debug=f"{funcion}.encryption_key")
-            raise MadreException(param = param)
+        # añadimos a parametros un cero, ya que es el del registro creado en caso de OK que retornamos en PARAM
+        param.parametros.append(0) 
 
-        fernet = Fernet(encryption_key)
-
-        # Encriptar el token
-        param.debug = token
-        encrypted_token = fernet.encrypt(token.encode())
-        param.parametros[2] = encrypted_token  # lo cambiamos por el token ya encriptado
-
-        param.parametros.append(0) # añadimos a parametros un cero, ya que es el del registro creado en caso de OK que retornamos en PARAM
-
-        param = call_proc_bbdd(param=param, procedimiento="w_mail_graba_access_token")
+        param = call_proc_bbdd(param=param, procedimiento="w_mail_graba_mail")
 
         # Verificar si el procedimiento devolvió un error
         if param.ret_code < 0:
-            param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_access_token")
+            param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_mail")
             raise MadreException(param=param)
         
         return param

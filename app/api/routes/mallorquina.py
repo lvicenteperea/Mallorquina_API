@@ -1,7 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
 from starlette.requests import Request
-from fastapi.security import HTTPAuthorizationCredentials
-from app.middleware.auth import AuthMiddleware
 from datetime import datetime
 
 
@@ -14,7 +12,6 @@ import app.services.mallorquina.tarifas_a_TPV as tarifas_a_TPV
 import app.services.mallorquina.fichas_tecnicas as fichas_tecnicas
 import app.services.mallorquina.carga_productos_erp as carga_productos_erp
 import app.services.mallorquina.encargos_navidad as encargos_navidad
-import app.services.emails.grabar_token as grabar_token
 
 
 from app.utils.functions import graba_log, imprime
@@ -331,47 +328,6 @@ async def mll_encargos_navidad(id_App: int = Query(..., description="Identificad
         # --------------------------------------------------------------------------------
 
         param.debug = f"Esto debería ser <infoTransaccion>: {type(param_resultado)}"
-    
-    except MadreException as e:
-        graba_log(param, "mll_carga_prod_erp.MadreException", e)
-                
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_carga_prod_erp.HTTPException", e)
-
-
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_fichas_tecnicas.Exception", e)
-
-    finally:
-        return param_resultado
-
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.get("/eml_grabar_token", response_model=InfoTransaccion)
-async def eml_grabar_token(id_App: int = Query(..., description="Identificador de la aplicación"),
-                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                        ret_code: int = Query(..., description="Código de retorno inicial"),
-                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                        tokenable: str = Query(..., description="Para su campo"),
-                        nombre: str= Query(..., description="Nombre o descripción del token o de su uso"),
-                        token: str = Query(..., description="Token que se le quiere asignar"),
-                        abilities = Query(..., description="para que servicio o servicios array de cadenas: ['serv1','serv2','serv3',...]"),
-                       ):
-    
-    try:
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
-                                parametros=[tokenable, nombre, token, abilities],
-                                debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {tokenable} - {nombre} - {token} - {abilities}")
-
-        # --------------------------------------------------------------------------------
-        param_resultado = grabar_token.proceso(param = param) # ya retorna un infoTransaccion
-        # --------------------------------------------------------------------------------
-
-        param.debug = f"Esto debería ser <infoTransaccion>: {type(resultado)}"
     
     except MadreException as e:
         graba_log(param, "mll_carga_prod_erp.MadreException", e)

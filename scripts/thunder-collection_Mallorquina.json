@@ -2,7 +2,7 @@
     "clientName": "Thunder Client",
     "collectionName": "Mallorquina",
     "collectionId": "1e7c61d6-ebf4-4e56-be37-d93e3563d8f5",
-    "dateExported": "2025-01-17T06:54:12.367Z",
+    "dateExported": "2025-01-22T07:12:08.709Z",
     "version": "1.2",
     "folders": [],
     "requests": [
@@ -167,12 +167,17 @@
             "colId": "1e7c61d6-ebf4-4e56-be37-d93e3563d8f5",
             "containerId": "",
             "name": "mll_convierte_tarifas",
-            "url": "http://localhost:8000/mll_convierte_tarifas?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&origen_path=export_sqlpyme.xlsx&output_path=importa_TPV.xlsx",
+            "url": "http://localhost:8000/mallorquina/mll_convierte_tarifas?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"\"&origen_path=Productos SQLPyme-TPV.xlsx",
             "method": "GET",
             "sortNum": 625,
             "created": "2024-12-30T12:36:59.985Z",
-            "modified": "2024-12-30T12:38:11.364Z",
-            "headers": [],
+            "modified": "2025-01-20T19:07:38.746Z",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                }
+            ],
             "params": [
                 {
                     "name": "id_App",
@@ -181,7 +186,7 @@
                 },
                 {
                     "name": "user",
-                    "value": "Pruebas",
+                    "value": "usuario_dev",
                     "isPath": false
                 },
                 {
@@ -196,12 +201,7 @@
                 },
                 {
                     "name": "origen_path",
-                    "value": "export_sqlpyme.xlsx",
-                    "isPath": false
-                },
-                {
-                    "name": "output_path",
-                    "value": "importa_TPV.xlsx",
+                    "value": "Productos SQLPyme-TPV.xlsx",
                     "isPath": false
                 }
             ]
@@ -211,11 +211,11 @@
             "colId": "1e7c61d6-ebf4-4e56-be37-d93e3563d8f5",
             "containerId": "",
             "name": "mll_sync_todo",
-            "url": "http://localhost:8000/mallorquina/mll_sync_todo?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
+            "url": "http://localhost:8000/mallorquina/mll_sincroniza?id_App=1&user=Pruebas&ret_code=0&ret_txt=\"\"",
             "method": "GET",
             "sortNum": 1250,
             "created": "2024-12-30T12:32:00.601Z",
-            "modified": "2025-01-16T09:12:05.542Z",
+            "modified": "2025-01-20T06:56:45.243Z",
             "headers": [
                 {
                     "name": "Authorization",
@@ -324,5 +324,5 @@
             ]
         }
     ],
-    "ref": "YZOjrXjdybClV9r5hhOevshmrzFyYF0K48DIeq-xz_51SUYAb3o3_vEw7GP7IFhZVXXoOPBaMmOd5Rm1Q0O5xA"
+    "ref": "YZOjrXjdybClV9r5hhOevlYUNf-PvyLswtkecbWrWcIFxQUf7dG9oQ6Mf4xWGvS3R7KhBC-YcMiTziD8qR0Ydg"
 }

@@ -10,26 +10,49 @@ from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
+'''
+SOL:
+    Barra:   Por ejemplo: "PVP TIENDA SOL,QUEVEDO",
+    Comedor: PVP TIENDA SOL,QUEVEDO
+    
+QUEVEDO:
+    Barra:  PVP TIENDA SOL,QUEVEDO
+    Comedor: PVP TIENDA SOL,QUEVEDO
+    Terraza: PVP TERRAZA QUEVEDO
+MG:
+    Barra: PVP TIENDA VELAZ,MORAL.
+    Comedor: PVP TIENDA VELAZ,MORAL.
+    
+VELAZQUEZ:
+    Barra: PVP TIENDA VELAZ,MORAL.
+    Comedor: PVP TIENDA VELAZ,MORAL.
+
+SALON_SOL:
+    Barra: PVP SALON SOL
+    Comedor: PVP SALON SOL
+
+'''
+
 PATH: str = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
 TIENDAS: str = {
                 "SOL": {
                     "Barra": "PVP TIENDA SOL,QUEVEDO",
-                    "Comedor": "PVP SALON TIENDAS",
-                    "Terraza": "PVP TERRAZA QUEVEDO"
+                    "Comedor": "PVP TIENDA SOL,QUEVEDO",
+                    "Terraza": None
                 },
                 "QUEVEDO": {
                     "Barra": "PVP TIENDA SOL,QUEVEDO",
-                    "Comedor": "PVP SALON TIENDAS",
+                    "Comedor": "PVP TIENDA SOL,QUEVEDO",
                     "Terraza": "PVP TERRAZA QUEVEDO"
                 },
                 "MG": {
-                    "Barra": "PVP TIENDA SOL,QUEVEDO",
-                    "Comedor": "PVP SALON TIENDAS",
+                    "Barra": "PVP TIENDA VELAZ,MORAL.",
+                    "Comedor": "PVP TIENDA VELAZ,MORAL.",
                     "Terraza": None
                 },
                 "VELAZQUEZ": {
                     "Barra": "PVP TIENDA VELAZ,MORAL.",
-                    "Comedor": "PVP SALON TIENDAS",
+                    "Comedor": "PVP TIENDA VELAZ,MORAL.",
                     "Terraza": None
                 },
                 "SALON_SOL": {

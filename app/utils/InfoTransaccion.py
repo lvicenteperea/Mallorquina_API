@@ -1,7 +1,7 @@
-
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional, Any
+import json
 
 class InfoTransaccion(BaseModel):
     id_App: int = 0
@@ -36,25 +36,50 @@ class InfoTransaccion(BaseModel):
         
         self.debug = self.debug if not debug else debug
 
+    #----------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------
     def limpiar_error(self):
         self.ret_code = None
         self.ret_txt = None
         self.debug = None
 
+    #----------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------
     def to_list(self):
         return [self.id_App, self.user, self.ret_code, self.ret_txt]
 
+    #----------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------
     def to_list_proc_bbdd(self):
 
         lista = [self.id_App, self.user, self.ret_code, self.ret_txt]
 
+        print("----------------------------------------------------")
+        print(self.parametros)
+        print("1----------------------------------------------------")
         for item in self.parametros:
-            lista.append(item)
+            print("")
+            print(item)
+            # lista.append(item)
+            if isinstance(item, list):
+                lista.append(','.join(map(str, item)))  # Convertir listas a cadenas separadas por comas
+            elif isinstance(item, dict):
+                lista.append(json.dumps(item))  # Convertir diccionarios a formato JSON
+            else:
+                lista.append(item)  # Mantener el valor original si es un tipo compatible
+
+        print("----------------------------------------------------1")
+        print(lista)
+        print("----------------------------------------------------")
 
         return lista
 
-
+    #----------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------
     def to_infotrans_proc_bbdd(self, list: list):
+        print("==================================================")
+        print(list[4:])
+        print("==================================================")
         return InfoTransaccion( id_App      = list[0], 
                                 user        = list[1], 
                                 ret_code    = list[2], 

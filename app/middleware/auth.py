@@ -55,7 +55,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
     #----------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------    
     async def dispatch(self, request: Request, call_next):
-        print(f"Headers recibidos: {request.headers}")
+        # print(f"Headers recibidos: {request.headers}")
+        # print("")
+        # print("")
 
         # Validar IP
         client_ip = request.client.host

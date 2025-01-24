@@ -47,20 +47,16 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
 
         # añadimos a parametros un cero, ya que es el del registro creado en caso de OK que retornamos en PARAM
         param.parametros.append(0) 
-
+    
         param = call_proc_bbdd(param=param, procedimiento="w_mail_graba_mail")
 
         # Verificar si el procedimiento devolvió un error
-        if param.ret_code < 0:
-            param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_mail")
-            raise MadreException(param=param)
-        
-        return param
+        # if param.ret_code < 0:
+        #     param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_mail")
+        #     # raise MadreException(param=param)
+        #     graba_log(param, f"Excepción en {funcion}", None)
 
-    except MadreException as e:
-        param.error_sistema()
-        graba_log(param, f"Excepción en {funcion}", e)
-        raise
+        return param
 
     except Exception as e:
         param.error_sistema()

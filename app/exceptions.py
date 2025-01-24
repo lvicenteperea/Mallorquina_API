@@ -4,7 +4,7 @@ import json
 
 from app.utils.mis_excepciones import MadreException
 from app.utils.functions import graba_log, imprime
-
+from app.utils.InfoTransaccion import InfoTransaccion
 
 '''
 # -----------------------------------------------------------------------------------------------
@@ -54,11 +54,11 @@ from app.utils.functions import graba_log, imprime
 # -----------------------------------------------------------------------------------------------
 def imprime_mi_log(tipo_excepcion, exc):
     print(f"--------------------------------------{tipo_excepcion}-----------------------------------------------")
-    print("Argumentos de la excepción:", exc.args)
+    print("Argumentos de la excepción:", exc.args if hasattr(exc, 'args') else exc)
     print(f"--------------------------------------------------------------------------------------------------------")
-    print(f"Detalle: {exc.detail}")
-    print(f"Estado: {exc.status_code}")
-    print(f"Encabezados: {exc.headers}")
+    print(f"Detalle: {exc.detail if hasattr(exc, 'detail') else 'Sin detalle'}")
+    print(f"Estado: {exc.status_code if hasattr(exc, 'status_code') else 'Sin estado'}")
+    print(f"Encabezados: {exc.headers if hasattr(exc, 'headers') else 'Sin encabezados'}")
 
     #imprime([tipo_excepcion, "Trace:", traceback.extract_tb(exc.detail["traceback"])], "=")
     if hasattr(exc, 'status_code'): 
@@ -71,10 +71,12 @@ def imprime_mi_log(tipo_excepcion, exc):
 # -----------------------------------------------------------------------------------------------
 # EXCEPTION HANDLERS
 # -----------------------------------------------------------------------------------------------
-async def madre_exception_handler(request: Request, exc: MadreException):
+async def madre_exception_handler(param: InfoTransaccion, mensaje: str = ' Error general contacte con su administrador', codigo: int = -1):
 # -----------------------------------------------------------------------------------------------
-    imprime_mi_log("madre_exception_handler", exc)
+    imprime_mi_log("madre_exception_handler2", mensaje)
+    imprime_mi_log("madre_exception_handler3", codigo)
 
+    '''
     if isinstance(exc.mi_mensaje, dict):
         mi_mensaje = exc.mi_mensaje
     else:
@@ -87,6 +89,14 @@ async def madre_exception_handler(request: Request, exc: MadreException):
     return JSONResponse(
         status_code = 500 if mi_mensaje['ret_code'] == -99 else 400, # exc.status_code
         content={"codigo_error (status_code)": exc.status_code, "mensaje": mi_mensaje},
+    )
+    '''
+    
+    # graba_log(param.to_dict() | {"codigo":codigo, "Mensaje":mensaje}, "madre_exception", None)
+
+    return JSONResponse(
+        status_code = codigo, 
+        content={"codigo_error (status_code)": param.ret_code, "mensaje": param.ret_txt+mensaje},
     )
 
 # -----------------------------------------------------------------------------------------------
@@ -152,6 +162,9 @@ async def generic_exception_handler(request: Request, exc: Exception):
         )
     '''    
 # -----------------------------------------------------------------------------------------------
+    imprime_mi_log("generic_exception_handler", exc)
+    
+    """
     if hasattr(exc, "status_code"):
         status_code = getattr(exc, "status_code", 500)
     else:
@@ -166,6 +179,16 @@ async def generic_exception_handler(request: Request, exc: Exception):
         "status_code": status_code,
         "message": detalle
     }
+    """
+
+    x =  JSONResponse(
+        status_code = 525, 
+        content={"codigo_error (status_code)": 526, "mensaje": "mi_mensaje"},
+    )
+    print("")
+    print("x para response:", x)
+    print("")
+    return x
 
 
 # -----------------------------------------------------------------------------------------------

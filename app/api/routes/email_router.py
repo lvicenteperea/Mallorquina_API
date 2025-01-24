@@ -111,25 +111,36 @@ async def eml_grabar_email( request: Request,  # Para acceder a request.state.us
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
-            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
-            raise MadreException(param,"Los usuarios no corresponden", -1)
+            imprime([user, authenticated_user], "@")
+            param.error_sistema(txt_adic=f"Error de usuario{user} != {authenticated_user}", debug=f"{user} - {authenticated_user}")
+            raise MadreException(param, "Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
         # Servicio
         # --------------------------------------------------------------------------------
-        param_resultado = grabar_email.proceso(param = param) # ya retorna un infoTransaccion
+        param = grabar_email.proceso(param = param) # ya retorna un infoTransaccion
+        param.debug = f"Retornando: {type(param)}"
         # --------------------------------------------------------------------------------
 
-        param.debug = f"Esto debería ser <infoTransaccion>: {type(param_resultado)}"
-        imprime([param], "*")
     
+        return param
 
     except MadreException as e:
-        graba_log(param, "eml_grabar_email.MadreException", e)
+        # imprime(["MadreException"], "@")
+        # graba_log(param, "eml_grabar_email.MadreException", e)
+        print("-----------------------------")
+        print("-------------------")
+        print(e)
+        print("-------------------")
+        print("-----------------------------")
+        
                 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "eml_grabar_email.Exception", e)
+        imprime(["param.ret_txt, param.ret_code, e"], "@")
+        # param.error_sistema()
+        raise
+        # graba_log(param, "eml_grabar_email.Exception", e)
 
-    finally:
-        return param_resultado
+        
+
+

@@ -12,14 +12,16 @@ import pyodbc
 
 #----------------------------------------------------------------------------------------
 def get_db_connection_mysql():
-    param = InfoTransaccion(debug=f"Conectando con: {settings.MYSQL_DB_URL_MLL}/{settings.MYSQL_DB_USER_MLL}/{settings.MYSQL_DB_DATABASE_MLL}")
+    param = InfoTransaccion(debug=f"Conectando con: {settings.MYSQL_DB_URL_MLL}/{settings.MYSQL_DB_PORT_MLL}/{settings.MYSQL_DB_USER_MLL}/{settings.MYSQL_DB_DATABASE_MLL}")
     try:
         connection = mysql.connector.connect(
             host=settings.MYSQL_DB_URL_MLL,
+            port=settings.MYSQL_DB_PORT_MLL,
             user=settings.MYSQL_DB_USER_MLL,
             password= settings.MYSQL_DB_PWD_MLL,
             database=settings.MYSQL_DB_DATABASE_MLL
         )
+        connection.set_charset_collation('utf8mb4', 'utf8mb4_unicode_ci')
         return connection
     
     except Exception as e:

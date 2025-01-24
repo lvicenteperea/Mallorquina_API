@@ -8,7 +8,7 @@ class MadreException(Exception):
 
     def __init__(self, param: InfoTransaccion, detail: str = "", status_code: int = 0):
         if not param:
-            self.param = InfoTransaccion()
+            self.param = InfoTransaccion(ret_code= status_code if status_code!=0 else -99, ret_txt=detail)
         else:
             self.param = param
 

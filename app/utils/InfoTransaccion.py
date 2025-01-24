@@ -54,12 +54,7 @@ class InfoTransaccion(BaseModel):
 
         lista = [self.id_App, self.user, self.ret_code, self.ret_txt]
 
-        print("----------------------------------------------------")
-        print(self.parametros)
-        print("1----------------------------------------------------")
         for item in self.parametros:
-            print("")
-            print(item)
             # lista.append(item)
             if isinstance(item, list):
                 lista.append(','.join(map(str, item)))  # Convertir listas a cadenas separadas por comas
@@ -68,18 +63,11 @@ class InfoTransaccion(BaseModel):
             else:
                 lista.append(item)  # Mantener el valor original si es un tipo compatible
 
-        print("----------------------------------------------------1")
-        print(lista)
-        print("----------------------------------------------------")
-
         return lista
 
     #----------------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------------
     def to_infotrans_proc_bbdd(self, list: list):
-        print("==================================================")
-        print(list[4:])
-        print("==================================================")
         return InfoTransaccion( id_App      = list[0], 
                                 user        = list[1], 
                                 ret_code    = list[2], 

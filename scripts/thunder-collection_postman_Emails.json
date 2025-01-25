@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "27abf681-84a4-4ed8-b4c6-cf6b78a31a54",
+        "_postman_id": "7a8d3cf7-d3f4-48e6-b716-03ed6deefdcc",
         "name": "Emails",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -63,7 +63,7 @@
             "request": {
                 "method": "POST",
                 "url": {
-                    "raw": "http://127.0.0.1:8000/email/eml_grabar_email?id_App=1&user=usuario_dev&ret_code=0&ret_txt=OK&de=sender@example.com&clave_externa=12345&asunto=Test&cuerpo=Hola&lenguaje=es&prioridad=1",
+                    "raw": "http://127.0.0.1:8000/email/eml_grabar_email?id_App=1&user=usuario_dev&ret_code=0&ret_txt=OK&de=sender@example.com&clave_externa=12345&lenguaje=es&prioridad=1",
                     "query": [
                         {
                             "key": "id_App",
@@ -88,14 +88,6 @@
                         {
                             "key": "clave_externa",
                             "value": "12345"
-                        },
-                        {
-                            "key": "asunto",
-                            "value": "Test"
-                        },
-                        {
-                            "key": "cuerpo",
-                            "value": "Hola"
                         },
                         {
                             "key": "lenguaje",
@@ -137,7 +129,7 @@
                             "language": "json"
                         }
                     },
-                    "raw": "{\n    \"para\": [\"destino1@example.com\", \"destino2@example.com\"],\n    \"cc\": [\"copia1@example.com\", \"copia2@example.com\"],\n    \"bcc\": [\"copia_oculta@example.com\"],\n    \"parametros\": {\n        \"nombre\": \"Juan\",\n        \"empresa\": \"Empresa XYZ\"\n    }\n}"
+                    "raw": "{\n    \"asunto\": \"Prueba de ThunderClient\",\n    \"cuerpo\": \"Esta es la prueba de un correo <strong>en HTML</strong> con parametros nombre: [{#nombre@}] y empresa: [{#empresa@}]\",\n    \"para\": [\"destino1@example.com\", \"destino2@example.com\"],\n    \"cc\": [\"copia1@example.com\", \"copia2@example.com\"],\n    \"bcc\": [\"copia_oculta@example.com\"],\n    \"parametros\": {\n        \"nombre\": \"Juan\",\n        \"empresa\": \"Empresa XYZ\"\n    }\n}"
                 }
             }
         }

@@ -2,7 +2,7 @@
     "clientName": "Thunder Client",
     "collectionName": "Emails",
     "collectionId": "4b63b7fb-7f90-4d63-b091-14bb5ed42efa",
-    "dateExported": "2025-01-22T07:12:31.888Z",
+    "dateExported": "2025-01-25T09:10:55.242Z",
     "version": "1.2",
     "folders": [],
     "requests": [
@@ -65,11 +65,11 @@
             "colId": "4b63b7fb-7f90-4d63-b091-14bb5ed42efa",
             "containerId": "",
             "name": "eml_grabar_email",
-            "url": "http://127.0.0.1:8000/email/eml_grabar_email?id_App=1&user=usuario_dev&ret_code=0&ret_txt=OK&de=sender@example.com&clave_externa=12345&asunto=Test&cuerpo=Hola&lenguaje=es&prioridad=1",
+            "url": "http://127.0.0.1:8000/email/eml_grabar_email?id_App=1&user=usuario_dev&ret_code=0&ret_txt=OK&de=sender@example.com&clave_externa=12345&lenguaje=es&prioridad=1",
             "method": "POST",
             "sortNum": 20000,
             "created": "2025-01-22T07:11:47.779Z",
-            "modified": "2025-01-22T07:11:47.779Z",
+            "modified": "2025-01-25T07:16:27.697Z",
             "headers": [
                 {
                     "name": "Content-Type",
@@ -112,16 +112,6 @@
                     "isPath": false
                 },
                 {
-                    "name": "asunto",
-                    "value": "Test",
-                    "isPath": false
-                },
-                {
-                    "name": "cuerpo",
-                    "value": "Hola",
-                    "isPath": false
-                },
-                {
                     "name": "lenguaje",
                     "value": "es",
                     "isPath": false
@@ -134,10 +124,10 @@
             ],
             "body": {
                 "type": "json",
-                "raw": "{\n    \"para\": [\"destino1@example.com\", \"destino2@example.com\"],\n    \"cc\": [\"copia1@example.com\", \"copia2@example.com\"],\n    \"bcc\": [\"copia_oculta@example.com\"],\n    \"parametros\": {\n        \"nombre\": \"Juan\",\n        \"empresa\": \"Empresa XYZ\"\n    }\n}",
+                "raw": "{\n    \"asunto\": \"Prueba de ThunderClient\",\n    \"cuerpo\": \"Esta es la prueba de un correo <strong>en HTML</strong> con parametros nombre: [{#nombre@}] y empresa: [{#empresa@}]\",\n    \"para\": [\"destino1@example.com\", \"destino2@example.com\"],\n    \"cc\": [\"copia1@example.com\", \"copia2@example.com\"],\n    \"bcc\": [\"copia_oculta@example.com\"],\n    \"parametros\": {\n        \"nombre\": \"Juan\",\n        \"empresa\": \"Empresa XYZ\"\n    }\n}",
                 "form": []
             }
         }
     ],
-    "ref": "4y7xnqhlO05rsGghmeiOMvE7j1UZjDBC49n3MyQLGJw4V3NcfwtI6EBQNI7Bx4x-alZJdLlfp-Kz63fKlZrtkg"
+    "ref": "4y7xnqhlO05rsGghmeiOMk3BxQwUtno5d3NAuQAskXwk3gSHvvJnUoJ5ufIz46w0maEcUnZMkkJH8xdXzDhPYA"
 }

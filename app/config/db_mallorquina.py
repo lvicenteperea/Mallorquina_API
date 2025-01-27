@@ -22,16 +22,16 @@ def get_db_connection_mysql():
             database=settings.MYSQL_DB_DATABASE_MLL,
             charset=settings.MYSQL_DB_CHARSET
         )
-        connection.set_charset_collation('utf8mb4', 'utf8mb4_unicode_ci')
 
-        # Establecer explícitamente la collation en la conexión
-        cursor = connection.cursor()
-        cursor.execute("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';")
+        # # Establecer explícitamente la collation en la conexión
+        # connection.set_charset_collation('utf8mb4', 'utf8mb4_unicode_ci')
+        # cursor = connection.cursor()
+        # cursor.execute("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';")
 
-        # Verificar collation
-        cursor.execute("SHOW VARIABLES LIKE 'collation_connection';")
-        print(cursor.fetchone())
-        cursor.close()
+        # # Verificar collation
+        # cursor.execute("SHOW VARIABLES LIKE 'collation_connection';")
+        # print(cursor.fetchone())
+        # cursor.close()
 
 
 

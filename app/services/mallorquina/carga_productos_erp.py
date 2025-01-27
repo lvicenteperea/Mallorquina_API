@@ -52,8 +52,11 @@ def carga (param: InfoTransaccion, excel):
     
     try:
         
-        # Leer el Excel
-        df = pd.read_excel(excel)
+        # # Leer el Excel
+        # df = pd.read_excel(excel)
+        # # Leer el Excel asegurando que todo se lea como texto
+        df = pd.read_excel(excel, dtype=str, keep_default_na=False)
+
 
         param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
@@ -63,61 +66,66 @@ def carga (param: InfoTransaccion, excel):
         param.debug = "Mapeo"
         # Mapeo de columnas del Excel con los campos de la tabla
         mapping = {
-            'codigo': 'ID',
-            'nombre': 'nombre',
-            'composicion_para_etiqueta': 'composicion_etiqueta',
-            'composicion_completa': 'composicion_completa',
+            'Código': 'ID',
+            'Nombre': 'nombre',
+            'Código de barras': 'codigo_barras',
+            'Composición_para_etiqueta': 'composicion_etiqueta',
+            'Composición_completa': 'composicion_completa',
             'temporada': 'temporada',
             #'familia_cod': 'familia_cod',
-            'descripcion': 'familia_desc',
+            'Descripción': 'familia_desc',
             'grupo_de_carta': 'grupo_de_carta',
+            'CENTRO PREPARACION CAFETERA': 'centro_preparacion_1',
+            'CENTRO PREPARACION PLANCHA': 'centro_preparacion_2',
+            'CENTRO PREPARACION COCINA': 'centro_preparacion_3',
             'alta_tpv': 'alta_tpv',
             'alta_glovo': 'alta_glovo',
             'alta_web': 'alta_web',
             'alta_catering': 'alta_catering',
-            'huevo': 'huevo',
-            'leche': 'leche',
-            'crustaceos': 'crustaceos',
-            'cascara': 'cascara',
-            'gluten': 'gluten',
-            'pescado': 'pescado',
-            'altramuz': 'altramuz',
-            'mostaza': 'mostaza',
-            'cacahuetes': 'cacahuetes',
-            'apio': 'apio',
-            'sulfitos': 'sulfitos',
-            'soja': 'soja',
-            'moluscos': 'moluscos',
-            'sesamo': 'sesamo',
-            'poblacion_diana': 'poblacion_diana',
-            'uso_esperado': 'uso_esperado',
-            'condiciones_almacenamiento': 'condiciones_almacenamiento',
-            'condiciones_conservacion': 'condiciones_conservacion',
-            'vida_fri_desde_fabric': 'vida_fri_desde_fabric',
-            'peso_neto_aprox': 'peso_neto_aprox',
-            'rec_aerobios_totales': 'rec_aerobios_totales',
-            'rec_enterobacterias': 'rec_enterobacterias',
-            'rec_escherichia_coli': 'rec_escherichia_coli',
-            'rec_staphylococcus_aureus': 'rec_staphylococcus_aureus',
-            'det_salmonella_cpp': 'det_salmonella_cpp',
-            'rec_listeria_monocytogenes': 'rec_listeria_monocytogenes',
-            'rec_mohos_y_levaduras': 'rec_mohos_y_levaduras',
-            'valor_energetico_kcal_kj': 'valor_energetico_kcal_kj',
-            'grasas_g': 'grasas_g',
-            'de_las_cuales_saturadas_g': 'de_las_cuales_saturadas_g',
-            'hidratos_de_carbono_g': 'hidratos_de_carbono_g',
-            'de_los_cuales_azucares_g': 'de_los_cuales_azucares_g',
-            'proteinas_g': 'proteinas_g',
-            'sal_g': 'sal_g',
-            'fibra_dietetica_g': 'fibra_dietetica_g',
-            'otros': 'otros',
+            'Huevo': 'huevo',
+            'Leche': 'leche',
+            'Crustaceos': 'crustaceos',
+            'Cáscara': 'cascara',
+            'Gluten': 'gluten',
+            'Pescado': 'pescado',
+            'Altramuz': 'altramuz',
+            'Mostaza': 'mostaza',
+            'Cacahuetes': 'cacahuetes',
+            'Apio': 'apio',
+            'Sulfitos': 'sulfitos',
+            'Soja': 'soja',
+            'Moluscos': 'moluscos',
+            'Sésamo': 'sesamo',
+            'Población_diana': 'poblacion_diana',
+            'Uso_esperado': 'uso_esperado',
+            'Condiciones_almacenamiento': 'condiciones_almacenamiento',
+            'Condiciones_conservación': 'condiciones_conservacion',
+            'Vida_frío_desde_fabric.': 'vida_fri_desde_fabric',
+            'Peso_neto_aprox': 'peso_neto_aprox',
+            'Rec_Aerobios_totales': 'rec_aerobios_totales',
+            'Rec_Enterobacterias': 'rec_enterobacterias',
+            'Rec_Escherichia_Coli': 'rec_escherichia_coli',
+            'Rec_Staphylococcus_Aureus': 'rec_staphylococcus_aureus',
+            'Det_Salmonella_cpp': 'det_salmonella_cpp',
+            'Rec_Listeria_Monocytogenes': 'rec_listeria_monocytogenes',
+            'Rec_Mohos_y_levaduras': 'rec_mohos_y_levaduras',
+            'Valor_energetico_Kcal_Kj': 'valor_energetico_kcal_kj',
+            'Grasas_g': 'grasas_g',
+            'De_las_cuales_SATURADAS_g': 'de_las_cuales_saturadas_g',
+            'Hidratos_de_carbono_g': 'hidratos_de_carbono_g',
+            'De_los_cuales_AZUCARES_g': 'de_los_cuales_azucares_g',
+            'Proteinas_g': 'proteinas_g',
+            'Sal_g': 'sal_g',
+            'Fibra_dietetica_g': 'fibra_dietetica_g',
+            'Otros': 'otros',
             'fec_modificacion': 'fec_modificacion'
         }
 
         # Procesar registros del Excel
         for x, row in df.iterrows():
             row = row.fillna('')  # Reemplazar valores NaN con cadenas vacías
-            codigo = row['codigo']
+            imprime([row], "*")
+            codigo = row['Código']
             fec_modificacion = row.get('fec_modificacion', None)
 
             # Consultar si el producto ya existe
@@ -231,15 +239,15 @@ def determinar_bbdd_y_tipo(columna):
         'pvp_tienda_sol_quevedo': ([4, 5], 'Comedor'),
         'pvp_terraza_quevedo': ([4], 'Terraza'),
 
-        'pvp_tiendas_salon': ([1, 3, 6, 7], 'Barra'),
-        'pvp_tiendas_salon': ([1, 3, 4, 6], 'Comedor'),
+        'PVP TIENDA VELAZ,MORAL.': ([1, 3, 6], 'Barra'),
+        'PVP TIENDA VELAZ,MORAL.': ([1, 3, 6], 'Comedor'),
 
-        # 'pvp_salon_sol': ([x], 'Barra'),
-        # 'pvp_salon_sol': ([x], 'Comedor'),
+        'pvp_salon_sol': ([7], 'Barra'),
+        'pvp_salon_sol': ([7], 'Comedor'),
 
-        'pvp_web': ([2], 'Web'),
-        'pvp_glovo': ([10], 'Glovo'),
-        'pvp_catering': ([11], 'Catering')
+        'pvp_web': ([91], 'Web'),
+        'pvp_glovo': ([92], 'Glovo'),
+        'pvp_catering': ([90], 'Catering')
     }
     return mapping_bbdd_tipo.get(columna, ([], ''))
 

@@ -207,17 +207,39 @@ def carga (param: InfoTransaccion, excel):
 
 
 # -----------------------------------------------------------------------------------------------------
+    # 0	Desconocida
+
+    # 4	Quevedo
+    # 5	SOL
+
+    # 1	Velázquez
+    # 3	MG Norte
+    # 6	MG
+    # 7	SOL-Bombonería
+
+    # 2	    WEB
+    # 10	GLOVO
+    # 11	CATERING
+
+    # 8	LOCAL LM
+    # 9	LOCAL LM
+    # 13	La Nube
 # -----------------------------------------------------------------------------------------------------
 def determinar_bbdd_y_tipo(columna):
     mapping_bbdd_tipo = {
-        'pvp_tienda_sol_quevedo': ([4, 5], 'Tienda'),
-        'pvp_tienda_resto': ([1, 3, 6, 7, 8, 9], 'Tienda'),
+        'pvp_tienda_sol_quevedo': ([4, 5], 'Barra'),
+        'pvp_tienda_sol_quevedo': ([4, 5], 'Comedor'),
         'pvp_terraza_quevedo': ([4], 'Terraza'),
-        'pvp_tiendas_salon': ([1, 3, 4, 6, 7, 8, 9], 'Salón'),
-        'pvp_salon_sol': ([5], 'Salón'),
-        'pvp_web': ([2], 'Tienda'),
-        'pvp_glovo': ([10], 'Tienda'),
-        'pvp_catering': ([11], 'Tienda')
+
+        'pvp_tiendas_salon': ([1, 3, 6, 7], 'Barra'),
+        'pvp_tiendas_salon': ([1, 3, 4, 6], 'Comedor'),
+
+        # 'pvp_salon_sol': ([x], 'Barra'),
+        # 'pvp_salon_sol': ([x], 'Comedor'),
+
+        'pvp_web': ([2], 'Web'),
+        'pvp_glovo': ([10], 'Glovo'),
+        'pvp_catering': ([11], 'Catering')
     }
     return mapping_bbdd_tipo.get(columna, ([], ''))
 

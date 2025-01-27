@@ -19,9 +19,22 @@ def get_db_connection_mysql():
             port=settings.MYSQL_DB_PORT_MLL,
             user=settings.MYSQL_DB_USER_MLL,
             password= settings.MYSQL_DB_PWD_MLL,
-            database=settings.MYSQL_DB_DATABASE_MLL
+            database=settings.MYSQL_DB_DATABASE_MLL,
+            charset=settings.MYSQL_DB_CHARSET
         )
         connection.set_charset_collation('utf8mb4', 'utf8mb4_unicode_ci')
+
+        # Establecer explícitamente la collation en la conexión
+        cursor = connection.cursor()
+        cursor.execute("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';")
+
+        # Verificar collation
+        cursor.execute("SHOW VARIABLES LIKE 'collation_connection';")
+        print(cursor.fetchone())
+        cursor.close()
+
+
+
         return connection
     
     except Exception as e:

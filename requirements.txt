@@ -16,5 +16,7 @@ python-jose
 
 starlette
 mysql-connector-python
+pandas
+openpyxl
 
 email-validator

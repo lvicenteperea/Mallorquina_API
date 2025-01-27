@@ -12,7 +12,7 @@ from app.config.settings import settings
 
 '''
 SOL:
-    Barra:   Por ejemplo: "PVP TIENDA SOL,QUEVEDO",
+    Barra:   PVP TIENDA SOL,QUEVEDO,
     Comedor: PVP TIENDA SOL,QUEVEDO
     
 QUEVEDO:

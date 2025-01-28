@@ -17,3 +17,5 @@ Servicios de prueba con Thunder Client
 http://localhost:8000/mll_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=""&fecha=2024-10-05
 http://localhost:8000/mll_consultas?id_App=63&user=Pruebas&ret_code=0&ret_txt=""&fecha=2024-10-05
 http://localhost:8000/mll_sync_todo?id_App=63&user=Pruebas&ret_code=0&ret_txt=""
+
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4

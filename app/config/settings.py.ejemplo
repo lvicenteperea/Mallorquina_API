@@ -3,21 +3,55 @@ from pydantic_settings import BaseSettings
 # from typing import ClassVar
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "MADRE"
+    PROJECT_NAME: str = "MALLORQUIA API"
+    
+    RUTA_LOCAL: str = "D:/Nube/GitHub/Mallorquina_API/"
+    RUTA_BASE: str = "app/ficheros/"
+    RUTA_IMAGEN: str = "app/ficheros/imagen/"
+    RUTA_DATOS: str = "app/ficheros/datos/"
+    RUTA_WEB: str = "app/ficheros/web/"
 
-    MYSQL_DB_URL: str = "127.0.0.1"
-    MYSQL_DB_USER: str = 'test'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD: str = ''  # Añadimos anotación de tipo
-    MYSQL_DB_HOST: str = 'localhost'  # Añadimos anotación de tipo
-    MYSQL_DB_DATABASE: str = 'test'  # Añadimos anotación de tipo
-
-    MYSQL_DB_URL_MLL: str = "127.0.0.1"
-    MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD_MLL: str = ''  # Añadimos anotación de tipo
+    # ----------------------------------------------------------------------------------------
+    # CONEXIONES
+    # ----------------------------------------------------------------------------------------
+    # Coenxión SSH ---------------------------------------------------------------------------
+    SSH_HOST: str = 'xxx.xxx.xxx'
+    SSH_PORT: int = 15122
+    SSH_USER: str = 'xxxxx'
+    # SSH_key_path: str = '/ruta/a/tu/clave/privada.pem' # Cambia por ssh_password si usas contraseña
+    SSH_PWD: str = 'xxxx'
+    # LOCAL MYSQL ----------------------------------------------------------------------------
+    # SSH_CONEX: bool = False
+    # MYSQL_DB_HOST_MLL: str = "xxx.xx.xx.xx"
+    # MYSQL_DB_PORT_MLL: int = 3306
+    # MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
+    # MYSQL_DB_PWD_MLL: str = 'root'  # Añadimos anotación de tipo
+    # MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
+    # MYSQL_DB_DATABASE_MLL: str = 'xxxxxx'  # Añadimos anotación de tipo
+    # MYSQL_DB_CHARSET: str = "utf8mb4"
+    # LOCAL MARIA DB  ------------------------------------------------------------------------
+    # SSH_CONEX: bool = False
+    # MYSQL_DB_HOST_MLL: str = "127.0.0.1"
+    # MYSQL_DB_PORT_MLL: int = 13306
+    # MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
+    # MYSQL_DB_PWD_MLL: str = 'root'  # Añadimos anotación de tipo
+    # MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
+    # MYSQL_DB_DATABASE_MLL: str = 'xxxx'  # Añadimos anotación de tipo
+    # MYSQL_DB_CHARSET: str = "utf8mb4"
+    # CONEXION DEV ----------------------------------------------------------------------------
+    SSH_CONEX: bool = True
+    MYSQL_DB_HOST_MLL: str = "xxxx.xxx.xx.xx"
+    MYSQL_DB_PORT_MLL: int = 15122
+    MYSQL_DB_USER_MLL: str = 'xxxxxxx'  # Añadimos anotación de tipo
+    MYSQL_DB_PWD_MLL: str = 'xxxxxx'  # Añadimos anotación de tipo
     MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
-    MYSQL_DB_DATABASE_MLL: str = 'mallorquina'  # Añadimos anotación de tipo
-
+    MYSQL_DB_DATABASE_MLL: str = 'xxxxxxx'  # Añadimos anotación de tipo
+    # ----------------------------------------------------------------------------------------
+    
     MONGODB_URL: str = ""
+
+    ENCRYPTION_KEY: str = "ZOoYUEQNjONU2fwUv-afUuUA--Z4RZlvRL4evOY_ZJk="
+    AUTH_ENABLED: bool = False  # Cambiar a False para desactivar la autenticación
 
     LOG_LEVEL: str = "info"
 

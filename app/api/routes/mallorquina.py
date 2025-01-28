@@ -119,7 +119,8 @@ async def mll_sincroniza(id_App: int = Query(..., description="Identificador de 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/mll_arqueo_caja", response_model=InfoTransaccion)
-async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador de la aplicación"),
+async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.user
+                            id_App: int = Query(..., description="Identificador de la aplicación"),
                             user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                             ret_code: int = Query(..., description="Código de retorno inicial"),
                             ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
@@ -129,6 +130,15 @@ async def mll_arqueo_caja(  id_App: int = Query(..., description="Identificador 
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
+
+        # --------------------------------------------------------------------------------
+        # Control de autenticación de usuario
+        # --------------------------------------------------------------------------------
+        # Verificar la autenticación
+        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
+        if user != authenticated_user:
+            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+            raise MadreException(param,"Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
         resultado = arqueo_caja.proceso(param = param)
@@ -237,18 +247,31 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/mll_fichas_tecnicas", response_model=InfoTransaccion)
-async def mll_fichas_tecnicas(id_App: int = Query(..., description="Identificador de la aplicación"),
-                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                        ret_code: int = Query(..., description="Código de retorno inicial"),
-                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                        #origen_path: str = Query(..., description="Fichero origen")
-                        output_path: str = Query(..., description="Fichero destino")
-                       ):
+async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.user
+                              id_App: int = Query(..., description="Identificador de la aplicación"),
+                              user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                              ret_code: int = Query(..., description="Código de retorno inicial"),
+                              ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                              #origen_path: str = Query(..., description="Fichero origen")
+                              output_path: str = Query(..., description="Fichero destino")
+                             ):
     
     try:
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[output_path])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {output_path}"
+
+        # --------------------------------------------------------------------------------
+        # Control de autenticación de usuario
+        # --------------------------------------------------------------------------------
+        # Verificar la autenticación
+        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
+        if user != authenticated_user:
+            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+            raise MadreException(param,"Los usuarios no corresponden", -1)
+        # else:
+        #     print(f"Usuario autenticado: {authenticated_user}")
+
 
         # --------------------------------------------------------------------------------
         resultado = fichas_tecnicas.proceso(param = param)

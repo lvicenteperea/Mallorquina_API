@@ -215,34 +215,17 @@ def carga (param: InfoTransaccion, excel):
 
 
 # -----------------------------------------------------------------------------------------------------
-    # 0	Desconocida
-
-    # 4	Quevedo
-    # 5	SOL
-
-    # 1	Velázquez
-    # 3	MG Norte
-    # 6	MG
-    # 7	SOL-Bombonería
-
-    # 2	    WEB
-    # 10	GLOVO
-    # 11	CATERING
-
-    # 8	LOCAL LM
-    # 9	LOCAL LM
-    # 13	La Nube
 # -----------------------------------------------------------------------------------------------------
 def determinar_bbdd_y_tipo(columna):
     mapping_bbdd_tipo = {
-        'pvp_tienda_sol_quevedo': ([4, 5], 'Barra'),
+        # 'pvp_tienda_sol_quevedo': ([4, 5], 'Barra'),
         'pvp_tienda_sol_quevedo': ([4, 5], 'Comedor'),
         'pvp_terraza_quevedo': ([4], 'Terraza'),
 
-        'PVP TIENDA VELAZ,MORAL.': ([1, 3, 6], 'Barra'),
-        'PVP TIENDA VELAZ,MORAL.': ([1, 3, 6], 'Comedor'),
+        # 'pvp_tienda_velzquez_mg': ([1, 3, 6], 'Barra'),
+        'pvp_tienda_velzquez_mg': ([1, 3, 6], 'Comedor'),
 
-        'pvp_salon_sol': ([7], 'Barra'),
+        # 'pvp_salon_sol': ([7], 'Barra'),
         'pvp_salon_sol': ([7], 'Comedor'),
 
         'pvp_web': ([91], 'Web'),

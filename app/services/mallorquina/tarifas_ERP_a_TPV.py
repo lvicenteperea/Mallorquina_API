@@ -39,11 +39,9 @@ SELECT
     pv.pvp
 FROM erp_productos p
 LEFT JOIN erp_productos_pvp pv ON p.ID = pv.id_producto
-WHERE pv.id_bbdd IN (1, 4, 5, 6, 7)
+WHERE pv.id_bbdd IN (1, 3, 4, 5, 6, 7)
+ and p.alta_tpv = "Sí"
 """
-
-
-
 
 
 #----------------------------------------------------------------------------------------
@@ -55,7 +53,6 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         output_path = f"{PATH}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}_"
 
-        print("5---------------------------------------- ")
         df = obtener_datos(param)
         resultado = generar_excel(param, df, output_path)
         
@@ -72,10 +69,14 @@ def proceso(param: InfoTransaccion) -> list:
 # Generar los archivos Excel por tienda
 def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
     resultado = []
-    print("1---------------------------------------- ")
+    error_log_path = f"{PATH}errores_{datetime.now().strftime('%Y%m%d%H%M%S')}.log"
+    errores = []
+
     try:
         for id_bbdd, tienda in TIENDAS.items():
             df_tienda = df[df["id_bbdd"] == id_bbdd]
+            total_filas = len(df_tienda)
+            imprime([f"Tienda: {tienda} - Filas: {total_filas}"], "*")
 
             # Preparar datos para el archivo de cada tienda
             data = []
@@ -90,18 +91,22 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                 if not barra and not comedor and not terraza:
                     continue
 
+                grupo_carta = producto.iloc[0]["Grupo Carta 1"]
+                if pd.isna(grupo_carta) or grupo_carta == "":
+                    errores.append(f"Producto {producto_id} de la tienda {tienda} no tiene Grupo Carta 1")
+                    continue
+
                 data.append([
                     producto.iloc[0]["Id Plato"],
                     producto.iloc[0]["Descripcion"],
                     barra, comedor, terraza,
                     "", "", "", "", "", "",
-                    producto.iloc[0]["Grupo Carta 1"], "", "", "",
+                    grupo_carta, "", "", "",
                     "", producto.iloc[0]["Código Barras"],
                     producto.iloc[0]["Centro"], producto.iloc[0]["Centro 2"], producto.iloc[0]["Centro 3"]
                 ])
 
             filas = len(data)
-            print("2---------------------------------------- ")
             if filas == 0:
                 print(f"No hay datos para la tienda {tienda}")
                 resultado.append(f"No hay datos para la tienda {tienda}")
@@ -111,12 +116,18 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                 output_file = f"{output_path}{tienda}.xlsx"
                 df_export.to_excel(output_file, index=False)
                 print(f"Archivo generado: {output_file}")
-                resultado.append(f'Archivo "{output_file}" generado  con {len(data)}')
+                resultado.append(f'Archivo {output_file} generado  con {len(data)} filas de {total_filas}')
 
+
+        if errores:
+            with open(error_log_path, "w") as error_file:
+                for error in errores:
+                    error_file.write(error + "\n")
+
+        
         return resultado
 
     except Exception as e:
-        print("3---------------------------------------- ")
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
         raise 
@@ -128,7 +139,6 @@ from app.config.db_mallorquina import get_db_connection_mysql, close_connection_
 
 def obtener_datos(param: InfoTransaccion) -> pd.DataFrame:
     try: 
-        print("4---------------------------------------- ")
         param.debug = "obtener_datos"
         conn_mysql = get_db_connection_mysql()
 

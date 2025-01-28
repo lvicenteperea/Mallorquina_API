@@ -99,31 +99,33 @@ Esta función es una ayuda para el desarrollo para hacer print de información
             otro valor imprime cada texto en una línea distinta.
 """
 #------------------------------------------------------------------------------------------------
-def imprime(textos: list, relleno: str = "", modo: int = 1):
+def imprime(textos: list, relleno: str = " ", modo: int = 1):
+    titulo = None
+    long = 80
+
+    if not relleno or relleno.strip() == "":
+        relleno = " "
+
+    linea_relleno = relleno[0] * long
+
+    if len(relleno) > 1:
+        titulo = "  " + relleno[1:] + "  "
+        index_medio = len(linea_relleno) // 2
+        print(linea_relleno[:index_medio] + titulo + linea_relleno[index_medio:])
+        linea_relleno = linea_relleno + (relleno[0] * len(titulo))
+    else:
+        print(linea_relleno)
 
     if len(textos) > 0:
-        # Determinar el ancho de las líneas de relleno
-        if relleno and relleno.strip() != "":
-            ancho = max(len(str(texto)) for texto in textos) + 10  # Añade un extra para que se vea mejor
-            linea_relleno = relleno * ancho
-    
-            # Imprimir la línea de relleno al inicio
-            print(linea_relleno)
-
         # Imprimir los textos
         if modo == 1:
-            # print(" ".join(textos))  # Todos los textos en la misma línea
             resultado = "<" + "> - <".join(str(elemento) for elemento in textos) + ">"
             print(resultado)
         else:
             for texto in textos:  # Cada texto en una línea separada
                 print(texto)
-
-        if relleno:
-            # Imprimir la línea de relleno al final
-            print(linea_relleno)
     else:
-        print(relleno * 20)
         print("Lista vacia")
-        print(relleno * 20)
+
+    print(linea_relleno)
 

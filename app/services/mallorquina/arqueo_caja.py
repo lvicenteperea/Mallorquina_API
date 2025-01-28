@@ -36,7 +36,6 @@ def proceso(param: InfoTransaccion) -> list:
         actualizar_en_ejecucion(param, 1)
 
         param.debug = "get_db_connection_mysql"
-        #try:
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 

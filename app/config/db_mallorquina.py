@@ -1,27 +1,59 @@
 # Para MySql
 import mysql.connector
 from mysql.connector import Error
-from app.config.settings import settings
-
-from app.utils.functions import graba_log, imprime
-from app.utils.InfoTransaccion import InfoTransaccion
 
 # Para SQL Server
 import pyodbc
 
+from sshtunnel import SSHTunnelForwarder
+
+
+from app.config.settings import settings
+from app.utils.functions import graba_log, imprime
+from app.utils.InfoTransaccion import InfoTransaccion
+
 
 #----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 def get_db_connection_mysql():
-    param = InfoTransaccion(debug=f"Conectando con: {settings.MYSQL_DB_URL_MLL}/{settings.MYSQL_DB_PORT_MLL}/{settings.MYSQL_DB_USER_MLL}/{settings.MYSQL_DB_DATABASE_MLL}")
+    param = InfoTransaccion(debug=f"Conectando con: {settings.MYSQL_DB_HOST_MLL}/{settings.MYSQL_DB_PORT_MLL}/{settings.MYSQL_DB_USER_MLL}/{settings.MYSQL_DB_DATABASE_MLL}")
+
     try:
-        connection = mysql.connector.connect(
-            host=settings.MYSQL_DB_URL_MLL,
-            port=settings.MYSQL_DB_PORT_MLL,
-            user=settings.MYSQL_DB_USER_MLL,
-            password= settings.MYSQL_DB_PWD_MLL,
-            database=settings.MYSQL_DB_DATABASE_MLL,
-            charset=settings.MYSQL_DB_CHARSET
-        )
+        if settings.SSH_CONEX:
+            print("Tunel SSH")
+            # Crear el túnel SSH
+            with SSHTunnelForwarder(
+                (settings.SSH_HOST, settings.SSH_PORT),
+                ssh_username=settings.SSH_USER,
+                ssh_password=settings.SSH_PWD,  # Usar contraseña en lugar de clave privada
+                remote_bind_address=(settings.MYSQL_DB_HOST_MLL, settings.MYSQL_DB_PORT_MLL)
+            ) as tunnel:
+                print(f"""parametros: 
+                          settings.SSH_HOST: {settings.SSH_HOST} 
+                          settings.SSH_PORT: {settings.SSH_PORT} 
+                          settings.SSH_USER: {settings.SSH_USER}  
+                          y el Puerto local asignado (tunnel.local_bind_port): {tunnel.local_bind_port}
+                          """)
+                # Configuración de la conexión con mysql.connector
+                connection = mysql.connector.connect(
+                    host='127.0.0.1',  # Siempre localhost al usar el túnel
+                    port= 3306, #tunnel.local_bind_port,
+                    user=settings.MYSQL_DB_USER_MLL,
+                    password=settings.MYSQL_DB_PWD_MLL,
+                    database=settings.MYSQL_DB_DATABASE_MLL,
+                    charset=settings.MYSQL_DB_CHARSET
+                )
+            print("Tunel SSH creado")
+
+        else:
+            connection = mysql.connector.connect(
+                host=settings.MYSQL_DB_HOST_MLL,
+                port=settings.MYSQL_DB_PORT_MLL,
+                user=settings.MYSQL_DB_USER_MLL,
+                password= settings.MYSQL_DB_PWD_MLL,
+                database=settings.MYSQL_DB_DATABASE_MLL,
+                charset=settings.MYSQL_DB_CHARSET
+            )
 
         # # Establecer explícitamente la collation en la conexión
         # connection.set_charset_collation('utf8mb4', 'utf8mb4_unicode_ci')
@@ -33,7 +65,14 @@ def get_db_connection_mysql():
         # print(cursor.fetchone())
         # cursor.close()
 
-
+        # Prueba de conexión
+        # cursor = connection.cursor()
+        # cursor.execute("SELECT DATABASE();")
+        # result = cursor.fetchone()
+        # cursor.close()
+        # connection.close()
+        # print(f"Conectado a la base de datos: {result[0]}")
+        # x=1/0
 
         return connection
     

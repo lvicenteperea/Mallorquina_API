@@ -97,6 +97,11 @@ Esta función es una ayuda para el desarrollo para hacer print de información
     - relleno: carácter que se repetirá en la línea de relleno.
     - modo: 1 (por defecto) imprime todos los textos en la misma línea;
             otro valor imprime cada texto en una línea distinta.
+
+             ✅
+             ❌
+             🟢
+             🔍
 """
 #------------------------------------------------------------------------------------------------
 def imprime(textos: list, relleno: str = " ", modo: int = 1):

@@ -40,14 +40,22 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         donde = "Select"
-        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'")
+        cursor_mysql.execute("""SELECT a.*, b.stIdEnt, b.Nombre as nombre_entidad FROM mll_cfg_bbdd a
+                                 inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
+                                 where a.activo= 'S'""")
+        # cursor_mysql.execute("""SELECT a.*, b.stIdEnt, b.Nombre as nombre_entidad FROM mll_cfg_bbdd a
+        #                     inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
+        #                     where a.activo= 'S'
+        #                     and a.id = %s""", 
+        #                 (reg_cfg_bbdd["ID"],))
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database']], "-")
+            # imprime(["Procesando TIENDA:", bbdd], "-")
+            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database'], bbdd["ID"], bbdd['stIdEnt'], bbdd['nombre_entidad']], "-")
 
             # Aquí va la lógica específica para cada bbdd
-            resultado.extend(procesar_consulta(param, bbdd["ID"], conn_mysql))
+            resultado.extend(procesar_consulta(param, bbdd["ID"], bbdd['stIdEnt'], conn_mysql))
 
             donde = "update"
             cursor_mysql.execute(
@@ -74,7 +82,7 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-def procesar_consulta(param: InfoTransaccion, tabla, conn_mysql) -> list:
+def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> list:
     resultado = []
     donde = "Inicio"
 
@@ -85,6 +93,7 @@ def procesar_consulta(param: InfoTransaccion, tabla, conn_mysql) -> list:
 
         donde = "Con. BBDD SqlServe"
         # conextamos con esta bbdd origen
+        imprime(["Conectando con BBDD origen", bbdd_config], "-")
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
         if conn_sqlserver:
@@ -115,7 +124,8 @@ def procesar_consulta(param: InfoTransaccion, tabla, conn_mysql) -> list:
                                         AC.[Id Rel] as ID_Relacion,
                                         CdC.[Id Puesto] as ID_Puesto,
                                         PF.Descripcion as Puesto_Facturacion, 
-                                        {tabla}
+                                        {tabla},
+                                        {stIdEnt}
                                     FROM [Arqueo Ciego] AC
                                     inner join [Cierres de Caja] CdC on CdC.[Id Cierre] = AC.[Id Apertura]
                                     inner join [Puestos Facturacion] PF on PF.[Id Puesto] = CdC.[Id Puesto]

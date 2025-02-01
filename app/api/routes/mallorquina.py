@@ -90,15 +90,17 @@ async def mll_sincroniza(id_App: int = Query(..., description="Identificador de 
                         ):
 
     try:
+        fecha = datetime.now()
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
         # --------------------------------------------------------------------------------
-        resultado = sincroniza.recorre_tiendas(param = param)
+        resultado = sincroniza.proceso(param = param)
         # --------------------------------------------------------------------------------
 
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
+        imprime([f"Fin de sincronización: {(datetime.now() - fecha).total_seconds()}", resultado], "*", 2)
 
     except MadreException as e:
         graba_log(param, "mll_sync_todo.MadreException", e)

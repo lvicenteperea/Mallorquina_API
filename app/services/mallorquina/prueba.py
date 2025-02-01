@@ -1,10 +1,59 @@
-partes = "() () (1,2,3)".split(") (")
-parte3 = partes[2].strip("()")
-lista3_str = [item.strip().strip('"') for item in parte3.split(";")]
-print(lista3_str)
+from datetime import datetime, timedelta
 
-lista3_str = [item.strip() for item in parte3.split(";")]
-print(lista3_str)
+
+columnas = [
+    "Fecha", "Hora_Cobro", "Tiempo", "Id_Salon", "Id_Mesa", "Comensales", "Tarifa", "Idioma", "Id_Turno", 
+    "Id_Camarero", "Id_Cliente_Habitacion", "Id_Apertura_Puesto_Cobro", "Factura_Num", "Iva_porc", "Descuento_porc", 
+    "Base", "Descuento", "Impuesto", "Total", "Propina", "Serie_Puesto_Facturacion", "Id_Relacion", "Id_Relacion_Cocina", 
+    "Recien_Abierta", "Bk", "Bk1", "Nombre_Cajero", "Anulada", "Fusion", "Base2", "Descuento2", "Iva2_porc", "Impuesto2", 
+    "Dcto_Manual", "Importe_Impresion", "Salida_Receta", "IdCobro_Propina", "Descripcion_Cobro_Propina", "lVeces_Impreso", 
+    "Edad", "VIdTipoCli", "IdEvento", "Factura_Num_Cliente", "Cocina_Evento", "Cocina_Pedido", "bDetenerComandaCocina_Mesa", 
+    "Cocina_Pedido_2", "CM_Id_Reserva", "CM_Id_Cliente", "Id_Envio_GS", "bEnviando", "Id_Envio_Realizado", "bNoCompCocina", "stIdEnt"
+]
+
+datos = (datetime.datetime(2023, 7, 12, 8, 23, 2), None, datetime.datetime(2023, 7, 12, 8, 23, 2), 9, 218, 1, 1, 0, 1, 0, 81, 4614, 32725, 10.00, 0.00, 32.090, 0.000, 3.210, 35.300, 0.000, 'MN', 462640, 1883477, False, False, False, 'DIRECCION', False, False, 0.000, 0.000, 0.00, 0.00, False, 35.300, False, 0, '', 1, 0, 0, 0, 348, '', '', False, '', '', '', 0, False, 446, None, '1010221038290475')
+
+
+print("📌 Comparación de columnas y valores:")
+for i, (col, val) in enumerate(zip(columnas, datos[0])):
+    print(f"{i + 1}. {col}: {val}")
+
+# Si hay más valores en datos de los que hay en columnas
+if len(datos[0]) > len(columnas):
+    print("⚠️ Hay más valores en los datos que columnas en la consulta.")
+elif len(datos[0]) < len(columnas):
+    print("⚠️ Hay menos valores en los datos que columnas en la consulta.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# partes = "() () (1,2,3)".split(") (")
+# parte3 = partes[2].strip("()")
+# lista3_str = [item.strip().strip('"') for item in parte3.split(";")]
+# print(lista3_str)
+
+# lista3_str = [item.strip() for item in parte3.split(";")]
+# print(lista3_str)
 
 
 
@@ -72,7 +121,7 @@ print(lista3_str)
 # print(elementos)
 
 
-# cadena3 = "datetime.datetime(2018), None, datetime.datetime(2018), 1, 1, 2, 0, 0, 1, 5, 0, 534, 1, Decimal('10.00'), Decimal('0.00'), Decimal('1.550'), Decimal('0.000'), Decimal('0.150'), Decimal('1.700'), Decimal('0.000'), 'T1', 1, 13, False, False, False, 'DIRECCION', False, False, Decimal('0.000'), Decimal('0.000'), Decimal('0.00'), Decimal('0.000'), False, Decimal('1.700'), False, 0, '', 1, 0, 0, 0, 0, '', '', False, '', '', '', 0, False, 1, None, '0610220837274849', 13"
+# cadena3 = "'datetime.datetime(2018)', None, 'datetime.datetime(2018)', 1, 1, 2, 0, 0, 1, 5, 0, 534, 1, Decimal('10.00')', Decimal('0.00')', Decimal('1.550')', Decimal('0.000')', Decimal('0.150')', Decimal('1.700')', Decimal('0.000')', 'T1', 1, 13, False, False, False, 'DIRECCION', False, False, Decimal('0.000')', Decimal('0.000')', Decimal('0.00')', Decimal('0.000')', False, Decimal('1.700')', False, 0, '', 1, 0, 0, 0, 0, '', '', False, '', '', '', 0, False, 1, None, '0610220837274849', 13"
 # elementos = len(cadena3.split(","))
 # print(elementos)
 

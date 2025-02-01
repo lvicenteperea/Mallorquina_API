@@ -95,7 +95,9 @@ Tambien deberíamos crear un middleware personalizado y ver como mejoramos los l
 
 
 
+Sincronización: Se queda embuclado en tablas grandes
+
 
 
 FastAPI
-http://127.0.0.1:8000/mll_fichas_tecnicas?id_App=63&user=Prueba&ret_code=0&ret_txt="OK"&origen_path=fichas_tecnicas.xlsx&output_path=salida.html
+http://127.0.0.1:8000/mallorquina/mll_fichas_tecnicas?id_App=63&user=Prueba&ret_code=0&ret_txt="OK"&origen_path=fichas_tecnicas.xlsx&output_path=salida.html

@@ -44,6 +44,15 @@ def get_db_connection_mysql():
                     charset=settings.MYSQL_DB_CHARSET
                 )
             print("Tunel SSH creado")
+            
+            # Prueba de conexión
+            cursor = connection.cursor()
+            cursor.execute("SELECT DATABASE();")
+            result = cursor.fetchone()
+            cursor.close()
+            connection.close()
+            print(f"Conectado a la base de datos: {result[0]}")
+            x=1/0
 
         else:
             connection = mysql.connector.connect(
@@ -64,15 +73,6 @@ def get_db_connection_mysql():
         # cursor.execute("SHOW VARIABLES LIKE 'collation_connection';")
         # print(cursor.fetchone())
         # cursor.close()
-
-        # Prueba de conexión
-        # cursor = connection.cursor()
-        # cursor.execute("SELECT DATABASE();")
-        # result = cursor.fetchone()
-        # cursor.close()
-        # connection.close()
-        # print(f"Conectado a la base de datos: {result[0]}")
-        # x=1/0
 
         return connection
     

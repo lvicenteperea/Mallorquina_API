@@ -10,9 +10,6 @@ from app.config.db_mallorquina import get_db_connection_mysql, close_connection_
 from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 from app.services.auxiliares.sendgrid_service import enviar_email
 
-import app.services.mallorquina.sincroniza_tablas.facturas_cabecera as facturas_cabecera
-
-
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MadreException
 
@@ -21,10 +18,12 @@ PAGINACION: int = 100
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def proceso(param: InfoTransaccion) -> list:
-    funcion = "sincroniza.proceso"
+def recorre_tiendas(param: InfoTransaccion) -> list:
+    funcion = "arqueo_caja.proceso"
     param.debug = "Obtener Conf. Gen"
     resultado = []
+    conn_mysql = None # para que no de error en el finally
+    cursor_mysql = None # para que no de error en el finally
 
     try:
         config = obtener_cfg_general(param)
@@ -37,59 +36,30 @@ def proceso(param: InfoTransaccion) -> list:
                 param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
                 raise MadreException(param = param)
 
-        param.debug = "actualiza ejec 1" 
+        param.debug = "actualiza ejec 1"
         actualizar_en_ejecucion(param, 1)
-
-        resultado = recorre_tiendas(param)
-
-        param.debug = "Fin"
-        return resultado
-
-                  
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.Exception", e)
-        raise
-
-    finally:
-        param.debug = "Actualiza Ejec 0"
-        actualizar_en_ejecucion(param, 0)
-        enviar_email(config["Lista_emails"],
-                     "Proceso finalizado",
-                     "El proceso de sincronización ha terminado."
-        )
-
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def recorre_tiendas(param: InfoTransaccion) -> list:
-    funcion = "sincroniza.recorre_tiendas"
-    param.debug = "recorre_tiendas"
-    resultado = []
-    conn_mysql = None # para que no de error en el finally
-    cursor_mysql = None # para que no de error en el finally
-
-    try:
 
         param.debug = "conn. MySql"
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         param.debug = "execute cfg_bbdd"
-        # cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd  WHERE activo= 'S'")
-        # hacemos el join para que no pase por bbdd que no tienen entidades activas, aunque luego vayamos a entidades
-        cursor_mysql.execute("""SELECT DISTINCT a.*
+        # cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'")
+        cursor_mysql.execute("""SELECT a.*, b.stIdEnt, b.Nombre as nombre_entidad, b.id as id_entidad 
                                   FROM mll_cfg_bbdd a
                                  inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
                                  where a.activo= 'S'""")
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime([f"Procesando TIENDA/BBDD: {bbdd['ID']}-{bbdd['Nombre']}", f"Conexión: {json.loads(bbdd['Conexion'])['database']}", bbdd], "*")
+            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database'], bbdd["ID"], bbdd['stIdEnt'], bbdd['nombre_entidad'], bbdd['id_entidad']], "-")
+            
 
             param.debug = "por tablas"
             # Aquí va la lógica específica para cada bbdd
-            resultado.append(recorre_entidades(param, bbdd, conn_mysql))
-            
+            recorre_tablas(param, bbdd, conn_mysql)
+            resultado.append(json.loads(bbdd['Conexion'])['database'])
+
             param.debug = "execute act. fec_Carga"
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
@@ -111,51 +81,12 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         param.debug = "cierra conn"
         close_connection_mysql(conn_mysql, cursor_mysql)
 
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
-    funcion = "sincroniza.recorre_entidades"
-    param.debug = "recorre_entidades"
-    resultado = []
-    cursor_mysql = None # para que no de error en el finally
-
-    try:
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
-
-        param.debug = "Select entidades"
-        cursor_mysql.execute("SELECT * FROM mll_cfg_entidades WHERE id_bbdd = %s AND activo= 'S'", (tienda_bbdd['ID'],))
-
-        lista_entidades = cursor_mysql.fetchall()
-
-        for entidad in lista_entidades:
-            imprime([f"Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}"], "-")
-            
-            
-            param.debug = "por tablas"
-            # Aquí va la lógica específica para cada bbdd
-            recorre_tablas(param, entidad, conn_mysql)
-            resultado.append(entidad)
-
-            param.debug = "execute act. fec_Carga"
-            cursor_mysql.execute(
-                "UPDATE mll_cfg_entidades SET Ultima_fecha_Carga = %s WHERE ID = %s",
-                (datetime.now(), entidad["ID"])
-            )
-            
-        conn_mysql.commit()
-
-        param.debug = "Fin"
-        return resultado
-
-                  
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.Exception", e)
-        raise
-
-    finally:
-        param.debug = "cierra conn"
-        cursor_mysql.close()
+        param.debug = "Actualiza Ejec 0"
+        actualizar_en_ejecucion(param, 0)
+        enviar_email(config["Lista_emails"],
+                     "Proceso finalizado",
+                     "El proceso de sincronización ha terminado."
+        )
 
 
 #----------------------------------------------------------------------------------------
@@ -165,8 +96,7 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
 #   - Conexion str: es la conexión de la tienda en formato -->{"host": "ip", "port": "1433", "user": "usuario", "database": "nombre_database", "p a s  s w o  r d": "la_contraseña"}
 #   - Ultima_Fecha_Carga str: fecha en la que se sincronizó la última vez
 #----------------------------------------------------------------------------------------
-def recorre_tablas(param: InfoTransaccion, entidad, conn_mysql) -> list:
-    resultado = []
+def recorre_tablas(param: InfoTransaccion, reg_cfg_bbdd, conn_mysql) -> list:
 
     try:
         param.debug = "Inicio"
@@ -174,26 +104,25 @@ def recorre_tablas(param: InfoTransaccion, entidad, conn_mysql) -> list:
 
         param.debug = "execute mll_cfg_tablas_entidades"
         # cursor_mysql.execute("SELECT * FROM mll_cfg_tablas_bbdd where id_bbdd = %s", (reg_cfg_bbdd["ID"],))
-        cursor_mysql.execute("""SELECT a.*, b.id_bbdd as ID_BBDD 
-                                  FROM mll_cfg_tablas_entidades a
-                                 inner join mll_cfg_entidades b on a.id_entidad = b.id
-                                 where a.id_entidad = %s""",
-                             (entidad["ID"],)
+        cursor_mysql.execute("""SELECT a.*, b.id_bbdd as ID_BBDD FROM mll_cfg_tablas_entidades a
+                               inner join mll_cfg_entidades b on a.id_entidad = b.id
+                               where a.id_entidad = %s""",
+                             (reg_cfg_bbdd["id_entidad"],)
                             )
         tablas_bbdd = cursor_mysql.fetchall()
         
         for tabla in tablas_bbdd:
             ultima_actualizacion = tabla["Fecha_Ultima_Actualizacion"]
             intervalo = tabla["Cada_Cuanto_Ejecutar"]
-            procesar = (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))
-
-            imprime([f"{'NO ' if not procesar else ''}Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
-            if procesar: # (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
+            imprime(["ultima_actualizacion:", ultima_actualizacion, intervalo],  "-")
+            if (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
+                imprime(["Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
+               
                 param.debug = f"Procesando tabla: {tabla}"
                 # Aquí va la lógica específica para cada tabla
-                resultado.append(procesar_tabla(param, conn_mysql, entidad, tabla))
+                procesar_tabla(param, tabla, conn_mysql)
 
-        return resultado
+        return []
 
     except Exception as e:
         param.error_sistema()
@@ -208,11 +137,10 @@ def recorre_tablas(param: InfoTransaccion, entidad, conn_mysql) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla) -> list:
+def procesar_tabla(param: InfoTransaccion, tabla, conn_mysql):
     param.debug="Inicio"
     cursor_mysql = None # para que no de error en el finally
     valor_max = None
-    resultado = []
 
     try:
         param.debug = "Obtener cursor"
@@ -240,35 +168,13 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla) -> list:
         param.debug = "obt. Origen"
         # Buscamos la conexión que necesitamos para esta bbdd origen
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, tabla["ID_BBDD"])
-
-        if nombre_tabla_destino == "tpv_facturas_cabecera":
-            resultado = proceso_especifico(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino)
-        else:
-            resultado = [0] # proceso_general(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino)
-
-        return resultado
-
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param, "procesar_tabla.Exception", e)
-        raise 
-
-
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino):
-    param.debug="proceso_general"
-    cursor_mysql = None # para que no de error en el finally
-    valor_max = None
-
-    try:
         salto = 0
         proximo_valor = tabla["ult_valor"]
 
+
         while True:
-            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], proximo_valor, salto)
-            # imprime(registros, f"*Registros: {len(registros)}", 2)
-            # imprime(tabla, f"*Tabla")
+            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], proximo_valor, salto)
+            imprime(registros, f"*Registros: {len(registros)}", 2)
             if len(registros) == 0:
                 break
 
@@ -299,17 +205,10 @@ def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_con
 
                 proximo_valor = ", ".join(str(registro[i]) for i in lista_max_valor)
                 if "U" in tabla_config["insert_update"]:
-                    if nombre_tabla_destino == "tpv_salones_restaurante":
-                        select = f"""SELECT COUNT(*) 
-                                    FROM {nombre_tabla_destino} 
-                                    WHERE {pk_campo} = %s
-                                      AND  stIdEnt = {entidad["stIdEnt"]}
-                                      AND Origen_BBDD = {tabla["ID_BBDD"]}"""
-                    else:
-                        select = f"""SELECT COUNT(*) 
-                                    FROM {nombre_tabla_destino} 
-                                    WHERE {pk_campo} = %s
-                                        AND Origen_BBDD = {tabla["ID_BBDD"]}"""
+                    select = f"""SELECT COUNT(*) 
+                                FROM {nombre_tabla_destino} 
+                                WHERE {pk_campo} = %s
+                                    AND Origen_BBDD = {tabla["ID_BBDD"]}"""
 
                     # Comprobar si el registro ya existe en la tabla destino
                     cursor_mysql.execute(select, (pk_value,))
@@ -328,11 +227,8 @@ def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_con
                     cursor_mysql.execute(update_query, valores_update)
                 else:
                     # Realizar un INSERT
-                    if insert_query.count(", stIdEnt)") == 1:
-                        registro_destino = list(registro) + [tabla["ID_BBDD"]] + [entidad['stIdEnt']] # Campos + Origen + stIdEnt
-                    else:
-                        registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
-                    # imprime([insert_query, registro_destino, entidad], "=......INSERT:......", 2)
+                    registro_destino = list(registro) + [tabla["ID_BBDD"]]  # Campos + Origen
+                    # imprime(["INSERT:......",insert_query, registro_destino], "=")
                     cursor_mysql.execute(insert_query, registro_destino)
                 
         
@@ -349,14 +245,12 @@ def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_con
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "proceso_general.Exception", e)
+        graba_log(param, "procesar_tabla.Exception", e)
         raise 
 
-
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor, salto) -> list: # el primer dato son los registros y el segundo la lista de PKs de la tabla
+def Obtener_datos_origen(param: InfoTransaccion, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor, salto) -> list: # el primer dato son los registros y el segundo la lista de PKs de la tabla
     param.debug="Inicio"
     conn_sqlserver = None # para que no de error en el finally
     cursor_sqlserver = None # para que no de error en el finally
@@ -377,9 +271,9 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
 
         # Contruimos la SELECT que va a recoger los datos de ORIGEN
         param.debug = "Construir Select"
-        select_query, lista_pk, lista_max_valor = construir_consulta(param, entidad, campos, nombre_tabla, campos_PK, ult_valor, salto)
+        select_query, lista_pk, lista_max_valor = construir_consulta(param, campos, nombre_tabla, campos_PK, ult_valor, salto)
 
-        # imprime(["Select: ", select_query], "=")
+        imprime(["Select: ", select_query], "=")
 
         # Ejecución del cursor
         param.debug = "Ejecutar select"
@@ -399,7 +293,7 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, campos_PK, ult_valor, salto) -> list: # el primer elemento la query y el segundo la lista de PKs
+def construir_consulta(param: InfoTransaccion, campos, nombre_tabla, campos_PK, ult_valor, salto) -> list: # el primer elemento la query y el segundo la lista de PKs
     try:
         # Construcción de la lista de campos para la SELECT
         campos_select = [campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')]
@@ -407,10 +301,6 @@ def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, ca
         lista_pk_valores = [item.strip('" ') for item in ult_valor.split(", ")]
         lista_pk_campos, lista_pk_formato, lista_pk_para_order = separar_campos_pk(campos_PK)
         condiciones_where = generar_where(param, lista_pk_campos, lista_pk_valores, lista_pk_formato, lista_pk_para_order)
-        if nombre_tabla == "[Salones Restaurante]":
-            condiciones_where =f"{condiciones_where} AND stIdEnt = {entidad['stIdEnt']}"
-            # imprime([condiciones_where], "*Condiciones")
-
         lista_max_valor = []
 
         # Construcción del WHERE
@@ -471,7 +361,7 @@ def separar_campos_pk(cadena):
     lista_campos = [item.strip().strip('"') for item in parte1.split(";")]
     lista_formatos = [item.strip().strip('"') for item in parte2.split(";")]
     lista_orden_str = [item.strip().strip('"') for item in parte3.split(";")] # deben ser números pero crea la lista de str
-    # imprime(lista_orden_str, "*Orden")
+    imprime(lista_orden_str, "*Orden")
     lista_orden = []
     for cadena in lista_orden_str:
         try:
@@ -534,11 +424,7 @@ def carga_lista_pk(lista, valor, posicion, relleno=None):
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def comando_insert(campos, nombre_tabla_destino):
-    columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")]
-    columnas_mysql.append("Origen_BBDD")
-    # Si existe un campo con 'Nombre' igual a '{stIdEnt}', agregamos 'stIdEnt' a la lista
-    if any(campo["Nombre"] == "{stIdEnt}" for campo in campos):
-        columnas_mysql.append("stIdEnt")
+    columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")] + ["Origen_BBDD"]
 
     return f"""
             INSERT INTO {nombre_tabla_destino} ({', '.join(columnas_mysql)})
@@ -573,31 +459,4 @@ def comando_update(campos_update, pk_campo, nombre_tabla_destino):
     """
 
     return update_query
-
-
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-def proceso_especifico(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino):
-    param.debug="proceso_especifico"
-    valor_max = None
-
-    try:
-
-        mi_metodo = "facturas_cabecera"
-        func = getattr(facturas_cabecera, mi_metodo, None)  # Obtener la función desde otro módulo
-
-        if func:
-            resultado = func(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino)  # Ejecutar la función
-        else:
-            param.debug(f"La función {mi_metodo} no se encontró en el módulo. Para cargar la tabla {nombre_tabla_destino} con la tabla {nombre_tabla}.")
-            raise ValueError(f"La función {mi_metodo} no se encontró en el módulo.")
-
-        z=1/0
-        return valor_max
-
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso_especifico.Exception", e)
-        raise 
-
 

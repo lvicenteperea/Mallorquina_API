@@ -66,7 +66,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return JSONResponse({"detail": "Acceso denegado"}, status_code=403)        
         
         # Excluir ciertas rutas de autenticación
-        if request.url.path in ["/login", "/open-endpoint", "/docs", "/redoc", "/auth/create_token"]:
+        if request.url.path in ["/login", "/open-endpoint", "/docs", "/redoc", "/auth/create_token", "/openapi.json", "/auth/login"]:
             return await call_next(request)
 
         # Obtener token del encabezado Authorization

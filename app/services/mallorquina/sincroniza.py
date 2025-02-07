@@ -45,11 +45,12 @@ def proceso(param: InfoTransaccion) -> list:
         param.debug = "Fin"
         return resultado
 
-                  
+
     except Exception as e:
         param.error_sistema()
         graba_log(param, "recorre_tiendas.Exception", e)
-        raise
+        raise 
+
 
     finally:
         param.debug = "Actualiza Ejec 0"
@@ -58,6 +59,7 @@ def proceso(param: InfoTransaccion) -> list:
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
         )
+
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -187,8 +189,9 @@ def recorre_tablas(param: InfoTransaccion, entidad, conn_mysql) -> list:
             intervalo = tabla["Cada_Cuanto_Ejecutar"]
             procesar = (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))
 
-            imprime([f"{'NO ' if not procesar else ''}Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
+            # imprime([f"{'NO ' if not procesar else ''}Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
             if procesar: # (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo))):
+                imprime([f"Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
                 param.debug = f"Procesando tabla: {tabla}"
                 # Aquí va la lógica específica para cada tabla
                 resultado.append(procesar_tabla(param, conn_mysql, entidad, tabla))
@@ -241,10 +244,16 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla) -> list:
         # Buscamos la conexión que necesitamos para esta bbdd origen
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, tabla["ID_BBDD"])
 
+        # ----------------------------------------------------------------------------------------
+        # Dependiendo de la tabla, se ejecuta un proceso u otro.
+        # por un lado estan las tablas generales que se tratan de una forma 
+        # y por otro las que tienen un tratamiento específico
+        # ----------------------------------------------------------------------------------------
         if nombre_tabla_destino == "tpv_facturas_cabecera":
-            resultado = proceso_especifico(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino)
+            resultado = proceso_especifico(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config)
         else:
-            resultado = [0] # proceso_general(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino)
+            resultado = [0] # proceso_general(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config)
+        # ----------------------------------------------------------------------------------------
 
         return resultado
 
@@ -256,7 +265,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino):
+def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config):
     param.debug="proceso_general"
     cursor_mysql = None # para que no de error en el finally
     valor_max = None
@@ -264,6 +273,7 @@ def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_con
     try:
         salto = 0
         proximo_valor = tabla["ult_valor"]
+        nombre_tabla_destino = campos['Nombre_Destino'] 
 
         while True:
             registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], proximo_valor, salto)
@@ -577,7 +587,7 @@ def comando_update(campos_update, pk_campo, nombre_tabla_destino):
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def proceso_especifico(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino):
+def proceso_especifico(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config):
     param.debug="proceso_especifico"
     valor_max = None
 
@@ -587,13 +597,12 @@ def proceso_especifico(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_
         func = getattr(facturas_cabecera, mi_metodo, None)  # Obtener la función desde otro módulo
 
         if func:
-            resultado = func(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config, nombre_tabla_destino)  # Ejecutar la función
+            resultado = func(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config)  # Ejecutar la función
         else:
             param.debug(f"La función {mi_metodo} no se encontró en el módulo. Para cargar la tabla {nombre_tabla_destino} con la tabla {nombre_tabla}.")
             raise ValueError(f"La función {mi_metodo} no se encontró en el módulo.")
 
-        z=1/0
-        return valor_max
+        return resultado
 
     except Exception as e:
         param.error_sistema()

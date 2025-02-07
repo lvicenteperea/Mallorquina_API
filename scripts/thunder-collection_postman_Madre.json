@@ -1,0 +1,438 @@
+{
+    "info": {
+        "_postman_id": "9e4b403f-5091-488b-be1c-419bc7d3b5a6",
+        "name": "Madre",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "Valida URL",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/valida_url?id_App=63&user=PRUEBAS&ret_code=0&ret_txt&url=semillas.somosimaginales.com&fecha=2024-08-26 21:31:00",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "PRUEBAS"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": ""
+                        },
+                        {
+                            "key": "url",
+                            "value": "semillas.somosimaginales.com"
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-08-26 21:31:00"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "valida_url"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "Valida  Precodigo",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:8000/valida_precodigo",
+                    "path": [
+                        "valida_precodigo"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"codigo\": \"abc123\",\n  \"usuario_id\": 42\n}"
+                }
+            }
+        },
+        {
+            "name": "Obten CNT EXP por CAT",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/cnt_exp_por_cat?id_App=63&user=PRUEBAS&ret_code=0&ret_txt=\"\"&id_idioma=0&id_dispositivo=0&fecha=2024-08-31 21:31:00&id_campaing=14&vacios=S",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "PRUEBAS"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "id_idioma",
+                            "value": "0"
+                        },
+                        {
+                            "key": "id_dispositivo",
+                            "value": "0"
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-08-31 21:31:00"
+                        },
+                        {
+                            "key": "id_campaing",
+                            "value": "14"
+                        },
+                        {
+                            "key": "vacios",
+                            "value": "S"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "cnt_exp_por_cat"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "Valida PreCódigo",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/valida_precodigo?id_App=63&user=PRUEBAS&ret_code=0&ret_txt=AZVVN REFSL&precodigo=REFSL&fecha=2024-08-26 21:31:00&url=semillas.somosimaginales.com",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "PRUEBAS"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "AZVVN REFSL"
+                        },
+                        {
+                            "key": "precodigo",
+                            "value": "REFSL"
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-08-26 21:31:00"
+                        },
+                        {
+                            "key": "url",
+                            "value": "semillas.somosimaginales.com"
+                        },
+                        {
+                            "key": "id_frontal",
+                            "value": "",
+                            "disabled": true
+                        },
+                        {
+                            "key": "id_cat",
+                            "value": "",
+                            "disabled": true
+                        },
+                        {
+                            "key": "id_Campaign",
+                            "value": "",
+                            "disabled": true
+                        },
+                        {
+                            "key": "id_Canje",
+                            "value": "",
+                            "disabled": true
+                        },
+                        {
+                            "key": "id_Participante",
+                            "value": "",
+                            "disabled": true
+                        },
+                        {
+                            "key": "id_Precodigo",
+                            "value": "",
+                            "disabled": true
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "valida_precodigo"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "Obten contenido",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/cnt_contenidos?id_App=61&user=PRUEBAS&ret_code=0&ret_txt=\"\"&id_idioma=0&id_dispositivo=0&fecha=2024-08-31 21:31:00&id_cnt=363&vacios=S",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "61"
+                        },
+                        {
+                            "key": "user",
+                            "value": "PRUEBAS"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "id_idioma",
+                            "value": "0"
+                        },
+                        {
+                            "key": "id_dispositivo",
+                            "value": "0"
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-08-31 21:31:00"
+                        },
+                        {
+                            "key": "id_cnt",
+                            "value": "363"
+                        },
+                        {
+                            "key": "vacios",
+                            "value": "S"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "cnt_contenidos"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "Obten CNT Categorias",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/cnt_categorias?id_App=63&user=PRUEBAS&ret_code=0&ret_txt=\"\"&id_idioma=0&id_dispositivo=0&fecha=2024-08-31 21:31:00&id_campaing=14&vacios=S",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "63"
+                        },
+                        {
+                            "key": "user",
+                            "value": "PRUEBAS"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "id_idioma",
+                            "value": "0"
+                        },
+                        {
+                            "key": "id_dispositivo",
+                            "value": "0"
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-08-31 21:31:00"
+                        },
+                        {
+                            "key": "id_campaing",
+                            "value": "14"
+                        },
+                        {
+                            "key": "vacios",
+                            "value": "S"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "cnt_categorias"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "Obten CNT Centros",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/cnt_exp_centros?id_App=61&user=PRUEBAS&ret_code=0&ret_txt=\"\"&id_idioma=0&id_dispositivo=0&fecha=2024-08-31 21:31:00&id_semilla=20&vacios=S",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "61"
+                        },
+                        {
+                            "key": "user",
+                            "value": "PRUEBAS"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "id_idioma",
+                            "value": "0"
+                        },
+                        {
+                            "key": "id_dispositivo",
+                            "value": "0"
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-08-31 21:31:00"
+                        },
+                        {
+                            "key": "id_semilla",
+                            "value": "20"
+                        },
+                        {
+                            "key": "vacios",
+                            "value": "S"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "cnt_exp_centros"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        },
+        {
+            "name": "Obten COM PROV Centros",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/comunidades_provincias_centros?id_App=61&user=PRUEBAS&ret_code=0&ret_txt=\"\"&id_idioma=0&id_dispositivo=0&fecha=2024-08-31 21:31:00&id_semilla=20&vacios=S",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "61"
+                        },
+                        {
+                            "key": "user",
+                            "value": "PRUEBAS"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"\""
+                        },
+                        {
+                            "key": "id_idioma",
+                            "value": "0"
+                        },
+                        {
+                            "key": "id_dispositivo",
+                            "value": "0"
+                        },
+                        {
+                            "key": "fecha",
+                            "value": "2024-08-31 21:31:00"
+                        },
+                        {
+                            "key": "id_semilla",
+                            "value": "20"
+                        },
+                        {
+                            "key": "vacios",
+                            "value": "S"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "comunidades_provincias_centros"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                }
+            }
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "11fef627-e0ef-4b82-b916-065d6bfad8d8",
+        "_postman_id": "fe1b56cf-8edb-4803-b1e1-234f7b9c7e87",
         "name": "Mallorquina",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -11,7 +11,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://127.0.0.1:8000/mll_carga_prod_erp?id_App=63&user=Prueba&ret_code=0&ret_txt=\"OK\"&origen_path=productos.xlsx",
+                    "raw": "http://127.0.0.1:8000/mallorquina/mll_carga_prod_erp?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"OK\"&origen_path=productos.xlsx",
                     "query": [
                         {
                             "key": "id_App",
@@ -19,7 +19,7 @@
                         },
                         {
                             "key": "user",
-                            "value": "Prueba"
+                            "value": "usuario_dev"
                         },
                         {
                             "key": "ret_code",
@@ -36,6 +36,7 @@
                     ],
                     "variable": [],
                     "path": [
+                        "mallorquina",
                         "mll_carga_prod_erp"
                     ],
                     "protocol": "http",
@@ -46,7 +47,13 @@
                         "1"
                     ],
                     "port": "8000"
-                }
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ]
             }
         },
         {
@@ -54,15 +61,15 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://127.0.0.1:8000/mll_fichas_tecnicas?id_App=63&user=Prueba&ret_code=0&ret_txt=\"OK\"&output_path=fichas_tecnicas.html",
+                    "raw": "http://127.0.0.1:8000/mallorquina/mll_fichas_tecnicas?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"OK\"&output_path=fichas_tecnicas.html",
                     "query": [
                         {
                             "key": "id_App",
-                            "value": "63"
+                            "value": "1"
                         },
                         {
                             "key": "user",
-                            "value": "Prueba"
+                            "value": "usuario_dev"
                         },
                         {
                             "key": "ret_code",
@@ -79,6 +86,7 @@
                     ],
                     "variable": [],
                     "path": [
+                        "mallorquina",
                         "mll_fichas_tecnicas"
                     ],
                     "protocol": "http",
@@ -89,7 +97,13 @@
                         "1"
                     ],
                     "port": "8000"
-                }
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ]
             }
         },
         {
@@ -97,7 +111,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mll_inf_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&fecha=2024-10-05&tienda=0",
+                    "raw": "http://localhost:8000/mallorquina/mll_inf_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&fecha=2024-12-01&tienda=0",
                     "query": [
                         {
                             "key": "id_App",
@@ -117,7 +131,7 @@
                         },
                         {
                             "key": "fecha",
-                            "value": "2024-10-05"
+                            "value": "2024-12-01"
                         },
                         {
                             "key": "tienda",
@@ -126,6 +140,7 @@
                     ],
                     "variable": [],
                     "path": [
+                        "mallorquina",
                         "mll_inf_arqueo_caja"
                     ],
                     "protocol": "http",
@@ -133,7 +148,13 @@
                         "localhost"
                     ],
                     "port": "8000"
-                }
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ]
             }
         },
         {
@@ -141,15 +162,15 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mll_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"",
+                    "raw": "http://localhost:8000/mallorquina/mll_arqueo_caja?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"\"",
                     "query": [
                         {
                             "key": "id_App",
-                            "value": "63"
+                            "value": "1"
                         },
                         {
                             "key": "user",
-                            "value": "Pruebas"
+                            "value": "usuario_dev"
                         },
                         {
                             "key": "ret_code",
@@ -162,6 +183,7 @@
                     ],
                     "variable": [],
                     "path": [
+                        "mallorquina",
                         "mll_arqueo_caja"
                     ],
                     "protocol": "http",
@@ -169,7 +191,13 @@
                         "localhost"
                     ],
                     "port": "8000"
-                }
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ]
             }
         },
         {
@@ -177,7 +205,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mallorquina/mll_convierte_tarifas?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"\"&origen_path=Productos SQLPyme-TPV.xlsx",
+                    "raw": "http://localhost:8000/mallorquina/mll_convierte_tarifas?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"\"",
                     "query": [
                         {
                             "key": "id_App",
@@ -194,10 +222,6 @@
                         {
                             "key": "ret_txt",
                             "value": "\"\""
-                        },
-                        {
-                            "key": "origen_path",
-                            "value": "Productos SQLPyme-TPV.xlsx"
                         }
                     ],
                     "variable": [],

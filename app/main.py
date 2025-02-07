@@ -4,8 +4,10 @@
 
 # uvicorn app.main:app --reload
 # python -m uvicorn app.main:app --reload
+# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 from fastapi import FastAPI, HTTPException #, Request  #, Depends
+from fastapi.middleware.cors import CORSMiddleware
 # from fastapi.responses import JSONResponse
 
 # from app.api.routes import router as api_router
@@ -23,12 +25,20 @@ from app.config.settings import settings
 from app.utils.mis_excepciones import MadreException
 from app.middleware.log_tiempos_respuesta import log_tiempos_respuesta
 
-
 # -----------------------------------------------------------------------------------------------
 # FASTAPI
 # -----------------------------------------------------------------------------------------------
-app = FastAPI(title=settings.PROJECT_NAME)
+# app = FastAPI(  title=settings.PROJECT_NAME,
+#                 docs_url=None, 
+#                 redoc_url=None
+#              )
 
+app = FastAPI(  title=settings.PROJECT_NAME,
+                description="Documentación de mi API con FastAPI",
+                version="1.0",
+                docs_url="/docs",  # URL de Swagger UI
+                redoc_url="/redoc"  # URL de ReDoc
+             )
 
 # -----------------------------------------------------------------------------------------------
 # LOGS
@@ -59,6 +69,20 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(json.JSONDecodeError, json_decode_error_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 app.add_exception_handler(TypeError, type_error_handler)
+
+
+
+# -----------------------------------------------------------------------------------------------
+# CORS
+# -----------------------------------------------------------------------------------------------
+# Configurar CORS para permitir peticiones desde React (localhost:3000)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Puedes restringirlo a ["http://localhost:3000"] si solo es React
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 

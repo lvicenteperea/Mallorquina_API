@@ -32,14 +32,14 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
             raise MadreException(param = param)
 
 
-        donde="actualizar_en_ejecucion"
+        param.debug="actualizar_en_ejecucion"
         actualizar_en_ejecucion(param, 1)
 
-        donde = "get_db_connection_mysql"
+        param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        donde = "Select"
+        param.debug = "Select"
         cursor_mysql.execute("""SELECT a.*, b.stIdEnt, b.Nombre as nombre_entidad FROM mll_cfg_bbdd a
                                  inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
                                  where a.activo= 'S'""")
@@ -51,13 +51,12 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            # imprime(["Procesando TIENDA:", bbdd], "-")
             imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database'], bbdd["ID"], bbdd['stIdEnt'], bbdd['nombre_entidad']], "-")
 
             # Aquí va la lógica específica para cada bbdd
             resultado.extend(procesar_consulta(param, bbdd["ID"], bbdd['stIdEnt'], conn_mysql))
 
-            donde = "update"
+            param.debug = "update"
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
                 (datetime.now(), bbdd["ID"])
@@ -68,7 +67,7 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
        
     except Exception as e:
         param.error_sistema()
-        graba_log(param, f"Excepción consulta_caja.recorre_consultas_tiendas-{donde}", e)
+        graba_log(param, f"Excepción consulta_caja.recorre_consultas_tiendas-{param.debug}", e)
         raise
 
     finally:
@@ -84,14 +83,14 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
 #----------------------------------------------------------------------------------
 def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> list:
     resultado = []
-    donde = "Inicio"
+    param.debug = "Inicio"
 
     try:
-        donde = "Con. BBDD Origen"
+        param.debug = "Con. BBDD Origen"
         # Buscamos la conexión que necesitamos para esta bbdd origen
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla)
 
-        donde = "Con. BBDD SqlServe"
+        param.debug = "Con. BBDD SqlServe"
         # conextamos con esta bbdd origen
         imprime(["Conectando con BBDD origen", bbdd_config], "-")
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
@@ -106,7 +105,7 @@ def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> lis
             select_query = f"""SELECT [Id Cierre]
                                 FROM [Cierres de Caja] WHERE CAST(Fecha AS DATE) = ?
                     """
-            donde = "Execute cierres"
+            param.debug = "Execute cierres"
             cursor_sqlserver.execute(select_query, param.parametros)
 
             apertura_ids_lista = cursor_sqlserver.fetchall()
@@ -132,7 +131,7 @@ def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> lis
                                     WHERE AC.[Id Apertura] IN ({placeholders})
                                     ORDER BY CdC.[Id Puesto], AC.[Fecha Hora]
                         """
-                donde = "Execute arqueo"
+                param.debug = "Execute arqueo"
                 cursor_sqlserver.execute(select_query, ids_cierre)
 
                 resultado = cursor_sqlserver.fetchall()
@@ -148,12 +147,12 @@ def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> lis
                             # print("Convertir pyodbc.Row a diccionario")
                             resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
 
-        donde = "Fin"
+        param.debug = "Fin"
         return resultado
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, f"Excepción tarifas_a_TPV.proceso-{donde}", e)
+        graba_log(param, f"Excepción tarifas_a_TPV.proceso-{param.debug}", e)
         raise
 
     finally:

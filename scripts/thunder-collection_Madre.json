@@ -2,7 +2,7 @@
     "clientName": "Thunder Client",
     "collectionName": "Madre",
     "collectionId": "43e2fbd1-80db-46b0-87ed-d196080dd3e4",
-    "dateExported": "2024-09-12T21:30:53.052Z",
+    "dateExported": "2025-02-04T18:31:24.558Z",
     "version": "1.2",
     "folders": [],
     "requests": [
@@ -387,7 +387,66 @@
                     "isPath": false
                 }
             ]
+        },
+        {
+            "_id": "43001755-414d-4d5f-8b51-3ff0a0c0d670",
+            "colId": "43e2fbd1-80db-46b0-87ed-d196080dd3e4",
+            "containerId": "",
+            "name": "Obten COM PROV Centros",
+            "url": "http://localhost:8000/comunidades_provincias_centros?id_App=61&user=PRUEBAS&ret_code=0&ret_txt=\"\"&id_idioma=0&id_dispositivo=0&fecha=2024-08-31 21:31:00&id_semilla=20&vacios=S",
+            "method": "GET",
+            "sortNum": 50000,
+            "created": "2024-09-13T14:57:03.913Z",
+            "modified": "2024-09-13T14:58:10.995Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "id_App",
+                    "value": "61",
+                    "isPath": false
+                },
+                {
+                    "name": "user",
+                    "value": "PRUEBAS",
+                    "isPath": false
+                },
+                {
+                    "name": "ret_code",
+                    "value": "0",
+                    "isPath": false
+                },
+                {
+                    "name": "ret_txt",
+                    "value": "\"\"",
+                    "isPath": false
+                },
+                {
+                    "name": "id_idioma",
+                    "value": "0",
+                    "isPath": false
+                },
+                {
+                    "name": "id_dispositivo",
+                    "value": "0",
+                    "isPath": false
+                },
+                {
+                    "name": "fecha",
+                    "value": "2024-08-31 21:31:00",
+                    "isPath": false
+                },
+                {
+                    "name": "id_semilla",
+                    "value": "20",
+                    "isPath": false
+                },
+                {
+                    "name": "vacios",
+                    "value": "S",
+                    "isPath": false
+                }
+            ]
         }
     ],
-    "ref": "-rcKOSEHZzK57O511oaEBCIiVuCvPYAv9sxCTOgsQWpe7Jn02VKIiVjn09zVU7vJ2mc6OB0S6MXNCdBKquC7TA"
+    "ref": "-rcKOSEHZzK57O511oaEBJygbRsW_D6yKagnKDoTLbPS9Nw39NnSRMM5EUA0ClF7uu8hmZ9ub8kxzlPESlGMEQ"
 }

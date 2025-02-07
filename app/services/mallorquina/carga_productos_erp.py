@@ -47,8 +47,10 @@ def proceso(param: InfoTransaccion) -> list:
 # -----------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------
 def carga (param: InfoTransaccion, excel):
-    resultado = []
     param.debug = "carga_productos_erp.carga"
+    insertados = 0
+    modificados = 0
+    eliminados = 0
     
     try:
         
@@ -124,21 +126,39 @@ def carga (param: InfoTransaccion, excel):
         # Procesar registros del Excel
         for x, row in df.iterrows():
             row = row.fillna('')  # Reemplazar valores NaN con cadenas vacías
-            imprime([row], "*")
+
+            # imprime([row], "*")
+
+            param.debug = f"Código: {row['Código']}"
             codigo = row['Código']
-            fec_modificacion = row.get('fec_modificacion', None)
+
+            param.debug = f"fec_modificacion: {row.get('fec_modificacion', None)}"
+            if row['fec_modificacion']:
+                param.debug = f"fec_modificacion1: {row.get('fec_modificacion', None)}"
+                fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%Y-%m-%d %H:%M:%S")
+            else:
+                param.debug = f"fec_modificacion2: {row.get('fec_modificacion', None)}"
+                fec_modificacion = datetime.strptime('2020-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
 
             # Consultar si el producto ya existe
             param.debug = "select 1"
-            cursor.execute("SELECT IF(fec_modificacion = '' OR fec_modificacion IS NULL, NOW(), STR_TO_DATE(fec_modificacion, %s)) FROM erp_productos WHERE ID = %s", ('%Y-%m-%d %H:%i:%s', codigo,))
+            cursor.execute("SELECT IF(fec_modificacion = '' OR fec_modificacion IS NULL, NOW(), STR_TO_DATE(fec_modificacion, %s)) as fec_modificacion_BBDD FROM erp_productos WHERE ID = %s", ('%Y-%m-%d %H:%i:%s', codigo,))
             resultado_dict = cursor.fetchone()
 
             if resultado_dict:
-                for _, v in resultado_dict.items():
-                    fec_modificacion_BBDD = v
+                for _, campo in resultado_dict.items():
+                    param.debug = f"campo: {type(campo)}-{campo}"
+                    fec_modificacion_BBDD = campo
+                
+                param.debug = f"fec_modificacion_BBDD: {type(fec_modificacion_BBDD)}-{fec_modificacion_BBDD}"
+                if not fec_modificacion_BBDD:
+                    fec_modificacion_BBDD = fec_modificacion
 
+                param.debug = f"fec_modificacion_BBDD: {type(fec_modificacion_BBDD)}-{fec_modificacion_BBDD} - fec_modificacion: {type(fec_modificacion)}-{fec_modificacion}"
                 # Actualizar si la fecha de modificación en el Excel es posterior
-                if fec_modificacion and fec_modificacion > datetime.strptime(fec_modificacion_BBDD, "%d/%m/%Y %H:%M:%S"):
+                if fec_modificacion and fec_modificacion > fec_modificacion_BBDD:
+                    modificados += 1
+
                     param.debug = "update___"
                     campos = ', '.join(f"{v} = %s" for k, v in mapping.items() if k in row)
                     valores = tuple(row[k] for k in mapping.keys() if k in row) + (codigo,)
@@ -167,12 +187,14 @@ def carga (param: InfoTransaccion, excel):
                                 for x in range(0, len(id_bbdd)):
                                     cursor.execute(
                                         """
-                                        delete form erp_productos_pvp 
-                                          where id_producto = %s and id_BBDD = %s and tipo = %s )
+                                        delete from erp_productos_pvp 
+                                          where id_producto = %s and id_BBDD = %s and tipo = %s
                                         """,
                                         (codigo, id_bbdd[x], tipo)
                                     )
+                                eliminados += cursor.rowcount
             else:
+                insertados += 1
                 # Insertar nuevo registro
                 param.debug = f"insert___ {x}" #{row}"
                 columnas = ', '.join(mapping.values())
@@ -202,7 +224,10 @@ def carga (param: InfoTransaccion, excel):
         # Confirmar transacciones y cerrar conexión
         conn_mysql.commit()
 
-        return resultado
+        return [f"Registros insertados: {insertados}",
+                f"Registros modificados: {modificados}",
+                f"Registros eliminados: {eliminados}"
+               ]
 
 
     except Exception as e:

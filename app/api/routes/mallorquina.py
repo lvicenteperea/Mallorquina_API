@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import File, UploadFile, Form
 from starlette.requests import Request
 from datetime import datetime
+import os
 
 
 # mias
@@ -12,7 +14,7 @@ import app.services.mallorquina.tarifas_ERP_a_TPV as tarifas_ERP_a_TPV  # tarifa
 import app.services.mallorquina.fichas_tecnicas as fichas_tecnicas
 import app.services.mallorquina.carga_productos_erp as carga_productos_erp
 import app.services.mallorquina.encargos_navidad as encargos_navidad
-
+from app.config.settings import settings
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
@@ -24,14 +26,14 @@ router = APIRouter()
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_consultas", response_model=InfoTransaccion)
-async def mll_consultas(request: Request,  # Para acceder a request.state.user
-                        id_App: int = Query(..., description="Identificador de la aplicación"),
-                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                        ret_code: int = Query(..., description="Código de retorno inicial"),
-                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                        fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
-                       ):
+@router.get("/mll_consultas_cierre", response_model=InfoTransaccion)
+async def mll_consultas_cierre( request: Request,  # Para acceder a request.state.user
+                                id_App: int = Query(..., description="Identificador de la aplicación"),
+                                user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                                ret_code: int = Query(..., description="Código de retorno inicial"),
+                                ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                                fecha: str = Query(None, description="Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual"),
+                               ):
     try:
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
@@ -69,11 +71,11 @@ async def mll_consultas(request: Request,  # Para acceder a request.state.user
         param.resultados = resultado or []
 
     except MadreException as e:
-        graba_log(param, "mll_consultas.MadreException", e)
+        graba_log(param, "mll_consultas_cierre.MadreException", e)
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "mll_consultas.Exception", e)
+        graba_log(param, "mll_consultas_cierre.Exception", e)
 
     finally:
         return param
@@ -90,21 +92,26 @@ async def mll_sincroniza(id_App: int = Query(..., description="Identificador de 
                         ):
 
     try:
-        fecha = datetime.now()
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
+
+        imprime([param], "=")
         # --------------------------------------------------------------------------------
         resultado = sincroniza.proceso(param = param)
         # --------------------------------------------------------------------------------
 
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
-        imprime([f"Fin de sincronización: {(datetime.now() - fecha).total_seconds()}", resultado], "*", 2)
+
+
+        return param
+   
 
     except MadreException as e:
         graba_log(param, "mll_sync_todo.MadreException", e)
-                
+
+               
     except HTTPException as e:
         param.error_sistema()
         graba_log(param, "mll_sync_todo.HTTPException", e)
@@ -113,9 +120,11 @@ async def mll_sincroniza(id_App: int = Query(..., description="Identificador de 
     except Exception as e:
         param.error_sistema()
         graba_log(param, "mll_sync_todo.Exception", e)
+
     
-    finally:
-        return param
+    # finally:
+    #     imprime([f" ✅ salimos por Finally"], "*", 2)
+    #     return param
     
 
 #----------------------------------------------------------------------------------
@@ -214,7 +223,6 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                         ret_code: int = Query(..., description="Código de retorno inicial"),
                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                        # origen_path: str = Query(..., description="Fichero origen"),
                        ):
     
     try:
@@ -254,7 +262,6 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
                               user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                               ret_code: int = Query(..., description="Código de retorno inicial"),
                               ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                              #origen_path: str = Query(..., description="Fichero origen")
                               output_path: str = Query(..., description="Fichero destino")
                              ):
     
@@ -299,7 +306,53 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_carga_prod_erp", response_model=InfoTransaccion)
+@router.post("/mll_carga_prod_erp", response_model=InfoTransaccion)
+async def mll_carga_prod_erp(id_App: int = Form(..., description="Identificador de la aplicación"),
+                             user: str = Form(..., description="Nombre del usuario que realiza la solicitud"),
+                             ret_code: int = Form(..., description="Código de retorno inicial"),
+                             ret_txt: str = Form(..., description="Texto descriptivo del estado inicial"),
+                             file: UploadFile = File(..., description="Archivo subido por el usuario")
+                            ):
+    
+    try:
+        resultado = []
+        fichero = file.filename
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
+                                parametros=[fichero],
+                                debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fichero}")
+
+
+        # Guardar el archivo subido en el servidor
+        # origen_path  = f"./uploads/{file.filename}"
+        excel = os.path.join(f"{settings.RUTA_DATOS}/erp", f"{fichero}")
+        with open(excel, "wb") as f:
+            f.write(await file.read())
+
+        # --------------------------------------------------------------------------------
+        resultado = carga_productos_erp.proceso(param = param)
+        # --------------------------------------------------------------------------------
+
+        param.debug = f"Retornando un lista: {type(resultado)}"
+        param.resultados = resultado or []
+    
+    except MadreException as e:
+        graba_log(param, "mll_carga_prod_erp.MadreException", e)
+                
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "mll_carga_prod_erp.HTTPException", e)
+
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "mll_fichas_tecnicas.Exception", e)
+
+    finally:
+        return param
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.get("/mll_carga_prod_erp_2", response_model=InfoTransaccion)
 async def mll_carga_prod_erp(request: Request,  # Para acceder a request.state.user,
                              id_App: int = Query(..., description="Identificador de la aplicación"),
                              user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),

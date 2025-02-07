@@ -110,8 +110,7 @@ async def mll_sincroniza(id_App: int = Query(..., description="Identificador de 
 
     except MadreException as e:
         graba_log(param, "mll_sync_todo.MadreException", e)
-
-               
+                
     except HTTPException as e:
         param.error_sistema()
         graba_log(param, "mll_sync_todo.HTTPException", e)

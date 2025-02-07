@@ -29,6 +29,10 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         config = obtener_cfg_general(param)
 
+        if True:
+            param.ret_txt()
+            raise Exception("Error mete los datos bien cabrón")
+
         if not config.get("ID", False):
             param.registrar_error(ret_txt=f'No se han encontrado datos de configuración: config["En_Ejecucion"]', debug=f"{funcion}.config-ID")
             raise MadreException(param = param)
@@ -45,7 +49,7 @@ def proceso(param: InfoTransaccion) -> list:
         param.debug = "Fin"
         return resultado
 
-
+                  
     except Exception as e:
         param.error_sistema()
         graba_log(param, "recorre_tiendas.Exception", e)

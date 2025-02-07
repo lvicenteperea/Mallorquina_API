@@ -156,6 +156,7 @@ async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.us
         
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
+        param.ret_txt = "OK"
     
     except MadreException as e:
         graba_log(param, "mll_arqueo_caja.MadreException", e)
@@ -192,6 +193,9 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
 
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha, tienda], debug="Inicio")
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha} - {tienda}"
+
+        imprime("Llegamos", "*")
+
 
         # --------------------------------------------------------------------------------
         resultado = arqueo_caja_info.informe(param = param)
@@ -352,7 +356,7 @@ async def mll_carga_prod_erp(id_App: int = Form(..., description="Identificador 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/mll_carga_prod_erp_2", response_model=InfoTransaccion)
-async def mll_carga_prod_erp(request: Request,  # Para acceder a request.state.user,
+async def mll_carga_prod_erp2(request: Request,  # Para acceder a request.state.user,
                              id_App: int = Query(..., description="Identificador de la aplicación"),
                              user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
                              ret_code: int = Query(..., description="Código de retorno inicial"),

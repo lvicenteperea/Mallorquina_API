@@ -20,7 +20,8 @@ from app.utils.mis_excepciones import MadreException
 #----------------------------------------------------------------------------------------
 def informe(param: InfoTransaccion) -> list:
     param.debug="Inicio"
-    resultado = []
+    resultado = ["",""]
+    datos = []
     config = obtener_cfg_general(param)
     tienda = param.parametros[1]
 
@@ -41,15 +42,16 @@ def informe(param: InfoTransaccion) -> list:
 
         for bbdd in lista_bbdd:
             imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
-            resultado.append(consultar(param, bbdd["ID"], conn_mysql))
-            if param.ret_code != 0:
-                return
+            datos.append(consultar(param, bbdd["ID"], conn_mysql))
 
-        a_excel_con_pd(param, resultado)
-        if param.ret_code == 0:
-            a_excel_con_openpyxl(param, resultado)
+        if datos:
+            resultado[0] = a_excel_con_pd(param, datos)
+            if param.ret_code == 0:
+                resultado[1] = a_excel_con_openpyxl(param, datos)
 
-        return resultado
+            return resultado
+        else:
+            return ["No se ha generado fichero porque no hay datos"]
 
 
     except Exception as e:
@@ -108,6 +110,7 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
                         vmp.id_medios_pago,
                         mp.nombre
                  """
+
         param.debug="execute del cursor"
         cursor_mysql.execute(query)
         datos = cursor_mysql.fetchall()
@@ -131,10 +134,10 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
 #----------------------------------------------------------------------------------------
 def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
     param.debug = "Inicio"
-    path = f"{settings.RUTA_DATOS}cierre_caja/"
+    fichero = f"{settings.RUTA_DATOS}cierre_caja/resultado_panda.xlsx"
 
     try:
-        with pd.ExcelWriter(f"{path}resultado_panda.xlsx") as writer:
+        with pd.ExcelWriter(fichero) as writer:
             param.debug = "Bucle for"
             for sublista in todos_los_conjuntos:
                 # Si la sublista está vacía, pasamos de largo
@@ -169,7 +172,8 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 # 6. Exportamos este DataFrame a una hoja en el Excel
                 df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
-
+        return f"Se ha generado el fichero {fichero} correctamente."
+    
     except Exception as e:
         param.error_sistema()
         graba_log(param, "proceso.Exception", e)
@@ -185,7 +189,8 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         wb = Workbook()
         ws_default = wb.active
         wb.remove(ws_default)
-        path = f"{settings.RUTA_DATOS}cierre_caja/"
+        fichero = f"{settings.RUTA_DATOS}cierre_caja/resultado_openpyxl.xlsx"
+        
 
         param.debug = "2. Elimiar Columnas"
         # 2. Columnas que NO queremos mostrar
@@ -202,6 +207,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
             #    - Convertimos "total_ventas" y "total_operaciones" a float
             #    - Quitamos las columnas que no queremos
             datos_procesados = []
+            imprime([sublista], "*")
             for fila in sublista:
                 # Creamos una copia limpia
                 nueva_fila = {}
@@ -280,8 +286,9 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
 
         param.debug = "9. Guardamos"
         # 9. Guardamos el archivo
-        wb.save(f"{path}resultado_openpyxl.xlsx")
+        wb.save(fichero)
 
+        return f"Se ha generado el fichero {fichero} correctamente"
 
     except Exception as e:
         param.error_sistema()

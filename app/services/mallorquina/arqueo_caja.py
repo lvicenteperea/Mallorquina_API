@@ -70,7 +70,7 @@ def proceso(param: InfoTransaccion) -> list:
             for fecha in fechas:
                 print(fecha)
                 resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql, fecha)
-                resultado.append(resultado_dict)
+                resultado.extend(resultado_dict)
 
             param.debug = "update"
             cursor_mysql.execute(
@@ -108,7 +108,7 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql, fecha) -> dict
         param.debug = "Buscamos la conexión que necesitamos para esta bbdd origen"
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla)
 
-        param.debug = "conextamos con esta bbdd origen"
+        param.debug = "conectamos con esta bbdd origen"
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
         if conn_sqlserver:
@@ -124,7 +124,7 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql, fecha) -> dict
             param.debug = "Ejecución select 1"
             cursor_sqlserver.execute(select_query, fecha) #param.parametros) # parametros es la fecha
             apertura_ids_lista = cursor_sqlserver.fetchall()
-            imprime([apertura_ids_lista], "=")
+            # imprime([apertura_ids_lista], "=")
             ids_cierre = [item[0] for item in apertura_ids_lista]
             
             if ids_cierre:
@@ -154,7 +154,7 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql, fecha) -> dict
                 datos = cursor_sqlserver.fetchall()
 
                 param.debug = "Llamada a Grabar"
-                resultado = grabar(param, conn_mysql, tabla, datos)
+                resultado = grabar(param, conn_mysql, tabla, datos, fecha)
 
         return resultado
 
@@ -211,9 +211,13 @@ def busca_tvp(param: InfoTransaccion, conn_mysql, id_tienda,  id_tpv) -> int:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
-    resultado = {}
+def grabar(param: InfoTransaccion, conn_mysql, tabla, datos, fecha) -> dict:
     param.debug = "Inicio"
+    resultado = []
+    ventas_registros = 0
+    total_ventas = 0
+    total_operaciones = 0
+    medios_pago_registros = 0
 
     try: 
         cierre_descs = ["Mañana", "Tarde"]
@@ -268,30 +272,37 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
                                    cierre_descs[orden],
                                   )
                                 )
-
             id_ventas_diarias = cursor_mysql.lastrowid  # Obtener el ID insertado
+
+            ventas_registros  += cursor_mysql.rowcount
+            total_ventas += data["ventas"]
+            total_operaciones += data["operaciones"]
 
             # Insertar en mll_rec_ventas_medio_pago
             for detalle in data["detalles"]:
                 if detalle.Importe != 0 or detalle.Operaciones != 0:
                     clave = (ID_Apertura, data["fecha"], data["id_tpv"], data["id_tienda"], cierre_descs[orden])
 
-                    # Comprobamos si la clave existe en el diccionario
-                    if clave not in resultado:
-                        # Creamos el registro si no existe
-                        resultado[clave] = {
-                            "ventas": float(detalle.Importe),
-                            "operaciones": int(detalle.Operaciones)
-                        }
-                        imprime(["0->"
-                                    , (resultado[clave]["ventas"])
-                                    , (resultado[clave]["operaciones"])
-                                   ]
-                                   ,'-')
-                    else:
-                        # Incrementamos los valores existentes si la clave ya está
-                        resultado[clave]["ventas"] = resultado[clave]["ventas"] + float(detalle.Importe)
-                        resultado[clave]["operaciones"] += int(detalle.Operaciones)
+                    # # Comprobamos si la clave existe en el diccionario
+                    # if clave not in resultado:
+                    #     # Creamos el registro si no existe
+                    #     resultado[clave] = {"ID_Apertura": ID_Apertura, 
+                    #                         "fecha": data["fecha"], 
+                    #                         "id_tpv": data["id_tpv"], 
+                    #                         "id_tienda": data["id_tienda"], 
+                    #                         "orden": cierre_descs[orden],
+                    #                         "ventas": float(detalle.Importe),
+                    #                         "operaciones": int(detalle.Operaciones)
+                    #                        }
+                    #     # imprime(["0->"
+                    #     #             , (resultado[clave]["ventas"])
+                    #     #             , (resultado[clave]["operaciones"])
+                    #     #            ]
+                    #     #            ,'-')
+                    # else:
+                    #     # Incrementamos los valores existentes si la clave ya está
+                    #     resultado[clave]["ventas"] = resultado[clave]["ventas"] + float(detalle.Importe)
+                    #     resultado[clave]["operaciones"] += int(detalle.Operaciones)
                      
                     insert_medio_pago = """
                         INSERT INTO mll_rec_ventas_medio_pago (id_ventas_diarias, id_medios_pago, ventas, operaciones)
@@ -302,7 +313,10 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos) -> dict:
                                                             detalle.Importe,
                                                             detalle.Operaciones,
                                                            )
-                                        )
+                    )
+                    medios_pago_registros  += cursor_mysql.rowcount
+               
+        resultado = [f"para el {fecha}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} oepraciones. En Medios de pago se han creado {medios_pago_registros} registros"]
 
         return resultado
 

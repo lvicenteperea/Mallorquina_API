@@ -270,6 +270,9 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
     
     try:
         resultado = []
+        if not output_path:
+            output_path = "fichas_tecnicas.html"
+            
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[output_path])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {output_path}"
 

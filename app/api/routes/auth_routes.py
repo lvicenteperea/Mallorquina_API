@@ -124,8 +124,8 @@ async def login(request: Request,
                             { "text": '✅ Carga ERP', "action": 'openCargaProdErp' },
                             { "text": '✅ Arqueo Caja', "action": 'openArqueoCaja' },
                             { "text": '✅ Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
-                            { "text": '❌ Convierte Tarifas', "action": 'openConvierteTarifas' },
-                            { "text": '❌ Fichas Técnicas', "action": 'openFichasTecnicas' },
+                            { "text": '✅ Convierte Tarifas', "action": 'openConvierteTarifas' },
+                            { "text": '🟢 Fichas Técnicas', "action": 'openFichasTecnicas' },
                             { "text": '✅ openSincronizaTodo2', "action": 'openSincronizaTodo2' },
         ]
                }

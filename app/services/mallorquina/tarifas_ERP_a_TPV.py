@@ -26,8 +26,7 @@ COLUMNAS_EXCEL = [
 
 # Consulta SQL para obtener los datos de ambas tablas
 QUERY = """
-SELECT 
-    p.ID AS 'Id Plato', 
+SELECT p.ID AS 'Id Plato', 
     p.nombre AS 'Descripcion',
     p.codigo_barras AS 'Código Barras',
     p.grupo_de_carta AS 'Grupo Carta 1',
@@ -40,7 +39,7 @@ SELECT
 FROM erp_productos p
 LEFT JOIN erp_productos_pvp pv ON p.ID = pv.id_producto
 WHERE pv.id_bbdd IN (1, 3, 4, 5, 6, 7)
- and p.alta_tpv = "Sí"
+and p.alta_tpv = "Sí"
 """
 
 
@@ -51,7 +50,7 @@ def proceso(param: InfoTransaccion) -> list:
     param.debug = "proceso"
 
     try:
-        output_path = f"{PATH}tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}_"
+        output_path = f"tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}_"
 
         df = obtener_datos(param)
         resultado = generar_excel(param, df, output_path)
@@ -114,9 +113,9 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                 # Crear DataFrame y exportar a Excel
                 df_export = pd.DataFrame(data, columns=COLUMNAS_EXCEL)
                 output_file = f"{output_path}{tienda}.xlsx"
-                df_export.to_excel(output_file, index=False)
-                print(f"Archivo generado: {output_file}")
-                resultado.append({"fichero": f'{output_file}', "texto": f'Para la tienda de {tienda} se han generado {len(data)} precios de {total_filas}'})
+                df_export.to_excel(f"{PATH}{output_file}", index=False)
+                
+                resultado.append({"fichero": f'{output_file}', "texto": f'{tienda}: {len(data)} precios de {total_filas}'})
 
 
         if errores:

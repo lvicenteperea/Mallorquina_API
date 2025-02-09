@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "fe1b56cf-8edb-4803-b1e1-234f7b9c7e87",
+        "_postman_id": "3cec8919-5d4e-4eb3-a013-f6a4a9eea5e3",
         "name": "Mallorquina",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -11,7 +11,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://127.0.0.1:8000/mallorquina/mll_carga_prod_erp?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"OK\"&origen_path=productos.xlsx",
+                    "raw": "http://127.0.0.1:8000/mallorquina/mll_carga_prod_erp_2?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"OK\"&origen_path=productos.xlsx",
                     "query": [
                         {
                             "key": "id_App",
@@ -37,7 +37,7 @@
                     "variable": [],
                     "path": [
                         "mallorquina",
-                        "mll_carga_prod_erp"
+                        "mll_carga_prod_erp_2"
                     ],
                     "protocol": "http",
                     "host": [
@@ -111,15 +111,15 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mallorquina/mll_inf_arqueo_caja?id_App=63&user=Pruebas&ret_code=0&ret_txt=\"\"&fecha=2024-12-01&tienda=0",
+                    "raw": "http://localhost:8000/mallorquina/mll_inf_arqueo_caja?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"Ok\"&fecha=2024-12-01&tienda=2",
                     "query": [
                         {
                             "key": "id_App",
-                            "value": "63"
+                            "value": "1"
                         },
                         {
                             "key": "user",
-                            "value": "Pruebas"
+                            "value": "usuario_dev"
                         },
                         {
                             "key": "ret_code",
@@ -127,7 +127,7 @@
                         },
                         {
                             "key": "ret_txt",
-                            "value": "\"\""
+                            "value": "\"Ok\""
                         },
                         {
                             "key": "fecha",
@@ -135,7 +135,7 @@
                         },
                         {
                             "key": "tienda",
-                            "value": "0"
+                            "value": "2"
                         }
                     ],
                     "variable": [],
@@ -205,11 +205,11 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mallorquina/mll_convierte_tarifas?id_App=63&user=usuario_dev&ret_code=0&ret_txt=\"\"",
+                    "raw": "http://localhost:8000/mallorquina/mll_convierte_tarifas?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"\"",
                     "query": [
                         {
                             "key": "id_App",
-                            "value": "63"
+                            "value": "1"
                         },
                         {
                             "key": "user",
@@ -291,7 +291,7 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8000/mallorquina/mll_consultas?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"\"&fecha=2024-10-05",
+                    "raw": "http://localhost:8000/mallorquina/mll_consultas_cierre?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"\"&fecha=2024-10-05",
                     "query": [
                         {
                             "key": "id_App",
@@ -317,7 +317,7 @@
                     "variable": [],
                     "path": [
                         "mallorquina",
-                        "mll_consultas"
+                        "mll_consultas_cierre"
                     ],
                     "protocol": "http",
                     "host": [
@@ -367,6 +367,57 @@
                     ],
                     "port": "8000"
                 }
+            }
+        },
+        {
+            "name": "mll_descarga",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/mallorquina/mll_descarga?id_App=1&user=usuario_dev&ret_code=0&ret_txt=Ok&tipo=TPV&nombre=tarifas_20250209170940_Moraleja.xlsx",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "1"
+                        },
+                        {
+                            "key": "user",
+                            "value": "usuario_dev"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "Ok"
+                        },
+                        {
+                            "key": "tipo",
+                            "value": "TPV"
+                        },
+                        {
+                            "key": "nombre",
+                            "value": "tarifas_20250209170940_Moraleja.xlsx"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "mallorquina",
+                        "mll_descarga"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ]
             }
         }
     ]

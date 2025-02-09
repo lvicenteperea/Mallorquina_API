@@ -16,6 +16,7 @@ from app.api.routes.auth_routes import router as auth_router
 from app.api.routes.email_router import router as email_router
 
 
+
 from app.middleware.auth import AuthMiddleware
 import json 
 

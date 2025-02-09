@@ -1,7 +1,9 @@
+from fastapi.responses import FileResponse
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi import File, UploadFile, Form
 from starlette.requests import Request
 from datetime import datetime
+# from fastapi import APIRouter, HTTPException, Query, Request
 import os
 
 
@@ -14,6 +16,8 @@ import app.services.mallorquina.tarifas_ERP_a_TPV as tarifas_ERP_a_TPV  # tarifa
 import app.services.mallorquina.fichas_tecnicas as fichas_tecnicas
 import app.services.mallorquina.carga_productos_erp as carga_productos_erp
 import app.services.mallorquina.encargos_navidad as encargos_navidad
+import app.services.auxiliares.descarga as descarga
+
 from app.config.settings import settings
 
 from app.utils.functions import graba_log, imprime
@@ -394,6 +398,62 @@ async def mll_carga_prod_erp2(request: Request,  # Para acceder a request.state.
 
     finally:
         return param
+
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.get("/mll_descarga")
+async def mll_descarga(request: Request,
+                       id_App: int = Query(..., description="Identificador de la aplicación"),
+                       user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                       ret_code: int = Query(..., description="Código de retorno inicial"),
+                       ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                       tipo: str = Query(..., description="Tipo de archivo a descargar"),
+                       nombre: str = Query(..., description="Nombre del archivo a descargar")):
+    try:
+
+        # --------------------------------------------------------------------------------
+        # Validaciones y construcción Básica
+        # --------------------------------------------------------------------------------
+        param = InfoTransaccion(
+            id_App=id_App,
+            user=user,
+            ret_code=ret_code,
+            ret_txt=ret_txt,
+            parametros=[tipo, nombre]
+        )
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {tipo} - {nombre}"
+
+        # --------------------------------------------------------------------------------
+        # Control de autenticación de usuario
+        # --------------------------------------------------------------------------------
+        # Verificar la autenticación
+        # authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
+        # if user != authenticated_user:
+        #     param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+        #     raise MadreException(param,"Los usuarios no corresponden", -1)
+        # else:
+        #     print(f"Usuario autenticado: {authenticated_user}")
+
+        # --------------------------------------------------------------------------------
+        # Servicio
+        # --------------------------------------------------------------------------------
+        return descarga.proceso(param=param)
+
+
+    except MadreException as e:
+        graba_log(param, "mll_consultas_cierre.MadreException", e)
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "mll_consultas_cierre.Exception", e)
+
+
+
+
+
+
+
 
 
 #----------------------------------------------------------------------------------

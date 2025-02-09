@@ -89,7 +89,7 @@ async def login(request: Request,
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         # Buscar usuario en la base de datos
-        cursor_mysql.execute("SELECT id, username, password_hash FROM hxxi_users WHERE username = %s", (login_request.username,))
+        cursor_mysql.execute("SELECT * FROM hxxi_users WHERE username = %s", (login_request.username,))
         user_bbdd = cursor_mysql.fetchone()
 
         if not user_bbdd:
@@ -118,15 +118,18 @@ async def login(request: Request,
                 "ret_txt": "Todo OK",
                 "token": token, 
                 "user": {"id": user_bbdd["id"], 
-                         "username": user_bbdd["username"]},
-                "options": [{ "text": '✅ Consulta Cierre', "action": 'openConsultaCierre' },
-                            { "text": '✅ Sincroniza BBDD', "action": 'openSincronizaTodo' },
-                            { "text": '✅ Carga ERP', "action": 'openCargaProdErp' },
-                            { "text": '✅ Arqueo Caja', "action": 'openArqueoCaja' },
-                            { "text": '✅ Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
-                            { "text": '✅ Convierte Tarifas', "action": 'openConvierteTarifas' },
-                            { "text": '🟢 Fichas Técnicas', "action": 'openFichasTecnicas' },
-                            { "text": '✅ openSincronizaTodo2', "action": 'openSincronizaTodo2' },
+                         "username": user_bbdd["username"],
+                         "email": user_bbdd["email"],
+                         "dpto": "Administración",
+                         "img": user_bbdd["img"]},
+                "options": [{ "text": 'Consulta Cierre', "action": 'openConsultaCierre' },
+                            { "text": 'Sincroniza BBDD', "action": 'openSincronizaTodo' },
+                            { "text": 'Carga ERP', "action": 'openCargaProdErp' },
+                            { "text": 'Arqueo Caja', "action": 'openArqueoCaja' },
+                            { "text": 'Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
+                            { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },
+                            { "text": 'Fichas Técnicas', "action": 'openFichasTecnicas' },
+                            { "text": 'PRueba de SincTodo', "action": 'openSincronizaTodo2' },
         ]
                }
              

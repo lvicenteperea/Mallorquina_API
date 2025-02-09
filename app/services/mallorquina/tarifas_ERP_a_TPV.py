@@ -116,7 +116,7 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                 output_file = f"{output_path}{tienda}.xlsx"
                 df_export.to_excel(output_file, index=False)
                 print(f"Archivo generado: {output_file}")
-                resultado.append(f'Archivo {output_file} generado  con {len(data)} filas de {total_filas}')
+                resultado.append({"fichero": f'{output_file}', "texto": f'Para la tienda de {tienda} se han generado {len(data)} precios de {total_filas}'})
 
 
         if errores:

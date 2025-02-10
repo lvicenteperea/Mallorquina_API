@@ -1,9 +1,11 @@
 from fastapi.responses import FileResponse
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Body, Depends
 from fastapi import File, UploadFile, Form
 from starlette.requests import Request
 from datetime import datetime
 # from fastapi import APIRouter, HTTPException, Query, Request
+from pydantic import BaseModel
+from typing import List
 import os
 
 
@@ -26,6 +28,12 @@ from app.utils.InfoTransaccion import InfoTransaccion
 
 # Definimos el router
 router = APIRouter()
+
+class ParamRequest(BaseModel):
+    id_App: int = 1
+    user: str = "usuario_dev"
+    ret_code: int = 0
+    ret_txt: str = "OK"
 
 
 #----------------------------------------------------------------------------------
@@ -402,27 +410,28 @@ async def mll_carga_prod_erp2(request: Request,  # Para acceder a request.state.
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_descarga")
+class DescargaRequest(ParamRequest):
+    tipo: str = "TPV"
+    nombres: List[str] = []
+
+@router.post("/mll_descarga")
 async def mll_descarga(request: Request,
-                       id_App: int = Query(..., description="Identificador de la aplicación"),
-                       user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                       ret_code: int = Query(..., description="Código de retorno inicial"),
-                       ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                       tipo: str = Query(..., description="Tipo de archivo a descargar"),
-                       nombre: str = Query(..., description="Nombre del archivo a descargar")):
+                       body_params: DescargaRequest = Body(...)):
     try:
 
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
         # --------------------------------------------------------------------------------
         param = InfoTransaccion(
-            id_App=id_App,
-            user=user,
-            ret_code=ret_code,
-            ret_txt=ret_txt,
-            parametros=[tipo, nombre]
+            id_App=body_params.id_App,
+            user=body_params.user,
+            ret_code=body_params.ret_code,
+            ret_txt=body_params.ret_txt,
+            parametros=[body_params.tipo, body_params.nombres]
         )
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {tipo} - {nombre}"
+        param.debug = f"infoTrans: {param}"
+
+        # imprime([type(body_params.nombres), len(body_params.nombres), body_params.nombres], "*")
 
         # --------------------------------------------------------------------------------
         # Control de autenticación de usuario
@@ -439,22 +448,24 @@ async def mll_descarga(request: Request,
         # Servicio
         # --------------------------------------------------------------------------------
         return descarga.proceso(param=param)
-
+         
 
     except MadreException as e:
-        graba_log(param, "mll_consultas_cierre.MadreException", e)
+        graba_log(param, "mll_descarga.MadreException", e)
+        raise
+
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "mll_sync_todo.HTTPException", e)
+        raise
+
 
     except Exception as e:
         param.error_sistema()
-        graba_log(param, "mll_consultas_cierre.Exception", e)
+        graba_log(param, "mll_descarga.Exception", e)
+        raise
 
-
-
-
-
-
-
-
+ 
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------

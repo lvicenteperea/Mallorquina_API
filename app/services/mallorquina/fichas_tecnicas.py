@@ -8,14 +8,13 @@ from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
 # Rutas de los archivos
+LOGO =        os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
 RUTA_ICONOS = os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "alergenos/")
-LOGO = os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
-PLANTILLA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla.html")
-PLANTILLA_FICHA = os.path.join(settings.RUTA_DATOS, "alergenos/plantilla_producto.html")
-RUTA_HTML = os.path.join(settings.RUTA_WEB, "alergenos/")
-FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_DATOS, "alergenos/no_imprimibles.csv")
 
+PLANTILLA       = os.path.join(settings.RUTA_ALERGENOS, "plantilla.html")
+PLANTILLA_FICHA = os.path.join(settings.RUTA_ALERGENOS, "plantilla_producto.html")
 
+FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_ALERGENOS_HTML, "no_imprimibles.csv")
 
 #----------------------------------------------------------------------------------------
 # Comprueba que tenemos descripción de la composición del productos, porque si no tiene, 
@@ -138,104 +137,9 @@ def indice(param, productos):
 #----------------------------------------------------------------------------------------
 # Reemplazar FICHAS
 #----------------------------------------------------------------------------------------
-"""
 def fichas(param: InfoTransaccion, productos: list, precios: dict):
     fichas_html = cargar_plantilla(param, PLANTILLA_FICHA)
-    fichas_content = ""
-    precios_content = ""
-
-    try:
-        # Generar las fichas técnicas
-        for producto in productos:
-            composicion = imprimible(param, producto)
-            if composicion: 
-                id_producto = producto['ID']
-                " ""
-                imprime([producto, type(producto)], "=")
-
-                {'familia_cod': None, 
-                'familia_desc': '4- BOMBONERIA/6. Productos Venta Directa', 
-                'grupo_de_carta': '', 
-                'alta_tpv': 'Sí', 
-                'alta_glovo': '', 
-                'alta_web': '', 
-                'alta_catering': '', 
-                'peso_neto_aprox': '', 
-                'fibra_dietetica_g': '', 
-                'otros': '', 
-                'fec_modificacion': '', 
-                'created_at': datetime.datetime(2025, 1, 5, 19, 15, 18), 
-                'updated_at': None, 
-                'modified_by': None}
-                " ""
-
-                ficha_campos = {
-                    'codigo': id_producto,
-                    'nombre': producto.get("nombre", "").strip() or " ",
-                    'categoria': producto.get("categoria", "").strip() or " ",
-                    'temporada': producto.get("temporada", "").strip() or " ",
-                    'fecha': datetime.now().strftime("%d/%m/%Y"),
-                    'composicion_completa': composicion,
-                    'LOGO': LOGO,
-                    'Gluten': "X" if producto.get('gluten', '') == "Sí" else "Traza" if producto.get('gluten', '') == "Traza" else " ",
-                    'Cascara': "X" if producto.get('cascara', '') == "Sí" else "Traza" if producto.get('cascara', '') == "Traza" else " ",
-                    'Crustaceos': "X" if producto.get('crustaceos', '') == "Sí" else "Traza" if producto.get('crustaceos', '') == "Traza" else " ",
-                    'Apio': "X" if producto.get('apio', '') == "Sí" else "Traza" if producto.get('apio', '') == "Traza" else " ",
-                    'Huevo': "X" if producto.get('huevo', '') == "Sí" else "Traza" if producto.get('huevo', '') == "Traza" else " ",
-                    'Mostaza': "X" if producto.get('mostaza', '') == "Sí" else "Traza" if producto.get('mostaza', '') == "Traza" else " ",
-                    'Pescado': "X" if producto.get('pescado', '') == "Sí" else "Traza" if producto.get('pescado', '') == "Traza" else " ",
-                    'Sesamo': "X" if producto.get('sesamo', '') == "Sí" else "Traza" if producto.get('sesamo', '') == "Traza" else " ",
-                    'Cacahuetes': "X" if producto.get('cacahuetes', '') == "Sí" else "Traza" if producto.get('cacahuetes', '') == "Traza" else " ",
-                    'Sulfitos': "X" if producto.get('sulfitos', '') == "Sí" else "Traza" if producto.get('sulfitos', '') == "Traza" else " ",
-                    'Soja': "X" if producto.get('soja', '') == "Sí" else "Traza" if producto.get('soja', '') == "Traza" else " ",
-                    'Altramuz': "X" if producto.get('altramuz', '') == "Sí" else "Traza" if producto.get('altramuz', '') == "Traza" else " ",
-                    'Leche': "X" if producto.get('leche', '') == "Sí" else "Traza" if producto.get('leche', '') == "Traza" else " ",
-                    'Moluscos': "X" if producto.get('moluscos', '') == "Sí" else "Traza" if producto.get('moluscos', '') == "Traza" else " ",
-
-                    'Valor_energetico_Kcal_Kj': producto.get("valor_energetico_kcal_kj", "").strip() or " ",
-                    'Grasas_g': producto.get("grasas_g", "").strip() or " ",
-                    'De_las_cuales_SATURADAS_g': producto.get("de_las_cuales_saturadas_g", "").strip() or " ",
-                    'Hidratos_de_carbono_g': producto.get("hidratos_de_carbono_g", "").strip() or " ",
-                    'De_los_cuales_AZUCARES_g': producto.get("de_los_cuales_azucares_g", "").strip() or " ",
-                    'Proteinas_g': producto.get("proteinas_g", "").strip() or " ",
-                    'Sal_g': producto.get("sal_g", "").strip() or " ",
-
-                    'Rec_Enterobacterias': producto.get("rec_enterobacterias", "").strip() or " ",
-                    'Rec_Aerobios_totales': producto.get("rec_aerobios_totales", "").strip() or " ",
-                    'Rec_Escherichia_Coli': producto.get("rec_escherichia_coli", "").strip() or " ",
-                    'Rec_Staphylococcus_Aureus': producto.get("rec_staphylococcus_aureus", "").strip() or " ",
-                    'Det_Salmonella_cpp': producto.get("det_salmonella_cpp", "").strip() or " ",
-                    'Rec_Listeria_Monocytogenes': producto.get("rec_listeria_monocytogenes", "").strip() or " ",
-                    'Rec_Mohos_y_levaduras': producto.get("rec_mohos_y_levaduras", "").strip() or " ",
-
-                    'Poblacion_diana': producto.get("poblacion_diana", "").strip() or " ",
-                    'uso_esperado': producto.get("uso_esperado", "").strip() or " ",
-                    'Condiciones_conservacion': producto.get("condiciones_conservación", "").strip() or " ",
-
-                    'vida_en_lugar_fresco_y_seco': producto.get("vida_en_lugar_fresco_y_seco", "").strip() or " ",
-                    'vida_en_refrigeracion': producto.get("vida_en_refrigeracion", "").strip() or " ",
-                    'vida_en_congelacion': producto.get("vida_en_congelacion", "").strip() or " ",
-                }
-                fichas_content += reemplazar_campos(fichas_html, ficha_campos)
-                
-                # Generar la sección de precios
-                if id_producto in precios:
-                    precios_content += f"<h3>Precios para {producto['nombre']}</h3><ul>"
-                    for precio in precios[id_producto]:
-                        precios_content += f"<li>{precio['nombre']} - {precio['tipo']}: {precio['pvp']}</li>"
-                    precios_content += "</ul>"
-                fichas_content = reemplazar_campos(fichas_content, {'precios': precios_content})
-                
-        return fichas_content
-    
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param, "fichas.Exception", e)
-        raise 
-"""
-def fichas(param: InfoTransaccion, productos: list, precios: dict):
-    fichas_html = cargar_plantilla(param, PLANTILLA_FICHA)
-    plantilla_fichas = os.path.join(RUTA_HTML, "fichas/")
+    plantilla_fichas = os.path.join(settings.RUTA_ALERGENOS_HTML, "fichas/")
 
     try:
         # Generar las fichas técnicas
@@ -378,9 +282,9 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         param.debug = "rutas"
         if not param.parametros[0]:
-            salida = os.path.join(RUTA_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")
+            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")
         else:
-            salida = os.path.join(RUTA_HTML, param.parametros[0]) # Nombre del archivo HTML viene en el segundo parámetro
+            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, param.parametros[0]) # Nombre del archivo HTML viene en el segundo parámetro
 
         param.debug = f"{salida}"
         # Conectar a la base de datos
@@ -415,7 +319,7 @@ def proceso(param: InfoTransaccion) -> list:
         with open(salida, 'w', encoding='utf-8') as f:
             f.write(html)
 
-        resultado = [f"HTML generado correctamente: {salida}"] if html else ["No se ha generado fichero", f"No se han generado {param.ret_code}"]
+        resultado = [f"Ficheros generados correctamente"]
         return resultado
     
 

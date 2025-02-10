@@ -2,12 +2,11 @@ import pandas as pd
 from datetime import datetime
 
 from app.utils.functions import graba_log, imprime
-from app.utils.mis_excepciones import MadreException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
 
-PATH: str = f"{settings.RUTA_DATOS}tarifas_a_TPV/"
+PATH: str = settings.RUTA_TPV # f"{settings.RUTA_DATOS}tarifas_a_TPV/"
 # Definición de las tiendas y su correspondencia con id_bbdd
 TIENDAS = {
     5: "Sol",
@@ -117,13 +116,11 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                 
                 resultado.append({"fichero": f'{output_file}', "texto": f'{tienda}: {len(data)} precios de {total_filas}'})
 
-
         if errores:
             with open(error_log_path, "w") as error_file:
                 for error in errores:
                     error_file.write(error + "\n")
 
-        
         return resultado
 
     except Exception as e:

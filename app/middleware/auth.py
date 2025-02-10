@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from fastapi.security import HTTPBearer
 from app.config.settings import settings
 
-
+from app.utils.functions import graba_log, imprime
 
 """
 Lo ideal es que se guarde en el sistema:
@@ -72,6 +72,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Obtener token del encabezado Authorization
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
+            imprime([auth_header, request.headers.get("Authorization"), request.url.path], "*")
             return JSONResponse({"detail": "Autenticación requerida1"}, status_code=401)
 
         token = auth_header.split(" ")[1]

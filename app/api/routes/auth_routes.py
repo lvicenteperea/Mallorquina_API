@@ -95,6 +95,30 @@ async def login(request: Request,
         if not user_bbdd:
             raise HTTPException(status_code=401, detail="El Usuario y la Contraseña no son credenciales válidas")
 
+        imprime([user_bbdd["id"]], "*")
+        # Ejecutar la consulta
+        cursor_mysql.execute("SELECT texto, accion FROM mallorquina.hxxi_users_opciones WHERE id_username = %s ORDER BY orden", (user_bbdd["id"],))
+        options_bbdd = cursor_mysql.fetchall()
+
+        imprime([options_bbdd], "*")
+
+        if options_bbdd:
+            # Convertir el resultado a la estructura deseada
+            lista_opciones = [{"text": row["texto"], "action": row["accion"]} for row in options_bbdd]
+        else:
+            lista_opciones = [ { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },]            
+
+                # "options": [{ "text": 'Consulta Cierre', "action": 'openConsultaCierre' },
+                #             { "text": 'Sincroniza BBDD', "action": 'openSincronizaTodo' },
+                #             { "text": 'Carga ERP', "action": 'openCargaProdErp' },
+                #             { "text": 'Arqueo Caja', "action": 'openArqueoCaja' },
+                #             { "text": 'Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
+                #             { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },
+                #             { "text": 'Fichas Técnicas', "action": 'openFichasTecnicas' },
+                #             { "text": 'PRueba de SincTodo', "action": 'openSincronizaTodo2' },
+                #            ]
+
+
         if "password_hash" not in user_bbdd:
             raise HTTPException(status_code=500, detail="Error en la estructura de datos de usuario")
 
@@ -122,15 +146,7 @@ async def login(request: Request,
                          "email": user_bbdd["email"],
                          "dpto": "Administración",
                          "img": user_bbdd["img"]},
-                "options": [{ "text": 'Consulta Cierre', "action": 'openConsultaCierre' },
-                            { "text": 'Sincroniza BBDD', "action": 'openSincronizaTodo' },
-                            { "text": 'Carga ERP', "action": 'openCargaProdErp' },
-                            { "text": 'Arqueo Caja', "action": 'openArqueoCaja' },
-                            { "text": 'Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
-                            { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },
-                            { "text": 'Fichas Técnicas', "action": 'openFichasTecnicas' },
-                            { "text": 'PRueba de SincTodo', "action": 'openSincronizaTodo2' },
-        ]
+                "options": lista_opciones
                }
              
     finally:

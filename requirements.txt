@@ -21,3 +21,6 @@ openpyxl
 sshtunnel
 
 email-validator
+
+python-multipart
+passlib[bcrypt]

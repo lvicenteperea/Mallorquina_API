@@ -139,59 +139,6 @@ async def login(request: Request,
 
 
 #----------------------------------------------------------------------------------
-'''
-5. Configuración en React
-Desde el frontend en React, puedes autenticar usuarios con este código:
-
-javascript
-Copiar
-Editar
-async function login(username, password) {
-    const response = await fetch("http://localhost:8000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-    });
-
-    if (!response.ok) throw new Error("Error en el login");
-    const data = await response.json();
-    localStorage.setItem("token", data.token);
-}
-Y al hacer peticiones protegidas:
-
-javascript
-Copiar
-Editar
-async function getData() {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:8000/protected-route", {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) throw new Error("No autorizado");
-    return await response.json();
-}
-
-async function registerUser(username, email, password) {
-    const queryParams = new URLSearchParams({
-        id_App: 1,  // El ID de la aplicación que estás usando
-        user: "admin",  // Usuario que realiza el registro
-        ret_code: 0,  // Código de retorno
-        ret_txt: "Registro de usuario exitoso"  // Mensaje de retorno
-    });
-
-    const response = await fetch(`http://localhost:8000/auth/register?${queryParams.toString()}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-    });
-
-    if (!response.ok) throw new Error("Error en el registro");
-
-    return await response.json();
-}
-
-'''
 #----------------------------------------------------------------------------------
 @router.post("/register")
 async def register(register_request: RegisterRequest,

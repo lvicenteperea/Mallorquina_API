@@ -53,7 +53,7 @@ def proceso(param: InfoTransaccion):
             for email in emails:
                 id_email = email["id"]
                 param.debug = f'Enviar ({id_email}) para: {email["para"]} - CC: {email["cc"]} - BCC: {email["bcc"]}'
-                resultado = enviar_email(param, conn_mysql, email, datos_conexion)  #  email["destinatario"], email["asunto"], email["cuerpo"]
+                resultado = enviar_email(param, conn_mysql, email, datos_conexion, servidor)  #  email["destinatario"], email["asunto"], email["cuerpo"]
 
                 imprime(resultado, "*Resultado")
 
@@ -125,7 +125,7 @@ def marcar_email(param: InfoTransaccion, cursor_mysql, email_id, texto, estado):
 #----------------------------------------------------------------------------------------
 #      Envía un email utilizando SendGrid y los datos del servidor de correo
 #----------------------------------------------------------------------------------------
-def robinson(param: InfoTransaccion, conn_mysql, lista_emails):
+def robinson(param: InfoTransaccion, conn_mysql, lista_emails, servidor):
 
     try:
         # imprime([lista_emails, type(lista_emails)], "*Primera")
@@ -140,13 +140,14 @@ def robinson(param: InfoTransaccion, conn_mysql, lista_emails):
         # Si la lista es pequeña, usar WHERE IN
         if len(lista_emails) <= 500 and len(lista_emails) > 1:
             placeholders = ', '.join(['%s'] * len(lista_emails))
-            query = f"SELECT email FROM mail_robinson WHERE email IN ({placeholders})"
-            cursor_mysql.execute(query, lista_emails)
+            # query = f"SELECT email FROM mail_robinson WHERE email IN ({placeholders})"
+            query = "SELECT email FROM mail_robinson WHERE email IN (%s) and id_app = %s"
+            cursor_mysql.execute(query, (lista_emails, servidor,))
             emails_en_robinson = {row[0] for row in cursor_mysql.fetchall()}  # Convertimos a set para búsqueda rápida
         else:
             emails_en_robinson = set()
             for email in lista_emails:
-                cursor_mysql.execute("SELECT email FROM mail_robinson WHERE email = %s", (email,))
+                cursor_mysql.execute("SELECT email FROM mail_robinson WHERE email = %s and id_app = %s", (email,servidor))
                 resultado = cursor_mysql.fetchone()
                 if resultado:
                     emails_en_robinson.add(resultado["email"])
@@ -183,7 +184,7 @@ def robinson(param: InfoTransaccion, conn_mysql, lista_emails):
 #----------------------------------------------------------------------------------------
 #      Envía un email utilizando SendGrid y los datos del servidor de correo
 #----------------------------------------------------------------------------------------
-def enviar_email(param: InfoTransaccion, conn_mysql, email, datos_conexion):
+def enviar_email(param: InfoTransaccion, conn_mysql, email, datos_conexion, servidor):
     
     try:
         # Inicializar el cliente SendGrid con la API Key desde datos_conexion
@@ -196,18 +197,18 @@ def enviar_email(param: InfoTransaccion, conn_mysql, email, datos_conexion):
 
         # Configurar destinatarios principales (TO)
         param.debug = "para"
-        lista = robinson(param, conn_mysql, email["para"])
+        lista = robinson(param, conn_mysql, email["para"], servidor)
         param.debug = "para2"
         to_emails = [To(dest) for dest in lista] if isinstance(lista, list) else [To(lista)]
 
         # Configurar CC (Con Copia)
         param.debug = "cc"
-        lista = robinson(param, conn_mysql, email.get("cc", []))
+        lista = robinson(param, conn_mysql, email.get("cc", []), servidor)
         cc_emails = [Cc(dest) for dest in lista] if len(lista)>0 else []
 
         # Configurar BCC (Con Copia Oculta)
         param.debug = "bcc"
-        lista = robinson(param, conn_mysql, email.get("bcc", []))
+        lista = robinson(param, conn_mysql, email.get("bcc", []), servidor)
         bcc_emails = [Cc(dest) for dest in lista] if len(lista)>0 else []
 
         # Configurar contenido del email

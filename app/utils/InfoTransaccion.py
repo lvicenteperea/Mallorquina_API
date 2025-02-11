@@ -3,6 +3,15 @@ from datetime import datetime
 from typing import List, Optional, Any
 import json
 
+
+class ParamRequest(BaseModel):
+    id_App: int = 1
+    user: str = "usuario_dev"
+    ret_code: int = 0
+    ret_txt: str = "OK"
+
+
+
 class InfoTransaccion(BaseModel):
     id_App: int = 0
     user: str = 'Sistema_' # Usuario de sistema que se conecta: Fronta, BackOfficce, un servicio específico, webs de terceros...
@@ -10,12 +19,35 @@ class InfoTransaccion(BaseModel):
     ret_txt: str = "Ok"
     debug: str = "" # solo por si se necesita saber por donde ha pasado la ejecución
 
-    # Datos cuando las funciones de BBDD retornar un valor Ok, Dos listas diferentes
-    # En "parametros" retorna la lista de parametros que son de salida o entrada/salida
-    parametros: Optional[List[Any]] = None  # Especificar lista opcional con elementos de cualquier tipo
-    # En "resultados" es para procedimientos que retornar un listado de registros "una select"
-    resultados: List[Any] = []  # Lista vacía predeterminada para resultados
+    parametros: Optional[List[Any]] = None  # Parámetros específicos que ha recibido el servicio, función,....
+    resultados: List[Any] = []  # Lista vacía predeterminada para resultados, siempre será una lista, con un texto, varios, con un listado.....
     
+
+    @classmethod
+    def from_request(cls, request: ParamRequest) -> "InfoTransaccion":
+        # Extraer los valores de los atributos base
+        base_data = request.dict(exclude_unset=True)
+        
+        # Extraer los parámetros adicionales (los que no están en ParamRequest)
+        base_fields = set(ParamRequest.__annotations__.keys())
+        extra_params = {k: v for k, v in base_data.items() if k not in base_fields}
+        
+        # Construcción del campo debug con todos los valores
+        debug_info = " - ".join([f"{key}: {value}" for key, value in base_data.items()])
+        
+        return cls(
+            **{k: v for k, v in base_data.items() if k in base_fields},  # Solo los campos base
+            parametros=list(extra_params.values()),  # Lista con valores extra
+            debug=debug_info
+        )
+
+
+
+
+
+
+
+
 
     def set_parametros(self, datos):
         self.parametros = datos

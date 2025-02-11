@@ -24,52 +24,39 @@ from app.config.settings import settings
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
-from app.utils.InfoTransaccion import InfoTransaccion
+from app.utils.InfoTransaccion import InfoTransaccion, ParamRequest
 
 # Definimos el router
 router = APIRouter()
 
-class ParamRequest(BaseModel):
-    id_App: int = 1
-    user: str = "usuario_dev"
-    ret_code: int = 0
-    ret_txt: str = "OK"
-
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.get("/mll_consultas_cierre", response_model=InfoTransaccion)
+class FechaRequest(ParamRequest):
+    fecha: str = ""  # Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual
+    
+@router.post("/mll_consultas_cierre", response_model=InfoTransaccion)
 async def mll_consultas_cierre( request: Request,  # Para acceder a request.state.user
-                                id_App: int = Query(..., description="Identificador de la aplicación"),
-                                user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                                ret_code: int = Query(..., description="Código de retorno inicial"),
-                                ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                                fecha: str = Query(None, description="Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual"),
+                                body_params: FechaRequest = Body(...),
                                ):
     try:
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
         # --------------------------------------------------------------------------------
         # Si no se proporciona `fecha`, usar la actual
-        if not fecha:
-            fecha = datetime.now().strftime('%Y-%m-%d')
+        if not body_params.fecha:
+            body_params.fecha = datetime.now().strftime('%Y-%m-%d')
 
-        param = InfoTransaccion(
-            id_App=id_App,
-            user=user,
-            ret_code=ret_code,
-            ret_txt=ret_txt,
-            parametros=[fecha]
-        )
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
+        # --------------------------------------------------------------------------------
+        param = InfoTransaccion.from_request(body_params)
 
         # --------------------------------------------------------------------------------
         # Control de autenticación de usuario
         # --------------------------------------------------------------------------------
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if user != authenticated_user:
-            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+        if param.user != authenticated_user:
+            param.error_sistema(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
             raise MadreException(param,"Los usuarios no corresponden", -1)
         # else:
         #     print(f"Usuario autenticado: {authenticated_user}")
@@ -82,15 +69,14 @@ async def mll_consultas_cierre( request: Request,  # Para acceder a request.stat
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
 
+        return param
+
     except MadreException as e:
         graba_log(param, "mll_consultas_cierre.MadreException", e)
 
     except Exception as e:
         param.error_sistema()
         graba_log(param, "mll_consultas_cierre.Exception", e)
-
-    finally:
-        return param
 
 
 
@@ -417,16 +403,13 @@ async def mll_descarga(request: Request,
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
         # --------------------------------------------------------------------------------
-        param = InfoTransaccion(
-            id_App=body_params.id_App,
-            user=body_params.user,
-            ret_code=body_params.ret_code,
-            ret_txt=body_params.ret_txt,
-            parametros=[body_params.tipo, body_params.nombres]
-        )
-        param.debug = f"infoTrans: {param}"
 
-        # imprime([type(body_params.nombres), len(body_params.nombres), body_params.nombres], "*")
+        # --------------------------------------------------------------------------------
+        imprime([type(body_params.nombres), len(body_params.nombres), body_params.nombres], "*")
+        
+        param = InfoTransaccion.from_request(body_params)
+
+        imprime([param], "*")
 
         # --------------------------------------------------------------------------------
         # Control de autenticación de usuario

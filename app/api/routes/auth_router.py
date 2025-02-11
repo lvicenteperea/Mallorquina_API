@@ -137,7 +137,6 @@ async def login(request: Request,
         }
         token = AuthMiddleware.create_token(token_data)
 
-        # 🟢  ✅   ❌
         return {"ret_code":0,
                 "ret_txt": "Todo OK",
                 "token": token, 

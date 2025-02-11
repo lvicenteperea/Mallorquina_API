@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body
 from starlette.requests import Request
 from typing import List, Optional, Dict
 
 # mias
 import app.services.emails.grabar_token as grabar_token
 import app.services.emails.grabar_email as grabar_email
+import app.services.emails.enviar_emails as enviar_emails
 
 from app.utils.functions import graba_log, imprime
 from app.utils.mis_excepciones import MadreException
@@ -55,6 +56,7 @@ async def eml_grabar_token( request: Request,  # Para acceder a request.state.us
 
         param.debug = f"Esto debería ser <infoTransaccion>: {type(param_resultado)}"
     
+        return param_resultado
 
     except MadreException as e:
         graba_log(param, "eml_grabar_token.MadreException", e)
@@ -62,9 +64,6 @@ async def eml_grabar_token( request: Request,  # Para acceder a request.state.us
     except Exception as e:
         param.error_sistema()
         graba_log(param, "eml_grabar_token.Exception", e)
-
-    finally:
-        return param_resultado
 
 
 #----------------------------------------------------------------------------------
@@ -137,10 +136,46 @@ async def eml_grabar_email( request: Request,  # Para acceder a request.state.us
                 
     except Exception as e:
         imprime(["param.ret_txt, param.ret_code, e"], "@")
-        # param.error_sistema()
-        raise
-        # graba_log(param, "eml_grabar_email.Exception", e)
+        param.error_sistema()
+        graba_log(param, "eml_grabar_email.Exception", e)
 
         
 
 
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.get("/eml_envia_emails", response_model=InfoTransaccion)
+async def eml_envia_emails(id_App: int = Query(..., description="Identificador de la aplicación"),
+                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                         ret_code: int = Query(..., description="Código de retorno inicial"),
+                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                         servidor: int = Query(..., description="Se van enviar los emails asociados a este servidor"),
+                        ):
+
+    try:
+        resultado = []
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[servidor])
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {servidor}"
+
+        # --------------------------------------------------------------------------------
+        resultado = enviar_emails.proceso(param = param)
+        # --------------------------------------------------------------------------------
+
+        param.debug = f"Retornando: {type(resultado)}"
+        param.resultados = resultado or []
+
+
+        return param
+   
+
+    except MadreException as e:
+        graba_log(param, "eml_envia_emails.MadreException", e)
+                
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "eml_envia_emails.HTTPException", e)
+
+
+    except Exception as e:
+        param.error_sistema()
+        graba_log(param, "eml_envia_emails.Exception", e)

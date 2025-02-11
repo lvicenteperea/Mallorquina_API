@@ -11,8 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # from fastapi.responses import JSONResponse
 
 # from app.api.routes import router as api_router
-from app.api.routes.mallorquina import router as mallorquina_router
-from app.api.routes.auth_routes import router as auth_router
+from app.api.routes.mll_router import router as mallorquina_router
+from app.api.routes.auth_router import router as auth_router
 from app.api.routes.email_router import router as email_router
 
 

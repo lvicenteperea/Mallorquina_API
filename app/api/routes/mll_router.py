@@ -132,11 +132,6 @@ async def mll_sincroniza(id_App: int = Query(..., description="Identificador de 
         param.error_sistema()
         graba_log(param, "mll_sync_todo.Exception", e)
 
-    
-    # finally:
-    #     imprime([f" ✅ salimos por Finally"], "*", 2)
-    #     return param
-    
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -306,6 +301,8 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
 
         param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
+
+        return param
     
     except MadreException as e:
         graba_log(param, "mll_fichas_tecnicas.MadreException", e)
@@ -319,8 +316,6 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
         param.error_sistema()
         graba_log(param, "mll_fichas_tecnicas.Exception", e)
 
-    finally:
-        return param
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------

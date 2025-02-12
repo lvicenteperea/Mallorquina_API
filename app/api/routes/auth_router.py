@@ -97,7 +97,7 @@ async def login(request: Request,
 
         imprime([user_bbdd["id"]], "*")
         # Ejecutar la consulta
-        cursor_mysql.execute("SELECT texto, accion FROM mallorquina.hxxi_users_opciones WHERE id_username = %s ORDER BY orden", (user_bbdd["id"],))
+        cursor_mysql.execute("SELECT texto, accion FROM mallorquina.hxxi_users_opciones WHERE id_username = %s AND orden != 0 ORDER BY orden", (user_bbdd["id"],))
         options_bbdd = cursor_mysql.fetchall()
 
         imprime([options_bbdd], "*")

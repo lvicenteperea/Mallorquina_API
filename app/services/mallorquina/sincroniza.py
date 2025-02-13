@@ -12,10 +12,8 @@ from app.services.auxiliares.sendgrid_service import enviar_email
 
 import app.services.mallorquina.sincroniza_tablas.facturas_cabecera as facturas_cabecera
 
-
 from app.utils.InfoTransaccion import InfoTransaccion
-from app.utils.mis_excepciones import MadreException
-
+from app.utils.mis_excepciones import MiException
 
 PAGINACION: int = 100
 
@@ -29,17 +27,48 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         config = obtener_cfg_general(param)
 
-        if True:
-            param.ret_txt()
-            raise Exception("Error mete los datos bien cabrón")
+        # -------------------------------------------------------------
+        # z=1/0
+        # MI ERROR: mll_sincroniza.Exception: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213080650).
+        # ERROR: division by zero - division by zero - 
+        # LOCALIZACION: z=1/0
+        # return: 525 undefined
+        #     {
+        #         "codigo_error (status_code)": 526,
+        #         "mensaje": "mi_mensaje"
+        #     }
+
+        # -------------------------------------------------------------
+        # param.ret_txt = "Error mete los datos bien cabrón2"
+        # raise MiException(param = param)
+        # MI ERROR: recorre_tiendas.Exception: App: 1, Usuario: usuario_dev, Error: -1 - Error mete los datos bien cabrón2
+        # ERROR: Error mete los datos bien cabrón2 - Error mete los datos bien cabrón2 - 
+        # LOCALIZACION: raise MiException(param = param)
+        # return: 525 undefined
+        #     {
+        #         "codigo_error (status_code)": 526,
+        #         "mensaje": "mi_mensaje"
+        #     }
+
+        # -------------------------------------------------------------
+        # param.ret_txt = "Error mete los datos bien cabrón2"
+        # raise Exception("Error mete los datos bien cabrón")
+        # MI ERROR: recorre_tiendas.Exception: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213080842).
+        # ERROR: Error mete los datos bien cabrón - Error mete los datos bien cabrón - 
+        # LOCALIZACION: raise Exception("Error mete los datos bien cabrón")
+        # return: Status: 525 undefined
+        #    {
+        #         "codigo_error (status_code)": 526,
+        #         "mensaje": "mi_mensaje"
+        #    }
 
         if not config.get("ID", False):
             param.registrar_error(ret_txt=f'No se han encontrado datos de configuración: config["En_Ejecucion"]', debug=f"{funcion}.config-ID")
-            raise MadreException(param = param)
+            raise MiException(param = param)
                 
         if config["En_Ejecucion"]:
                 param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
-                raise MadreException(param = param)
+                raise MiException(param = param)
 
         param.debug = "actualiza ejec 1" 
         actualizar_en_ejecucion(param, 1)
@@ -292,7 +321,7 @@ def proceso_general(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_con
             pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
             if not pk_campos:
                 param.registrar_error(ret_txt=f"No se encontró ningún campo PK en {nombre_tabla}.", debug=f"Campos: {campos}")
-                raise MadreException(param = param)
+                raise MiException(param = param)
 
             # Usamos el primer campo PK encontrado
             pk_campo = pk_campos[0]["Nombre_Destino"]

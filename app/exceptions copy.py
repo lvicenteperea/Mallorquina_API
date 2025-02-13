@@ -1,65 +1,20 @@
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 import json
-import traceback
 
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
-'''
-# -----------------------------------------------------------------------------------------------
-# LOGGING
-#import logging
-#import logging.config
-
-# # esto sería con basicConfig
-# logging.basicConfig(
-#     level=logging.DEBUG,  # Configura el nivel de logging
-#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Formato del log
-#     handlers=[
-#         logging.FileHandler("app/logs/app.log"),  # Guarda los logs en un archivo
-#         logging.StreamHandler()  # También muestra los logs en la consola
-#     ]
-# )
- 
-
-# Configuración manual
-# logger.setLevel(logging.DEBUG)
-
-# # Crear un formato de log
-# formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-# # Crear y configurar el handler para escribir en archivo
-# file_handler = logging.handlers.RotatingFileHandler("app/logs/app.log", maxBytes=1000000, backupCount=5)
-# file_handler.setFormatter(formatter)
-# logger.addHandler(file_handler)
-# 
-# Crear y configurar el handler para escribir en la consola
-# console_handler = logging.StreamHandler()
-# console_handler.setFormatter(formatter)
-# logger.addHandler(console_handler)
-# -----------------------------------------------------------------------------------------------
-
-# # esto sería con fichero de inicialización
-# try:
-#     logging.config.fileConfig('app/logging.ini')
-# except Exception as e:
-#     print(f"Error configuring logging: {e}")
-
-# logger = logging.getLogger('app_logger')
-
-# logger.info("Inicio de la ejecución")
-'''
 # -----------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------
 def imprime_mi_log(tipo_excepcion, exc):
     print(f"--------------------------------------{tipo_excepcion}-----------------------------------------------")
-    print("Argumentos de la excepción:", type(exc.args), exc.args)
+    print("Argumentos de la excepción:", exc.args if hasattr(exc, 'args') else exc)
     print(f"--------------------------------------------------------------------------------------------------------")
-    print(f"Detalle: {exc.detail}")
-    print(f"Estado: {exc.status_code}")
-    print(f"Encabezados: {exc.headers}")
+    print(f"Detalle: {exc.detail if hasattr(exc, 'detail') else 'Sin detalle'}")
+    print(f"Estado: {exc.status_code if hasattr(exc, 'status_code') else 'Sin estado'}")
+    print(f"Encabezados: {exc.headers if hasattr(exc, 'headers') else 'Sin encabezados'}")
 
     #imprime([tipo_excepcion, "Trace:", traceback.extract_tb(exc.detail["traceback"])], "=")
     if hasattr(exc, 'status_code'): 
@@ -72,10 +27,12 @@ def imprime_mi_log(tipo_excepcion, exc):
 # -----------------------------------------------------------------------------------------------
 # EXCEPTION HANDLERS
 # -----------------------------------------------------------------------------------------------
-async def madre_exception_handler(request: Request, exc: MadreException):
+async def mi_exception_handler(param: InfoTransaccion, mensaje: str = ' Error general contacte con su administrador', codigo: int = -1):
 # -----------------------------------------------------------------------------------------------
-    imprime_mi_log("madre_exception_handler", exc)
+    # imprime_mi_log("mi_exception_handler2", mensaje)
+    # imprime_mi_log("mi_exception_handler3", codigo)
 
+    '''
     if isinstance(exc.mi_mensaje, dict):
         mi_mensaje = exc.mi_mensaje
     else:
@@ -89,21 +46,37 @@ async def madre_exception_handler(request: Request, exc: MadreException):
         status_code = 500 if mi_mensaje['ret_code'] == -99 else 400, # exc.status_code
         content={"codigo_error (status_code)": exc.status_code, "mensaje": mi_mensaje},
     )
+    '''
+    
+    # graba_log(param.to_dict() | {"codigo":codigo, "Mensaje":mensaje}, "madre_exception", None)
+
+    # return JSONResponse(
+    #     status_code = codigo, 
+    #     content={"codigo_error (status_code)": param.ret_code, "mensaje": param.ret_txt+mensaje},
+    # )
+    x =  JSONResponse(
+        status_code = 524, 
+        content={"codigo_error (status_code)": 523, "mensaje": "mi_mensaje de madre exception"},
+    )
+    print("")
+    print("x para response madre:", x)
+    print("")
+    return x
+
 
 # -----------------------------------------------------------------------------------------------
 async def http_exception_handler(request: Request, exc: HTTPException):
-# -----------------------------------------------------------------------------------------------
-    imprime_mi_log("http_exception_handler", exc)
-
     if hasattr(exc, "status_code"):
         status_code = getattr(exc, "status_code", 500)
     else:
-        status_code = 550  # Estatus predeterminado para errores genéricos
+        status_code = 500  # Estatus predeterminado para errores genéricos
 
     if hasattr(exc, "detail"):
         detalle = getattr(exc, "detail", "Detalle no disponible")
     else:
         detalle = "Detalle no ha llegado"
+
+    print(status_code, detalle)
 
     return {
         "status_code": status_code,
@@ -112,40 +85,25 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 # -----------------------------------------------------------------------------------------------
 async def generic_exception_handler(request: Request, exc: Exception):
-# -----------------------------------------------------------------------------------------------
     imprime_mi_log("generic_exception_handler", exc)
-    param = InfoTransaccion(id_App = 0, user="system", ret_code=-1, ret_txt="", parametros=[], resultados=[])
+    
+    import traceback
+    # print("🔥 Error fichero:", traceback.format_exc())
+    print("🔥 Error capturado:", str(exc))
+    # traceback.print_exc() 
 
-    # Si es una HTTPException, obtenemos el código de estado
-    if hasattr(exc, "status_code"):
-        status_code = getattr(exc, "status_code", 500)
-    else:
-        status_code = 550  # Estatus predeterminado para errores genéricos
-
-    if exc.args and isinstance(exc.args, str):
-        param.ret_txt = str(exc.args) # o solo tiene un argumento os es cero
-    else:
-        if exc.args and isinstance(exc.args, tuple):
-            if "detalle" in exc.args[0]:
-                param = exc.args[0]["detalle"]
-            else:
-                param.ret_txt =  f"Error desconocido: {type(exc.args)}"
-        else:
-            param.ret_txt = "Error desconocido"
-
-    graba_log(param, "GenericException", exc)
-
-    return {
-        "status_code": status_code,
-        "message": param.ret_txt
-    }
-
+    x =  JSONResponse(
+        status_code = 525, 
+        content={"codigo_error (statsu_code)": 526, "mensaje": "mi_mensaje"},
+    )
+    print("")
+    print("x para response:", x.body)
+    print("")
+    return x
 
 # -----------------------------------------------------------------------------------------------
 async def type_error_handler(request: Request, exc: TypeError):
 # -----------------------------------------------------------------------------------------------
-    imprime_mi_log("type_error_handler", exc)
-
     graba_log({"Detalle:": exc,"method:": request.method, "url:": request.url}, "TypeErrorException", exc)
 
     return {

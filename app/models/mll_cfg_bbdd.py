@@ -4,16 +4,16 @@ from app.utils.functions import graba_log
 def obtener_conexion_bbdd_origen(conn, id_bbdd):
     try:
         select = "SELECT Conexion FROM mll_cfg_bbdd WHERE ID = %s"
-        donde = select
+        donde = "select"
         cursor = conn.cursor(dictionary=True)
         cursor.execute(select, (id_bbdd,))
         donde = "Conectado"
 
         conexion_json = cursor.fetchone()["Conexion"]
-        donde = conexion_json
+        donde = "conexion_json"
 
         conexion = json.loads(conexion_json)
-        donde = conexion
+        donde = "conexion"
         
         cursor.close()
         # conn.close()

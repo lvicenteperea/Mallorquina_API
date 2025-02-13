@@ -12,7 +12,7 @@ from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 
 
 MAX_OFFSET: int = 400
@@ -39,7 +39,7 @@ def proceso(param: InfoTransaccion):
         param.debug = "datos conexión"
         datos_conexion = obtener_datos_conexion(param, conn_mysql, servidor)
         if not datos_conexion:
-            raise MadreException(param, f"No tenemos datos de conexión del servidor {servidor}", -1)
+            raise MiException(param, f"No tenemos datos de conexión del servidor {servidor}", -1)
 
         while True:
             """ Procesa el envío de todos los emails pendientes """
@@ -156,7 +156,7 @@ def robinson(param: InfoTransaccion, conn_mysql, lista_emails, servidor):
         param.debug = "Filtrado 1"
         emails_filtrados = [email for email in lista_emails if email not in emails_en_robinson]
         if len(emails_filtrados) !=  len(lista_emails):
-            raise MadreException(param=param, detail="hay robinson en este correo", status_code=0) # no es un error como tal, pero no se puede enviar el email
+            raise MiException(param=param, detail="hay robinson en este correo", status_code=0) # no es un error como tal, pero no se puede enviar el email
 
         if settings.DEV_PROD == "DEV":
             param.debug = "Filtrado 2"
@@ -166,14 +166,14 @@ def robinson(param: InfoTransaccion, conn_mysql, lista_emails, servidor):
 
         return emails_filtrados or []
 
-    except MadreException as e:
+    except MiException as e:
         raise e
                 
     except Exception as e:
         import traceback
         print("🔥 Error capturado:", str(e))
         traceback.print_exc() 
-        raise MadreException(param=param, detail="Se ha producido un error al calcular la lsita robinson", status_code=0) #Es un error , pero solo lo vamos a marcar como que no se puede enviar el email
+        raise MiException(param=param, detail="Se ha producido un error al calcular la lsita robinson", status_code=0) #Es un error , pero solo lo vamos a marcar como que no se puede enviar el email
                 
 
     finally:
@@ -243,7 +243,7 @@ def enviar_email(param: InfoTransaccion, conn_mysql, email, datos_conexion, serv
             return [-1, f"Error: {response}"]
 
 
-    except MadreException as e:
+    except MiException as e:
         return [1, "Hay un elemento en este email que es lista robinson"]  # no es un error, simplemente hay que marcarlo como robinson
 
     except Exception as e:

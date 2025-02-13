@@ -6,7 +6,7 @@ from app.models.mll_cfg import obtener_cfg_general
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
@@ -26,7 +26,7 @@ def proceso(param: InfoTransaccion) -> list:
 
         else:
             param.registrar_error(ret_txt= "No ha llegado fichero origen para cargar", debug=f"{funcion}.sin parametro entrada")
-            raise MadreException(param = param)
+            raise MiException(param = param)
 
         # Aquí va la lógica específica para cada bbdd
         resultado = carga(param, excel)

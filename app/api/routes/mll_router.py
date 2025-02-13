@@ -5,7 +5,7 @@ from starlette.requests import Request
 from datetime import datetime
 # from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import os
 
 
@@ -23,17 +23,126 @@ import app.services.auxiliares.descarga as descarga
 from app.config.settings import settings
 
 from app.utils.functions import graba_log, imprime
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion, ParamRequest
 
 # Definimos el router
 router = APIRouter()
 
 
+
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+@router.post("/mll_sincroniza", response_model=InfoTransaccion)
+@router.get("/mll_sincroniza", response_model=InfoTransaccion)
+# async def mll_sincroniza(id_App: int = Query(..., description="Identificador de la aplicación"),
+#                          user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+#                          ret_code: int = Query(..., description="Código de retorno inicial"),
+#                          ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+#                         ):
+async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
+                         body_params: ParamRequest = Body(...)
+                        ):
+    try:
+        # --------------------------------------------------------------------------------
+        param = InfoTransaccion.from_request(body_params)
+
+        # --------------------------------------------------------------------------------
+        # Validaciones y construcción Básica
+        # --------------------------------------------------------------------------------
+        # -------------------------------------------------------------
+        z=1/0
+        # MI ERROR: mll_sincroniza.Exception: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213081128).
+        # ERROR: division by zero - division by zero - 
+        # LOCALIZACION: z=1/0
+        # return: 525 undefined
+        #     {
+        #         "codigo_error (status_code)": 526,
+        #         "mensaje": "mi_mensaje"
+        #     }
+
+        # -------------------------------------------------------------
+        # param.ret_txt = "Texto del error."
+        # raise MiException(param = param, detail="Texto adicional", status_code=-3)
+        # MI ERROR: mll_sincroniza.MiException: App: 1, Usuario: usuario_dev, Error: -1 - Texto del error.
+        # ERROR: 0 -  - 
+        # LOCALIZACION: raise MiException(param = param, detail="Texto adicional", status_code=_3) - D:\Nube\GitHub\Mallorquina_API\app\api\routes\mll_router.py - 66
+        # return: 525 undefined
+        #     {
+        #         "codigo_error (status_code)": 526,
+        #         "mensaje": "mi_mensaje"
+        #     }
+
+        # -------------------------------------------------------------
+        # param.ret_txt = "Error mete los datos bien cabrón2"
+        # raise MiException(param = param)
+        # MI ERROR: mll_sincroniza.MiException: App: 1, Usuario: usuario_dev, Error: -1 - Error mete los datos bien cabrón2
+        # ERROR: Error mete los datos bien cabrón2 - Error mete los datos bien cabrón2
+        # LOCALIZACION: raise MiException(param = param)
+        # return: 525 undefined
+        #     {
+        #         "codigo_error (status_code)": 526,
+        #         "mensaje": "mi_mensaje"
+        #     }
+
+        # -------------------------------------------------------------
+        # param.ret_txt = "Error de exception"
+        # raise Exception("Error de exception2")
+        # MI ERROR: mll_sincroniza.Exception: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213085515).
+        # ERROR: Error de exception2 - Error de exception2
+        # LOCALIZACION: raise Exception("Error de exception2")
+        # return: Status: 525 undefined
+        #    {
+        #         "codigo_error (status_code)": 526,
+        #         "mensaje": "mi_mensaje"
+        #    }
+
+        # --------------------------------------------------------------------------------
+        # Control de autenticación de usuario
+        # --------------------------------------------------------------------------------
+        # Verificar la autenticación
+        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
+        if param.user != authenticated_user:
+            param.error_sistema(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
+            raise MiException(param,"Los usuarios no corresponden", -1)
+            # MI ERROR: mll_sincroniza.MiException: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213081526)Error de usuario
+            # ERROR: Error general. contacte con su administrador (20250213081526)Error de usuario - Error general. contacte con su administrador (20250213081526)Error de usuario
+            # LOCALIZACION: raise MiException(param,"Los usuarios no corresponden", _1)
+            # return: Status: 525 undefined
+            #    {
+            #         "codigo_error (status_code)": 526,
+            #         "mensaje": "mi_mensaje"
+            #    }
+        # --------------------------------------------------------------------------------
+        # Servicio
+        # --------------------------------------------------------------------------------
+        resultado = sincroniza.proceso(param = param)
+        # --------------------------------------------------------------------------------
+
+        param.debug = f"Retornando: {type(resultado)}"
+        param.resultados = resultado or []
+
+        return param
+   
+
+    except MiException as e:
+        raise e
+    except HTTPException as e:
+        param.error_sistema()
+        graba_log(param, "mll_sincroniza.HTTPException", e)
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e)
+
+
+
+
+
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 class FechaRequest(ParamRequest):
-    fecha: str = ""  # Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual
+    fecha: str    # Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual
+    tienda: Optional[int] = 0   # Tienda de la que queremos sacar la información
     
 @router.post("/mll_consultas_cierre", response_model=InfoTransaccion)
 async def mll_consultas_cierre( request: Request,  # Para acceder a request.state.user
@@ -47,6 +156,9 @@ async def mll_consultas_cierre( request: Request,  # Para acceder a request.stat
         if not body_params.fecha:
             body_params.fecha = datetime.now().strftime('%Y-%m-%d')
 
+        if not body_params.tienda:
+            body_params.tienda = 0
+
         # --------------------------------------------------------------------------------
         param = InfoTransaccion.from_request(body_params)
 
@@ -57,7 +169,7 @@ async def mll_consultas_cierre( request: Request,  # Para acceder a request.stat
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if param.user != authenticated_user:
             param.error_sistema(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
-            raise MadreException(param,"Los usuarios no corresponden", -1)
+            raise MiException(param,"Los usuarios no corresponden", -1)
         # else:
         #     print(f"Usuario autenticado: {authenticated_user}")
 
@@ -71,52 +183,13 @@ async def mll_consultas_cierre( request: Request,  # Para acceder a request.stat
 
         return param
 
-    except MadreException as e:
-        graba_log(param, "mll_consultas_cierre.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_consultas_cierre.MiException", e)
 
     except Exception as e:
         param.error_sistema()
         graba_log(param, "mll_consultas_cierre.Exception", e)
 
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.get("/mll_sincroniza", response_model=InfoTransaccion)
-async def mll_sincroniza(id_App: int = Query(..., description="Identificador de la aplicación"),
-                         user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                         ret_code: int = Query(..., description="Código de retorno inicial"),
-                         ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                        ):
-
-    try:
-        resultado = []
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
-
-        imprime([param], "=")
-        # --------------------------------------------------------------------------------
-        resultado = sincroniza.proceso(param = param)
-        # --------------------------------------------------------------------------------
-
-        param.debug = f"Retornando: {type(resultado)}"
-        param.resultados = resultado or []
-
-
-        return param
-   
-
-    except MadreException as e:
-        graba_log(param, "mll_sync_todo.MadreException", e)
-                
-    except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_sync_todo.HTTPException", e)
-
-
-    except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_sync_todo.Exception", e)
 
 
 #----------------------------------------------------------------------------------
@@ -141,7 +214,7 @@ async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.us
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
             param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
-            raise MadreException(param,"Los usuarios no corresponden", -1)
+            raise MiException(param,"Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
         resultado = arqueo_caja.proceso(param = param)
@@ -151,8 +224,8 @@ async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.us
         param.resultados = resultado or []
         param.ret_txt = "OK"
     
-    except MadreException as e:
-        graba_log(param, "mll_arqueo_caja.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_arqueo_caja.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()
@@ -197,8 +270,8 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
     
-    except MadreException as e:
-        graba_log(param, "mll_inf_arqueo_caja.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_inf_arqueo_caja.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()
@@ -234,8 +307,8 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
         param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
     
-    except MadreException as e:
-        graba_log(param, "mll_convierte_tarifas.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_convierte_tarifas.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()
@@ -276,7 +349,7 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
             param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
-            raise MadreException(param,"Los usuarios no corresponden", -1)
+            raise MiException(param,"Los usuarios no corresponden", -1)
         # else:
         #     print(f"Usuario autenticado: {authenticated_user}")
 
@@ -290,8 +363,8 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
 
         return param
     
-    except MadreException as e:
-        graba_log(param, "mll_fichas_tecnicas.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_fichas_tecnicas.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()
@@ -334,8 +407,8 @@ async def mll_carga_prod_erp(id_App: int = Form(..., description="Identificador 
         param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
     
-    except MadreException as e:
-        graba_log(param, "mll_carga_prod_erp.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_carga_prod_erp.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()
@@ -373,8 +446,8 @@ async def mll_carga_prod_erp2(request: Request,  # Para acceder a request.state.
         param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
     
-    except MadreException as e:
-        graba_log(param, "mll_carga_prod_erp.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_carga_prod_erp.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()
@@ -418,7 +491,7 @@ async def mll_descarga(request: Request,
         # authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         # if user != authenticated_user:
         #     param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
-        #     raise MadreException(param,"Los usuarios no corresponden", -1)
+        #     raise MiException(param,"Los usuarios no corresponden", -1)
         # else:
         #     print(f"Usuario autenticado: {authenticated_user}")
 
@@ -428,8 +501,8 @@ async def mll_descarga(request: Request,
         return descarga.proceso(param=param)
          
 
-    except MadreException as e:
-        graba_log(param, "mll_descarga.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_descarga.MiException", e)
         raise
 
     except HTTPException as e:
@@ -464,8 +537,8 @@ async def mll_encargos_navidad(id_App: int = Query(..., description="Identificad
 
         param.debug = f"Esto debería ser <infoTransaccion>: {type(param_resultado)}"
     
-    except MadreException as e:
-        graba_log(param, "mll_carga_prod_erp.MadreException", e)
+    except MiException as e:
+        graba_log(param, "mll_carga_prod_erp.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()

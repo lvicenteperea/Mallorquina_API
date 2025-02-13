@@ -1,226 +1,85 @@
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 import json
+import traceback
 
-from app.utils.mis_excepciones import MadreException
-from app.utils.functions import graba_log, imprime
+from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
+from app.utils.functions import graba_log, imprime
 
-'''
-# -----------------------------------------------------------------------------------------------
-# LOGGING
-#import logging
-#import logging.config
-
-# # esto sería con basicConfig
-# logging.basicConfig(
-#     level=logging.DEBUG,  # Configura el nivel de logging
-#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Formato del log
-#     handlers=[
-#         logging.FileHandler("app/logs/app.log"),  # Guarda los logs en un archivo
-#         logging.StreamHandler()  # También muestra los logs en la consola
-#     ]
-# )
- 
-
-# Configuración manual
-# logger.setLevel(logging.DEBUG)
-
-# # Crear un formato de log
-# formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-# # Crear y configurar el handler para escribir en archivo
-# file_handler = logging.handlers.RotatingFileHandler("app/logs/app.log", maxBytes=1000000, backupCount=5)
-# file_handler.setFormatter(formatter)
-# logger.addHandler(file_handler)
-# 
-# Crear y configurar el handler para escribir en la consola
-# console_handler = logging.StreamHandler()
-# console_handler.setFormatter(formatter)
-# logger.addHandler(console_handler)
-# -----------------------------------------------------------------------------------------------
-
-# # esto sería con fichero de inicialización
-# try:
-#     logging.config.fileConfig('app/logging.ini')
-# except Exception as e:
-#     print(f"Error configuring logging: {e}")
-
-# logger = logging.getLogger('app_logger')
-
-# logger.info("Inicio de la ejecución")
-'''
-# -----------------------------------------------------------------------------------------------
-# -----------------------------------------------------------------------------------------------
-def imprime_mi_log(tipo_excepcion, exc):
-    print(f"--------------------------------------{tipo_excepcion}-----------------------------------------------")
-    print("Argumentos de la excepción:", exc.args if hasattr(exc, 'args') else exc)
-    print(f"--------------------------------------------------------------------------------------------------------")
-    print(f"Detalle: {exc.detail if hasattr(exc, 'detail') else 'Sin detalle'}")
-    print(f"Estado: {exc.status_code if hasattr(exc, 'status_code') else 'Sin estado'}")
-    print(f"Encabezados: {exc.headers if hasattr(exc, 'headers') else 'Sin encabezados'}")
-
-    #imprime([tipo_excepcion, "Trace:", traceback.extract_tb(exc.detail["traceback"])], "=")
-    if hasattr(exc, 'status_code'): 
-        imprime([tipo_excepcion, "Estatus:", type(exc.status_code), exc.status_code], "=")
-    if hasattr(exc, 'detail'): 
-        imprime([tipo_excepcion, "Detail:", type(exc.detail), exc.detail], "=")
-    if hasattr(exc, 'param'): 
-        imprime([tipo_excepcion, "Param: ", exc.param], "=")
-
-# -----------------------------------------------------------------------------------------------
-# EXCEPTION HANDLERS
-# -----------------------------------------------------------------------------------------------
-async def madre_exception_handler(param: InfoTransaccion, mensaje: str = ' Error general contacte con su administrador', codigo: int = -1):
-# -----------------------------------------------------------------------------------------------
-    imprime_mi_log("madre_exception_handler2", mensaje)
-    imprime_mi_log("madre_exception_handler3", codigo)
-
-    '''
-    if isinstance(exc.mi_mensaje, dict):
-        mi_mensaje = exc.mi_mensaje
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+async def mi_exception_handler(request: Request, exc: MiException):
+    if exc.mi_cod >= 0:
+        status_code = 200
+        mensaje = exc.mi_msg
+    elif -90 < exc.mi_cod < 0:
+        status_code = 401
+        mensaje = exc.mi_msg
     else:
-        mi_mensaje = {"ret_code": -1,
-                      "ret_txt": exc.mi_mensaje,
-                     }
-
-    graba_log(mi_mensaje, "madre_exception", exc)
-
-    return JSONResponse(
-        status_code = 500 if mi_mensaje['ret_code'] == -99 else 400, # exc.status_code
-        content={"codigo_error (status_code)": exc.status_code, "mensaje": mi_mensaje},
-    )
-    '''
+        status_code = 525
+        imprime([f"ERROR CRÍTICO: {exc.mi_msg}"], "=   mi_exception_handler   ")
+        mensaje = "Contacte con su administrador"
     
-    # graba_log(param.to_dict() | {"codigo":codigo, "Mensaje":mensaje}, "madre_exception", None)
-
     return JSONResponse(
-        status_code = codigo, 
-        content={"codigo_error (status_code)": param.ret_code, "mensaje": param.ret_txt+mensaje},
+        status_code=status_code,
+        content={"status_code": exc.mi_cod, "message": mensaje}
     )
 
-# -----------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+async def generic_exception_handler(request: Request, exc: Exception):
+    imprime([f"ERROR GENERAL: {str(exc)}"], "=   generic_exception_handler   ")
+
+    return JSONResponse(
+        status_code=500,
+        content={"status_code": 500, "message": "Contacte con su administrador"}
+    )
+
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
 async def http_exception_handler(request: Request, exc: HTTPException):
-    '''
-    if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
-        mi_mensaje = {"ret_code": exc.detail['ret_code'],
-                      "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),
-                     }
-    else:
-        mi_mensaje = {"ret_code": -1,
-                      "ret_txt": exc.detail,
-                     }
+    loc = "no disponible"
+    param = InfoTransaccion(id_App=1, user="Vamos a ver", ret_code=-1, ret_txt="pues el RET_TXT", parametros=[])
 
-    graba_log(mi_mensaje, 
-                "HTTPException", 
-                exc # str(exc.detail.get("excepcion", exc.detail.get('ret_txt',"Sin texto asociado")))
-                )
-    
+    if isinstance(exc, BaseException): # Comprueba si es una excepción
+        tb = traceback.extract_tb(exc.__traceback__)
+        archivo, linea, funcion, texto_err = tb[-1]
+        loc = f'{texto_err.replace("-", "_")} - {archivo.replace("-", "_")} - {linea} - {funcion}'
+
+    graba_log(param, f"{funcion}.http_exception_handler", exc)
+
+
+    imprime([f"HTTP ERROR: {exc}", 
+             f"📌 URL: {request.url}",
+             f"📌 Método: {request.method}",
+             f"📌 Headers: {dict(request.headers)}",
+             f"📌 Body: {await request.body()}",  # Para leer el cuerpo de la solicitud
+             f"📌 Detalles del error: {exc.detail}",
+             f"📌 Localización: {loc}"
+            ], "=   http_exception_handler   ", 2)
+
     return JSONResponse(
         status_code=exc.status_code,
-        content={"codigo_error": exc.status_code, "mensaje": mi_mensaje},
+        content={"status_code": exc.status_code, "message": "Contacte con su administrador"}
     )
-    '''
-# -----------------------------------------------------------------------------------------------
-    if hasattr(exc, "status_code"):
-        status_code = getattr(exc, "status_code", 500)
-    else:
-        status_code = 500  # Estatus predeterminado para errores genéricos
 
-    if hasattr(exc, "detail"):
-        detalle = getattr(exc, "detail", "Detalle no disponible")
-    else:
-        detalle = "Detalle no ha llegado"
-
-    print(status_code, detalle)
-
-    return {
-        "status_code": status_code,
-        "message": detalle
-    }
-
-# -----------------------------------------------------------------------------------------------
-async def generic_exception_handler(request: Request, exc: Exception):
-    '''
-    imprime_mi_log("generic_exception_handler", exc)
-
-        if hasattr(exc, 'detail') and exc.detail is not None and isinstance(exc.detail, dict):
-            mi_mensaje = {"ret_code": exc.detail['ret_code'],
-                        "ret_txt": str(exc.detail.get('ret_txt', exc.detail.get("excepcion", "Sin texto asociado"))),
-                        }
-            graba_log(mi_mensaje, "GenericException", exc.detail.get("excepcion", "Sin texto asociado"))
-        else:
-            mi_mensaje = {"ret_code": -1,
-                        "ret_txt": str(exc),
-                        #   "ret_txt": exc.detail,
-                        }
-            graba_log(mi_mensaje, "GenericException", exc)
-
-        return JSONResponse(
-            status_code=500,
-            content={"codigo_error": -1, "mensaje": str(exc)},
-        )
-    '''    
-# -----------------------------------------------------------------------------------------------
-    imprime_mi_log("generic_exception_handler", exc)
-    
-    """
-    if hasattr(exc, "status_code"):
-        status_code = getattr(exc, "status_code", 500)
-    else:
-        status_code = 500  # Estatus predeterminado para errores genéricos
-
-    if hasattr(exc, "detail"):
-        detalle = getattr(exc, "detail", "Detalle no disponible")
-    else:
-        detalle = "Detalle no ha llegado"
-
-    return {
-        "status_code": status_code,
-        "message": detalle
-    }
-    """
-
-    x =  JSONResponse(
-        status_code = 525, 
-        content={"codigo_error (status_code)": 526, "mensaje": "mi_mensaje"},
-    )
-    print("")
-    print("x para response:", x)
-    print("")
-    return x
-
-
-# -----------------------------------------------------------------------------------------------
-async def type_error_handler(request: Request, exc: TypeError):
-# -----------------------------------------------------------------------------------------------
-    graba_log({"Detalle:": exc,"method:": request.method, "url:": request.url}, "TypeErrorException", exc)
-
-    return {
-        "message": exc,
-        "status_code": 500
-    }
-# -----------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
 async def json_decode_error_handler(request: Request, exc: json.JSONDecodeError):
-# -----------------------------------------------------------------------------------------------
-    imprime_mi_log("json_decode_error_handler", exc)
-
-
-    # Ya probaremos si esto es así
-    if isinstance(exc.detail, dict):
-        mi_mensaje = {"ret_code": exc.detail['ret_code'],
-                      "ret_txt": exc.detail.get('ret_txt', str(exc.detail["excepcion"])),
-                     }
-    else:
-        mi_mensaje = {"ret_code": -1,
-                      "ret_txt": exc.detail,
-                     }
-
-    mi_mensaje["ret_txt"] = mi_mensaje["ret_txt"].join(f"JSONDecodeError: {exc.msg} (line: {exc.lineno}, col: {exc.colno})")
-    graba_log(mi_mensaje, "JSONDecodeErrorException", exc.detail["excepcion"])
-
+    imprime([f"JSON Decode Error: {exc.msg}"], "=   json_decode_error_handler   ")
 
     return JSONResponse(
         status_code=400,
-        content={"codigo_error": -1, "mensaje": "Error decoding JSON"},
+        content={"status_code": 400, "message": "Error al decodificar JSON"}
+    )
+
+# ---------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+async def type_error_handler(request: Request, exc: TypeError):
+    imprime([f"Type Error: {str(exc)}"], "=   type_error_handler   ")
+
+    return JSONResponse(
+        status_code=422,
+        content={"status_code": 422, "message": "Error de tipo en la solicitud"}
     )

@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 from app.utils.functions import graba_log, imprime
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
@@ -166,7 +166,7 @@ def generar_html(param: InfoTransaccion) -> list:
         param.debug = "rutas"
         if not param.parametros[0]:
             param.registrar_error(ret_txt= "No se ha indicado el archivo Excel", debug=f"{funcion}.parametros[0]")
-            raise MadreException(param = param)
+            raise MiException(param = param)
 
         if not param.parametros[1]:
             salida = os.path.join(RUTA_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")

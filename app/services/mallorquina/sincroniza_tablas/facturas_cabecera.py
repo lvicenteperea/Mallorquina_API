@@ -13,7 +13,7 @@ from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.InfoTransaccion import InfoTransaccion
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 
 TAMAÑO_LOTE: int = 500
 

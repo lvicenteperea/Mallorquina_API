@@ -1,5 +1,5 @@
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.functions import graba_log, imprime
 
@@ -21,7 +21,7 @@ def obtener_cfg_general(param: InfoTransaccion):
 
         if not config.get("ID", False):
             param.registrar_error(ret_txt = f"No se han encontrado datos de configuración", debug="obtener_cfg_general.config-ID")
-            raise MadreException(param = param)
+            raise MiException(param = param)
 
         return config
 

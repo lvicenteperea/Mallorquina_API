@@ -12,7 +12,7 @@ import tempfile
 from app.utils.functions import graba_log, imprime
 from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.InfoTransaccion import InfoTransaccion
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.config.settings import settings
 
 # DOWNLOAD_PATH = "D:\\Nube\\GitHub\\Mallorquina_API\\app\\ficheros\\datos\\tarifas_a_TPV\\"
@@ -45,7 +45,7 @@ def descarga_precios_tpv(param: InfoTransaccion, nombres: list):
         DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, settings.RUTA_TPV)
 
         if len(nombres) != 1:
-            raise MadreException(param,f"No viene un nombre de fichero, vienen:  {len(nombres)}-{nombres}", -1)
+            raise MiException(param,f"No viene un nombre de fichero, vienen:  {len(nombres)}-{nombres}", -1)
         else:
             nombre = nombres[0]
 
@@ -54,7 +54,7 @@ def descarga_precios_tpv(param: InfoTransaccion, nombres: list):
         
         # Verificar si el archivo existe
         if not os.path.exists(file_path):
-            raise MadreException(param,f"Archivo '{file_path}' no encontrado", -1)
+            raise MiException(param,f"Archivo '{file_path}' no encontrado", -1)
         
         # Crear una respuesta mixta con el archivo y el JSON con la descripción
         resultado = FileResponse(file_path, filename=nombre)
@@ -78,7 +78,7 @@ def descarga_alergenos(param: InfoTransaccion):
 
         if (not os.path.exists(file_to_add) or
             not os.path.exists(dir_to_add)):
-            raise MadreException(param, f"Archivo o directorio de fichas técnicas", -1)
+            raise MiException(param, f"Archivo o directorio de fichas técnicas", -1)
 
         #----------------------------------------------------
         # empaquetamos los ficheros  

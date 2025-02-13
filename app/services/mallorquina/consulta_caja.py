@@ -9,7 +9,7 @@ from app.config.db_mallorquina import get_db_connection_mysql, close_connection_
 from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.InfoTransaccion import InfoTransaccion
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -19,17 +19,19 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
     resultado = []
     conn_mysql = None # para que no de error en el finally
     cursor_mysql = None # para que no de error en el finally
+    fecha = param.parametros[0]
+    tienda = param.parametros[1]
 
     try:
         config = obtener_cfg_general(param)
 
         if not config.get("ID", False):
             param.registrar_error(ret_txt= f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", debug=f"{funcion}.config-ID")
-            raise MadreException(param = param)
+            raise MiException(param = param)
         
         if config["En_Ejecucion"]:
             param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
-            raise MadreException(param = param)
+            raise MiException(param = param)
 
 
         param.debug="actualizar_en_ejecucion"
@@ -42,19 +44,20 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
         param.debug = "Select"
         cursor_mysql.execute("""SELECT a.*, b.stIdEnt, b.Nombre as nombre_entidad FROM mll_cfg_bbdd a
                                  inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
-                                 where a.activo= 'S'""")
-        # cursor_mysql.execute("""SELECT a.*, b.stIdEnt, b.Nombre as nombre_entidad FROM mll_cfg_bbdd a
-        #                     inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
-        #                     where a.activo= 'S'
-        #                     and a.id = %s""", 
-        #                 (reg_cfg_bbdd["ID"],))
+                                 where a.activo= 'S'
+                                   and a.id = if( %s = 0 , a.id , %s)""", 
+                             (tienda,tienda)
+                            )
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime(["Procesando TIENDA:", json.loads(bbdd['Conexion'])['database'], bbdd["ID"], bbdd['stIdEnt'], bbdd['nombre_entidad']], "-")
+            # Nombre_BBDD = f"{json.loads(bbdd['Conexion'])['database']} ({bbdd['ID']})"
+            Nombre_BBDD = json.loads(bbdd['Conexion'])['database']
+            id_bbdd = bbdd["ID"]
+            imprime(["Procesando TIENDA:", Nombre_BBDD, id_bbdd, bbdd['stIdEnt'], bbdd['nombre_entidad']], "-")
 
             # Aquí va la lógica específica para cada bbdd
-            resultado.extend(procesar_consulta(param, bbdd["ID"], bbdd['stIdEnt'], conn_mysql))
+            resultado.extend( procesar_consulta(param, Nombre_BBDD, id_bbdd, fecha, bbdd['stIdEnt'], conn_mysql) )
 
             param.debug = "update"
             cursor_mysql.execute(
@@ -81,18 +84,17 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> list:
+def procesar_consulta(param: InfoTransaccion, Nombre_BBDD, id_BBDD, fecha, stIdEnt, conn_mysql) -> list:
     resultado = []
     param.debug = "Inicio"
 
     try:
         param.debug = "Con. BBDD Origen"
         # Buscamos la conexión que necesitamos para esta bbdd origen
-        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla)
+        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, id_BBDD)
 
         param.debug = "Con. BBDD SqlServe"
         # conextamos con esta bbdd origen
-        imprime(["Conectando con BBDD origen", bbdd_config], "-")
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
         if conn_sqlserver:
@@ -106,7 +108,7 @@ def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> lis
                                 FROM [Cierres de Caja] WHERE CAST(Fecha AS DATE) = ?
                     """
             param.debug = "Execute cierres"
-            cursor_sqlserver.execute(select_query, param.parametros)
+            cursor_sqlserver.execute(select_query, fecha)
 
             apertura_ids_lista = cursor_sqlserver.fetchall()
             ids_cierre = [item[0] for item in apertura_ids_lista]
@@ -123,8 +125,9 @@ def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> lis
                                         AC.[Id Rel] as ID_Relacion,
                                         CdC.[Id Puesto] as ID_Puesto,
                                         PF.Descripcion as Puesto_Facturacion, 
-                                        {tabla},
-                                        {stIdEnt}
+                                        '{Nombre_BBDD}' as Nombre_BBDD,
+                                        {id_BBDD} as ID_BBDD,
+                                        '{stIdEnt}' as stIdEnt
                                     FROM [Arqueo Ciego] AC
                                     inner join [Cierres de Caja] CdC on CdC.[Id Cierre] = AC.[Id Apertura]
                                     inner join [Puestos Facturacion] PF on PF.[Id Puesto] = CdC.[Id Puesto]
@@ -134,19 +137,18 @@ def procesar_consulta(param: InfoTransaccion, tabla, stIdEnt, conn_mysql) -> lis
                 param.debug = "Execute arqueo"
                 cursor_sqlserver.execute(select_query, ids_cierre)
 
-                resultado = cursor_sqlserver.fetchall()
-                if isinstance(resultado, pyodbc.Row):
+                Lista_registros = cursor_sqlserver.fetchall()
+
+                # if isinstance(Lista_registros, pyodbc.Row):
+                #     if isinstance(row, pyodbc.Row):
+                #         # Convertir pyodbc.Row a diccionario
+                #         resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
+                # elif isinstance(Lista_registros, list):
+                for idx, row in enumerate(Lista_registros):
                     if isinstance(row, pyodbc.Row):
                         # Convertir pyodbc.Row a diccionario
-                        resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
-                elif isinstance(resultado, list):
-                    for idx, row in enumerate(resultado):
-                        # print(f"Fila {idx}: {type(row)}")  # Imprimir el tipo de cada fila
-
-                        if isinstance(row, pyodbc.Row):
-                            # print("Convertir pyodbc.Row a diccionario")
-                            resultado[idx] = row_to_dict(row, cursor_sqlserver)  # Usa el cursor que generó la fila
-
+                        resultado.append(row_to_dict(row, cursor_sqlserver))  # Usa el cursor que generó la fila
+                
         param.debug = "Fin"
         return resultado
 

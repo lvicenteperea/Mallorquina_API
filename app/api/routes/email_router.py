@@ -8,7 +8,7 @@ import app.services.emails.grabar_email as grabar_email
 import app.services.emails.enviar_emails as enviar_emails
 
 from app.utils.functions import graba_log, imprime
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
 
 # Definimos el router
@@ -46,7 +46,7 @@ async def eml_grabar_token( request: Request,  # Para acceder a request.state.us
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
             param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
-            raise MadreException(param,"Los usuarios no corresponden", -1)
+            raise MiException(param,"Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
         # Servicio
@@ -58,8 +58,8 @@ async def eml_grabar_token( request: Request,  # Para acceder a request.state.us
     
         return param_resultado
 
-    except MadreException as e:
-        graba_log(param, "eml_grabar_token.MadreException", e)
+    except MiException as e:
+        graba_log(param, "eml_grabar_token.MiException", e)
                 
     except Exception as e:
         param.error_sistema()
@@ -112,7 +112,7 @@ async def eml_grabar_email( request: Request,  # Para acceder a request.state.us
         if user != authenticated_user:
             imprime([user, authenticated_user], "@")
             param.error_sistema(txt_adic=f"Error de usuario{user} != {authenticated_user}", debug=f"{user} - {authenticated_user}")
-            raise MadreException(param, "Los usuarios no corresponden", -1)
+            raise MiException(param, "Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
         # Servicio
@@ -124,9 +124,9 @@ async def eml_grabar_email( request: Request,  # Para acceder a request.state.us
     
         return param
 
-    except MadreException as e:
-        # imprime(["MadreException"], "@")
-        # graba_log(param, "eml_grabar_email.MadreException", e)
+    except MiException as e:
+        # imprime(["MiException"], "@")
+        # graba_log(param, "eml_grabar_email.MiException", e)
         print("-----------------------------")
         print("-------------------")
         print(e)
@@ -168,8 +168,8 @@ async def eml_envia_emails(id_App: int = Query(..., description="Identificador d
         return param
    
 
-    except MadreException as e:
-        graba_log(param, "eml_envia_emails.MadreException", e)
+    except MiException as e:
+        graba_log(param, "eml_envia_emails.MiException", e)
                 
     except HTTPException as e:
         param.error_sistema()

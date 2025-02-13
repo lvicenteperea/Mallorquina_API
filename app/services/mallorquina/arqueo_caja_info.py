@@ -14,7 +14,7 @@ from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------

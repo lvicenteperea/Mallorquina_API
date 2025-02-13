@@ -21,19 +21,14 @@ from app.middleware.auth import AuthMiddleware
 import json 
 
 
-from app.exceptions import http_exception_handler, json_decode_error_handler, generic_exception_handler, madre_exception_handler, type_error_handler
+from app.exceptions import http_exception_handler, json_decode_error_handler, generic_exception_handler, mi_exception_handler, type_error_handler
 from app.config.settings import settings
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.middleware.log_tiempos_respuesta import log_tiempos_respuesta
 
 # -----------------------------------------------------------------------------------------------
 # FASTAPI
 # -----------------------------------------------------------------------------------------------
-# app = FastAPI(  title=settings.PROJECT_NAME,
-#                 docs_url=None, 
-#                 redoc_url=None
-#              )
-
 app = FastAPI(  title=settings.PROJECT_NAME,
                 description="Documentación de mi API con FastAPI",
                 version="1.0",
@@ -46,7 +41,6 @@ app = FastAPI(  title=settings.PROJECT_NAME,
 # -----------------------------------------------------------------------------------------------
 # Importar y registrar el middleware
 app.middleware("http")(log_tiempos_respuesta)
-
 
 # -----------------------------------------------------------------------------------------------
 # RUTAS
@@ -65,7 +59,7 @@ app.add_middleware(AuthMiddleware)
 # -----------------------------------------------------------------------------------------------
 # EXCEPTION HANDLERS
 # -----------------------------------------------------------------------------------------------
-app.add_exception_handler(MadreException, madre_exception_handler)
+app.add_exception_handler(MiException, mi_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(json.JSONDecodeError, json_decode_error_handler)
 app.add_exception_handler(Exception, generic_exception_handler)

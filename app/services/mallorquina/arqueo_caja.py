@@ -7,7 +7,7 @@ from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.functions import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
@@ -26,11 +26,11 @@ def proceso(param: InfoTransaccion) -> list:
         
         if  not config.get("ID", False): 
             param.registrar_error(ret_txt= f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", debug=f"{funcion}.config-ID")
-            raise MadreException(param = param)
+            raise MiException(param = param)
             
         if config["En_Ejecucion"]:
             param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
-            raise MadreException(param = param)
+            raise MiException(param = param)
 
         param.debug="actualizar_en_ejecucion"
         actualizar_en_ejecucion(param, 1)

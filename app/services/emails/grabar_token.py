@@ -1,6 +1,6 @@
 from cryptography.fernet import Fernet
 
-from app.utils.mis_excepciones import MadreException
+from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.functions import graba_log, imprime
 from app.config.settings import settings
@@ -48,7 +48,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         encryption_key = settings.ENCRYPTION_KEY
         if not encryption_key:
             param.registrar_error(ret_txt= "La clave de encriptación no está configurada en las variables de entorno.", debug=f"{funcion}.encryption_key")
-            raise MadreException(param = param)
+            raise MiException(param = param)
 
         fernet = Fernet(encryption_key)
 
@@ -64,11 +64,11 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         # Verificar si el procedimiento devolvió un error
         if param.ret_code < 0:
             param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_access_token")
-            raise MadreException(param=param)
+            raise MiException(param=param)
         
         return param
 
-    except MadreException as e:
+    except MiException as e:
         param.error_sistema()
         graba_log(param, f"Excepción en {funcion}", e)
         raise

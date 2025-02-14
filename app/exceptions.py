@@ -10,20 +10,20 @@ from app.utils.functions import graba_log, imprime
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
 async def mi_exception_handler(request: Request, exc: MiException):
-    if exc.mi_cod >= 0:
+    if exc.status_code >= 0: 
         status_code = 200
-        mensaje = exc.mi_msg
-    elif -90 < exc.mi_cod < 0:
+        mensaje = exc.detail
+    elif -90 < exc.status_code < 0:
         status_code = 401
-        mensaje = exc.mi_msg
+        mensaje = exc.detail
     else:
         status_code = 525
-        imprime([f"ERROR CRÍTICO: {exc.mi_msg}"], "=   mi_exception_handler   ")
+        imprime([f"ERROR CRÍTICO: {exc.detail}"], "=   mi_exception_handler   ")
         mensaje = "Contacte con su administrador"
     
     return JSONResponse(
         status_code=status_code,
-        content={"status_code": exc.mi_cod, "message": mensaje}
+        content={"status_code": exc.status_code, "message": mensaje}
     )
 
 # ---------------------------------------------------------------------------------------

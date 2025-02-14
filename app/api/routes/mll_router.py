@@ -33,69 +33,34 @@ router = APIRouter()
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-@router.post("/mll_sincroniza", response_model=InfoTransaccion)
+class SincronizaRequest(ParamRequest):
+    tiendas: Optional[List] = 0   # Tienda de la que queremos sacar la información
+    
+@router.post("/mll_sincroniza", response_model=InfoTransaccion,
+             summary="🔄 Sincroniza datos con el sistema",
+             description="""Este servicio sincroniza los datos entre la aplicación y el servidor.
+
+                                - ✅ **Requiere autenticación**
+                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
+                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
+                         """,
+             response_description="📌 Respuesta de un objeto tipo InfoTransaccion, y en el atributo 'resultados' habrá una lista de textos")
 @router.get("/mll_sincroniza", response_model=InfoTransaccion)
-# async def mll_sincroniza(id_App: int = Query(..., description="Identificador de la aplicación"),
-#                          user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-#                          ret_code: int = Query(..., description="Código de retorno inicial"),
-#                          ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-#                         ):
 async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
-                         body_params: ParamRequest = Body(...)
+                         body_params: SincronizaRequest = Body(...)
                         ):
     try:
         # --------------------------------------------------------------------------------
         param = InfoTransaccion.from_request(body_params)
+        
+        tiempo = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # imprime([tiempo], "*  INICIO  ")
 
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
         # --------------------------------------------------------------------------------
         # -------------------------------------------------------------
-        z=1/0
-        # MI ERROR: mll_sincroniza.Exception: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213081128).
-        # ERROR: division by zero - division by zero - 
-        # LOCALIZACION: z=1/0
-        # return: 525 undefined
-        #     {
-        #         "codigo_error (status_code)": 526,
-        #         "mensaje": "mi_mensaje"
-        #     }
-
-        # -------------------------------------------------------------
-        # param.ret_txt = "Texto del error."
-        # raise MiException(param = param, detail="Texto adicional", status_code=-3)
-        # MI ERROR: mll_sincroniza.MiException: App: 1, Usuario: usuario_dev, Error: -1 - Texto del error.
-        # ERROR: 0 -  - 
-        # LOCALIZACION: raise MiException(param = param, detail="Texto adicional", status_code=_3) - D:\Nube\GitHub\Mallorquina_API\app\api\routes\mll_router.py - 66
-        # return: 525 undefined
-        #     {
-        #         "codigo_error (status_code)": 526,
-        #         "mensaje": "mi_mensaje"
-        #     }
-
-        # -------------------------------------------------------------
-        # param.ret_txt = "Error mete los datos bien cabrón2"
-        # raise MiException(param = param)
-        # MI ERROR: mll_sincroniza.MiException: App: 1, Usuario: usuario_dev, Error: -1 - Error mete los datos bien cabrón2
-        # ERROR: Error mete los datos bien cabrón2 - Error mete los datos bien cabrón2
-        # LOCALIZACION: raise MiException(param = param)
-        # return: 525 undefined
-        #     {
-        #         "codigo_error (status_code)": 526,
-        #         "mensaje": "mi_mensaje"
-        #     }
-
-        # -------------------------------------------------------------
-        # param.ret_txt = "Error de exception"
-        # raise Exception("Error de exception2")
-        # MI ERROR: mll_sincroniza.Exception: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213085515).
-        # ERROR: Error de exception2 - Error de exception2
-        # LOCALIZACION: raise Exception("Error de exception2")
-        # return: Status: 525 undefined
-        #    {
-        #         "codigo_error (status_code)": 526,
-        #         "mensaje": "mi_mensaje"
-        #    }
+        
 
         # --------------------------------------------------------------------------------
         # Control de autenticación de usuario
@@ -105,19 +70,16 @@ async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
         if param.user != authenticated_user:
             param.error_sistema(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
             raise MiException(param,"Los usuarios no corresponden", -1)
-            # MI ERROR: mll_sincroniza.MiException: App: 1, Usuario: usuario_dev, Error: -99 - Error general. contacte con su administrador (20250213081526)Error de usuario
-            # ERROR: Error general. contacte con su administrador (20250213081526)Error de usuario - Error general. contacte con su administrador (20250213081526)Error de usuario
-            # LOCALIZACION: raise MiException(param,"Los usuarios no corresponden", _1)
-            # return: Status: 525 undefined
-            #    {
-            #         "codigo_error (status_code)": 526,
-            #         "mensaje": "mi_mensaje"
-            #    }
+
         # --------------------------------------------------------------------------------
         # Servicio
         # --------------------------------------------------------------------------------
         resultado = sincroniza.proceso(param = param)
         # --------------------------------------------------------------------------------
+
+        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "*  FIN TIEMPOS  ")
+        # <2025-02-14 13:37:30> - <2025-02-14 13:41:47>
+
 
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
@@ -133,8 +95,6 @@ async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=e)
-
-
 
 
 

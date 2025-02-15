@@ -78,7 +78,6 @@ async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
         # --------------------------------------------------------------------------------
 
         imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "*  FIN TIEMPOS  ")
-        # <2025-02-14 13:37:30> - <2025-02-14 13:41:47>
 
 
         param.debug = f"Retornando: {type(resultado)}"

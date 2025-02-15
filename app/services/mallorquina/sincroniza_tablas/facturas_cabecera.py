@@ -1,19 +1,13 @@
 
 from datetime import datetime, timedelta
 from decimal import Decimal
-import json
-import re
 
 from app.utils.functions import graba_log, imprime
 
-from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino
-from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
-from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver, close_connection_sqlserver
-from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
-from app.services.auxiliares.sendgrid_service import enviar_email
+from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
 
 from app.utils.InfoTransaccion import InfoTransaccion
-from app.utils.mis_excepciones import MiException
+#from app.utils.mis_excepciones import MiException
 
 TAMAÑO_LOTE: int = 500
 
@@ -34,23 +28,44 @@ def facturas_cabecera(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_c
     param.debug="facturas_cabecera"
 
     try:
-        # imprime([f"entidad: {entidad}",  f"Tabla: {tabla}",  f"bbdd_config: {bbdd_config}",  f"nombre_tabla: {nombre_tabla}", 
-        #          # f"Campos: {campos}", 
-        #          f"tabla_config: {tabla_config}"], 
-        #          f"*...¿Que parametros?...", 2)
-        
+        imprime([f"entidad: {entidad}",  
+                 f"Tabla: {tabla}",  
+                 f"bbdd_config: {bbdd_config}",  
+                 f"nombre_tabla: {nombre_tabla}", 
+                 # f"Campos: {campos}", 
+                 f"tabla_config: {tabla_config}"], 
+                 f"*...¿Que parametros?...", 2)     
+        # ------------------------------------------------------------------------------------------------------------------------
+        # Validaciones
+        # para [Facturas Cabecera] el ult_valor debe tener la fecha de siguiente carga y los dias a cargar de una tirada, 
+        # por ejemplo: "2025-01-01, 1" que indica que la próxima carga desde empezar en el día 01/01/2025 y se debe cargar un dia.
+        # ------------------------------------------------------------------------------------------------------------------------
+        print("   --- Ult Valor", tabla['ult_valor'])
+        valores = tabla['ult_valor'].replace(" ", "").split(",")  
+        print("   --- valores", valores)
+        desde = valores[0]  # fecha en formato yyyy-mm-dd
+        print("   --- desde", desde)
+        dias = int(valores[1]) if len(valores) > 1 else 1  # Si falta, asigna 1
+        print("   --- dias", dias)
 
-        proxima_fecha = tabla["ult_valor"]
+        if desde:
+            desde = datetime.strptime(f"{desde} 00:00:00", "%Y-%m-%d %H:%M:%S")
+        else:
+            raise ValueError("No está parametrizado el ult_valor de Facturas Cabeceras")
+
+        hasta = desde + timedelta(days=1)
+        # ------------------------------------------------------------------------------------------------------------------------
+
         param.debug = "conn origen"
         # conextamos con esta bbdd origen
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
         # Hacer un bucle por fechas pedidas
         empieza = datetime.now()
-        # imprime(tabla, f"*...Tabla...", 2)
-        registros = obtener_y_grabar(param, conn_sqlserver, conn_mysql, entidad, tabla, proxima_fecha)
+        # ------------------------------------------------------------------------------------------------------------------------
+        registros = obtener_y_grabar(param, conn_sqlserver, conn_mysql, entidad, tabla, desde, hasta, dias)
+        # ------------------------------------------------------------------------------------------------------------------------
         imprime([f"Segundos: {(datetime.now()-empieza).total_seconds()}",f"Registros: {len(registros)}-{datetime.now()}"], "*", 2)
-        
         
         return registros
 
@@ -65,10 +80,14 @@ def facturas_cabecera(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_c
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, fecha_a_tratar) -> list:
+def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, desde, hasta, dias) -> list:
     param.debug="Obtener_datos_origen"
-    registros = []
     mi_entidad = entidad["stIdEnt"]
+    valor_max = None
+    insertados = 0
+    actualizados = 0
+    registros = [valor_max, insertados, actualizados]
+
     
 
     try:
@@ -78,44 +97,32 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
        
         # --------------------------------------------------------------------------------
         param.debug = "Inicio"
-        fecha = datetime.strptime(fecha_a_tratar, "%Y-%m-%d %H:%M:%S")
-
-        # en realidad parametros solo tiene un elemento que es la fecha y debe ser en formato aaaa-mm-dd
-        # select_query = """SELECT [Id Cierre]
-        #                     FROM [Cierres de Caja] 
-        #                     WHERE CAST(Fecha AS DATE) = %s
-        #                       -- AND stIdEnt = %s
-        #                 """
-        # param.debug = "Ejecución select 1"
-        # cursor_sqlserver.execute(select_query, (fecha,)) # mi_entidad,)) 
-        # apertura_ids_lista = cursor_sqlserver.fetchall()
-        ids_cierre = [4614, 4615, 4616, 4617]  # [item[0] for item in apertura_ids_lista]
-        
-
-        # imprime([f"{type(apertura_ids_lista)}: {apertura_ids_lista}", f"{type(ids_cierre)}: {ids_cierre}", f"{type(ult_valor)}: {ult_valor}", f"{type(fecha)}: {fecha}"], "=",2)
-        # z=1/0
-
-        for id_cierre in ids_cierre:
-            # buscamos los cierres de estos IDs
+        vez = 1
+        while vez <= dias:
+            vez += 1
             param.debug = "Ejecución select 2"
             # pongo todos los campos a mano, pero con el tiempo se hará de forma dinámica, ya que en campos["nombre"] están los nombres de los campos de la tabla tratada
             select_query = """SELECT Fecha, [Hora Cobro], Tiempo, [Id Salon], [Id Mesa], Comensales, Tarifa, Idioma, [Id Turno], [Id Camarero], [Id Cliente Habitacion], [Id Apertura Puesto Cobro], [Factura Num], [Iva %], [Descuento %], Base, Descuento, Impuesto, Total, Propina, [Serie Puesto Facturacion], [Id Relacion], [Id Relacion Cocina], [Recien Abierta], Bk, Bk1, [Nombre Cajero], Anulada, [Fusion], Base2, Descuento2, [Iva2 %], Impuesto2, [Dcto Manual], [Importe Impresion], [Salida Receta], [IdCobro Propina], [Descripcion Cobro Propina], lVeces_Impreso, Edad, IdTipoCli, IdEvento, [Factura Num Cliente], [Cocina - Evento], [Cocina - Pedido], bDetenerComandaCocina_Mesa, [Cocina - Pedido 2], [CM Id_Reserva], [CM Id_Cliente], [Id Envio GS], bEnviando, [Id Envio Realizado], bNoCompCocina, stIdEnt 
                                 FROM [Facturas Cabecera] fc
-                                WHERE fc.[Id Apertura Puesto Cobro] = ?
-                                 AND fc.stIdEnt = ?"""
+                                WHERE fc.[Fecha] >= ?
+                                  AND fc.[Fecha] < ?
+                                  AND fc.stIdEnt = ?"""
             # imprime([f"{type(select_query)}: {select_query}", f"{type(id_cierre)}: {id_cierre}"], "=...Parametros...", 2)
-            cursor_sqlserver.execute(select_query, (id_cierre, mi_entidad)) 
+            cursor_sqlserver.execute(select_query, (desde, hasta, entidad['stIdEnt'])) 
             datos = cursor_sqlserver.fetchall()
-            # imprime([f"{type(datos)}: {datos}"], "=...Datos...", 2)
-            # z=1/0
+            imprime([f"{type(datos)}: {len(datos)}"], "=...Datos...", 2)
 
             num_leidos = len(datos)
             # -----------------------------------------------------------------------------------
             param.debug = "Llamada a Grabar"
-            num_escritos = grabar_datos(param, conn_mysql, entidad, tabla, datos, fecha, id_cierre)
+            valor_max, insertados, actualizados = grabar_datos(param, conn_mysql, entidad, tabla, datos, hasta)
             # -----------------------------------------------------------------------------------
 
-            registros.append(f"Fecha: {fecha} - cierre: {id_cierre}: {num_leidos} registros leidos y {num_escritos} escritos. {'✅' if num_leidos == num_escritos else '❌'}")
+            registros[0]  = valor_max
+            registros[1] += insertados
+            registros[2] += actualizados
+            # registros.append(f"Fecha: {fecha} - cierre: {id_cierre}: {num_leidos} registros leidos y {num_escritos} escritos. {'✅' if num_leidos == num_escritos else '❌'}")
+
 
         cursor_sqlserver.close()
         # ---------------------------------------------------------------
@@ -130,10 +137,12 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def grabar_datos(param: InfoTransaccion, conn_mysql, entidad, tabla, datos, fecha, id_cierre) -> int:
+def grabar_datos(param: InfoTransaccion, conn_mysql, entidad, tabla, datos, hasta) -> list:
     param.debug="facturas_cabecera"
     cursor_mysql = None # para que no de error en el finally
+    valor_max = hasta
     insertados = 0
+    actualizados = 0
 
     try:
         insert_query = """INSERT INTO tpv_facturas_cabecera (Fecha, Hora_Cobro, Tiempo, Id_Salon, Id_Mesa, Comensales, Tarifa, Idioma, Id_Turno, Id_Camarero, Id_Cliente_Habitacion, Id_Apertura_Puesto_Cobro, Factura_Num, Iva_porc, Descuento_porc, Base, Descuento, Impuesto, Total, Propina, Serie_Puesto_Facturacion, Id_Relacion, Id_Relacion_Cocina, Recien_Abierta, Bk, Bk1, Nombre_Cajero, Anulada, Fusion, Base2, Descuento2, Iva2_porc, Impuesto2, Dcto_Manual, Importe_Impresion, Salida_Receta, IdCobro_Propina, Descripcion_Cobro_Propina, lVeces_Impreso, Edad, IdTipoCli, IdEvento, Factura_Num_Cliente, Cocina_Evento, Cocina_Pedido, bDetenerComandaCocina_Mesa, Cocina_Pedido_2, CM_Id_Reserva, CM_Id_Cliente, Id_Envio_GS, bEnviando, Id_Envio_Realizado, bNoCompCocina, stIdEnt, id_entidad)
@@ -173,12 +182,12 @@ def grabar_datos(param: InfoTransaccion, conn_mysql, entidad, tabla, datos, fech
                                 SET Fecha_Ultima_Actualizacion = %s, 
                                     ult_valor = COALESCE(%s, ult_valor)
                                 WHERE ID = %s""",
-                            (datetime.now(), fecha.strftime("%Y-%m-%d %H:%M:%S"), tabla["ID"])
+                            (datetime.now(), hasta.strftime("%Y-%m-%d %H:%M:%S"), tabla["ID"]) # lo hacemos con el hasta porque hemos cargado < HASTA
                             )
         conn_mysql.commit()
         
         
-        return insertados
+        return [valor_max, insertados, actualizados]
 
     except Exception as e:
         param.error_sistema()

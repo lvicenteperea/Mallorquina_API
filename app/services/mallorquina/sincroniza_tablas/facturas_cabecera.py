@@ -37,7 +37,7 @@ def facturas_cabecera(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_c
                  f"*...¿Que parametros?...", 2)     
         # ------------------------------------------------------------------------------------------------------------------------
         # Validaciones
-        # para [Facturas Cabecera] el ult_valor debe tener la fecha de siguiente carga y los dias a cargar de una tirada, 
+        # para [Facturas Cabecera] ULT_VALOR debe tener la fecha de siguiente carga y los dias a cargar de una tirada, 
         # por ejemplo: "2025-01-01, 1" que indica que la próxima carga desde empezar en el día 01/01/2025 y se debe cargar un dia.
         # ------------------------------------------------------------------------------------------------------------------------
         print("   --- Ult Valor", tabla['ult_valor'])
@@ -102,17 +102,15 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
             vez += 1
             param.debug = "Ejecución select 2"
             # pongo todos los campos a mano, pero con el tiempo se hará de forma dinámica, ya que en campos["nombre"] están los nombres de los campos de la tabla tratada
-            select_query = """SELECT Fecha, [Hora Cobro], Tiempo, [Id Salon], [Id Mesa], Comensales, Tarifa, Idioma, [Id Turno], [Id Camarero], [Id Cliente Habitacion], [Id Apertura Puesto Cobro], [Factura Num], [Iva %], [Descuento %], Base, Descuento, Impuesto, Total, Propina, [Serie Puesto Facturacion], [Id Relacion], [Id Relacion Cocina], [Recien Abierta], Bk, Bk1, [Nombre Cajero], Anulada, [Fusion], Base2, Descuento2, [Iva2 %], Impuesto2, [Dcto Manual], [Importe Impresion], [Salida Receta], [IdCobro Propina], [Descripcion Cobro Propina], lVeces_Impreso, Edad, IdTipoCli, IdEvento, [Factura Num Cliente], [Cocina - Evento], [Cocina - Pedido], bDetenerComandaCocina_Mesa, [Cocina - Pedido 2], [CM Id_Reserva], [CM Id_Cliente], [Id Envio GS], bEnviando, [Id Envio Realizado], bNoCompCocina, stIdEnt 
+            select_query = f"""SELECT Fecha, [Hora Cobro], Tiempo, [Id Salon], [Id Mesa], Comensales, Tarifa, Idioma, [Id Turno], [Id Camarero], [Id Cliente Habitacion], [Id Apertura Puesto Cobro], [Factura Num], [Iva %], [Descuento %], Base, Descuento, Impuesto, Total, Propina, [Serie Puesto Facturacion], [Id Relacion], [Id Relacion Cocina], [Recien Abierta], Bk, Bk1, [Nombre Cajero], Anulada, [Fusion], Base2, Descuento2, [Iva2 %], Impuesto2, [Dcto Manual], [Importe Impresion], [Salida Receta], [IdCobro Propina], [Descripcion Cobro Propina], lVeces_Impreso, Edad, IdTipoCli, IdEvento, [Factura Num Cliente], [Cocina - Evento], [Cocina - Pedido], bDetenerComandaCocina_Mesa, [Cocina - Pedido 2], [CM Id_Reserva], [CM Id_Cliente], [Id Envio GS], bEnviando, [Id Envio Realizado], bNoCompCocina, stIdEnt, {entidad['ID']} 
                                 FROM [Facturas Cabecera] fc
-                                WHERE fc.[Fecha] >= ?
-                                  AND fc.[Fecha] < ?
-                                  AND fc.stIdEnt = ?"""
+                                 WHERE fc.[Fecha] >= ?
+                                   AND fc.[Fecha] < ?
+                                   AND fc.stIdEnt = ?"""
             # imprime([f"{type(select_query)}: {select_query}", f"{type(id_cierre)}: {id_cierre}"], "=...Parametros...", 2)
             cursor_sqlserver.execute(select_query, (desde, hasta, entidad['stIdEnt'])) 
             datos = cursor_sqlserver.fetchall()
-            imprime([f"{type(datos)}: {len(datos)}"], "=...Datos...", 2)
-
-            num_leidos = len(datos)
+            
             # -----------------------------------------------------------------------------------
             param.debug = "Llamada a Grabar"
             valor_max, insertados, actualizados = grabar_datos(param, conn_mysql, entidad, tabla, datos, hasta)
@@ -148,22 +146,27 @@ def grabar_datos(param: InfoTransaccion, conn_mysql, entidad, tabla, datos, hast
         insert_query = """INSERT INTO tpv_facturas_cabecera (Fecha, Hora_Cobro, Tiempo, Id_Salon, Id_Mesa, Comensales, Tarifa, Idioma, Id_Turno, Id_Camarero, Id_Cliente_Habitacion, Id_Apertura_Puesto_Cobro, Factura_Num, Iva_porc, Descuento_porc, Base, Descuento, Impuesto, Total, Propina, Serie_Puesto_Facturacion, Id_Relacion, Id_Relacion_Cocina, Recien_Abierta, Bk, Bk1, Nombre_Cajero, Anulada, Fusion, Base2, Descuento2, Iva2_porc, Impuesto2, Dcto_Manual, Importe_Impresion, Salida_Receta, IdCobro_Propina, Descripcion_Cobro_Propina, lVeces_Impreso, Edad, IdTipoCli, IdEvento, Factura_Num_Cliente, Cocina_Evento, Cocina_Pedido, bDetenerComandaCocina_Mesa, Cocina_Pedido_2, CM_Id_Reserva, CM_Id_Cliente, Id_Envio_GS, bEnviando, Id_Envio_Realizado, bNoCompCocina, stIdEnt, id_entidad)
                                                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"""
         datos_aux = [convertir_datos(fila) for fila in datos]
-        datos_convertidos = [tupla + (entidad['ID'],) for tupla in datos_aux]
-        # imprime([f"Datos: {datos[0]}", f"Convertidos: {datos_convertidos[0]}", f"INSERT: {insert_query}"], f"*...Datos: {len(datos[0])}-{type(datos[0])}...", 2)
-        
+        datos_convertidos = [tupla for tupla in datos_aux]
+        # imprime([f"Datos: {datos[0]}", 
+        #          f"Convertidos: {datos_convertidos[0]}", 
+        #          f"INSERT: {insert_query}",
+        #          f"Tamaño: {len(datos[0])}-{type(datos[0])} - {len(datos_convertidos[0])}-{type(datos_convertidos[0])}", 
+        #         ], 
+        #          f"*...Datos...", 
+        #          2)        
 
         for i in range(0, len(datos_convertidos), 1):
             lote = [tuple(registro) for registro in datos_convertidos[i:i + 1]]  # Convertir a tuplas extrayendo una porción de la lista
             if len(lote[0]) != 55:
-                # imprime([f"lote: {lote[0]}"], f"*...Lote: {i}-{len(lote[0])}...", 2)
+                imprime([f"lote: {lote[0]}"], f"*...Lote: {i}-{len(lote[0])}...", 2)
                 raise ValueError(f"Error en el lote {i} de {len(lote[0])} elementos")
 
 
         with conn_mysql.cursor() as cursor_mysql:
             leidos = len(datos_convertidos)
-            param.debug = f"Bucle de {0} a {TAMAÑO_LOTE} de {leidos}"
+            param.debug = f"Bucle1 de {0} a {TAMAÑO_LOTE} de {leidos}"
             for i in range(0, leidos, TAMAÑO_LOTE):
-                param.debug = f"Bucle de {i} a {i+TAMAÑO_LOTE} de {leidos}"
+                param.debug = f"Bucle2 de {i} a {i+TAMAÑO_LOTE} de {leidos}"
                 # lote = datos_convertidos[i:i + TAMAÑO_LOTE]  # Extraer una porción de la lista
 
                 lote = [tuple(registro) for registro in datos_convertidos[i:i + TAMAÑO_LOTE]]  # Convertir a tuplas extrayendo una porción de la lista
@@ -182,7 +185,7 @@ def grabar_datos(param: InfoTransaccion, conn_mysql, entidad, tabla, datos, hast
                                 SET Fecha_Ultima_Actualizacion = %s, 
                                     ult_valor = COALESCE(%s, ult_valor)
                                 WHERE ID = %s""",
-                            (datetime.now(), hasta.strftime("%Y-%m-%d %H:%M:%S"), tabla["ID"]) # lo hacemos con el hasta porque hemos cargado < HASTA
+                            (datetime.now(), f'{hasta.strftime("%Y-%m-%d")}, 1', tabla["ID"]) # lo hacemos con el hasta porque hemos cargado < HASTA
                             )
         conn_mysql.commit()
         

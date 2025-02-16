@@ -14,12 +14,11 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nom
 
         func = getattr(facturas_cabecera, mi_metodo, None)  # Obtener la función desde otro módulo
 
+        imprime([mi_metodo, tabla_config['Tabla_Destino'], entidad, tabla, bbdd_config, nombre_tabla, tabla_config], "=   --- proceso_especifico ---   ", 2)
         if func:
-            imprime([entidad, tabla, bbdd_config, nombre_tabla, tabla_config], "=   --- proceso_especifico ---   ", 2)
-
             resultado = func(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config)  # Ejecutar la función
         else:
-            param.debug(f"La función {mi_metodo} no se encontró en el módulo. Para cargar la tabla {nombre_tabla_destino} con la tabla {nombre_tabla}.")
+            param.debug = f"no se encontró el módulo {mi_metodo} para cargar la tabla {tabla_config['Tabla_Destino']} con la tabla {nombre_tabla}."
             raise ValueError(f"La función {mi_metodo} no se encontró en el módulo.")
 
         return resultado

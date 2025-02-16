@@ -1,28 +1,41 @@
-from datetime import datetime, timedelta
+l1= "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+l2= "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+l3= "('2025-02-12 08:05:36', None, '2025-02-12 08:05:36', 4, 107, 1, 0, 0, 1, 0, 0, 8868, 173783, 10.0, 0.0, 1.64, 0.0, 0.16, 1.8, 0.0, 'V1', 1157175, 4495500, 0, 0, 0, 'CAMARERO = 1', 0, 0, 0.0, 0.0, 0.0, 0.0, 0, 1.8, 0, 0, None, 1, 0, 0, 0, 0, None, None, 0, None, None, None, 0, 0, 3714, None, '2202232042133764', 5, 5)"
+l4 = "(Fecha, Hora_Cobro, Tiempo, Id_Salon, Id_Mesa, Comensales, Tarifa, Idioma, Id_Turno, Id_Camarero, Id_Cliente_Habitacion, Id_Apertura_Puesto_Cobro, Factura_Num, Iva_porc, Descuento_porc, Base, Descuento, Impuesto, Total, Propina, Serie_Puesto_Facturacion, Id_Relacion, Id_Relacion_Cocina, Recien_Abierta, Bk, Bk1, Nombre_Cajero, Anulada, Fusion, Base2, Descuento2, Iva2_porc, Impuesto2, Dcto_Manual, Importe_Impresion, Salida_Receta, IdCobro_Propina, Descripcion_Cobro_Propina, lVeces_Impreso, Edad, IdTipoCli, IdEvento, Factura_Num_Cliente, Cocina_Evento, Cocina_Pedido, bDetenerComandaCocina_Mesa, Cocina_Pedido_2, CM_Id_Reserva, CM_Id_Cliente, Id_Envio_GS, bEnviando, Id_Envio_Realizado, bNoCompCocina, stIdEnt, id_entidad)"
 
 
-columnas = [
-    "Fecha", "Hora_Cobro", "Tiempo", "Id_Salon", "Id_Mesa", "Comensales", "Tarifa", "Idioma", "Id_Turno", 
-    "Id_Camarero", "Id_Cliente_Habitacion", "Id_Apertura_Puesto_Cobro", "Factura_Num", "Iva_porc", "Descuento_porc", 
-    "Base", "Descuento", "Impuesto", "Total", "Propina", "Serie_Puesto_Facturacion", "Id_Relacion", "Id_Relacion_Cocina", 
-    "Recien_Abierta", "Bk", "Bk1", "Nombre_Cajero", "Anulada", "Fusion", "Base2", "Descuento2", "Iva2_porc", "Impuesto2", 
-    "Dcto_Manual", "Importe_Impresion", "Salida_Receta", "IdCobro_Propina", "Descripcion_Cobro_Propina", "lVeces_Impreso", 
-    "Edad", "VIdTipoCli", "IdEvento", "Factura_Num_Cliente", "Cocina_Evento", "Cocina_Pedido", "bDetenerComandaCocina_Mesa", 
-    "Cocina_Pedido_2", "CM_Id_Reserva", "CM_Id_Cliente", "Id_Envio_GS", "bEnviando", "Id_Envio_Realizado", "bNoCompCocina", "stIdEnt"
-]
-
-datos = (datetime.datetime(2023, 7, 12, 8, 23, 2), None, datetime.datetime(2023, 7, 12, 8, 23, 2), 9, 218, 1, 1, 0, 1, 0, 81, 4614, 32725, 10.00, 0.00, 32.090, 0.000, 3.210, 35.300, 0.000, 'MN', 462640, 1883477, False, False, False, 'DIRECCION', False, False, 0.000, 0.000, 0.00, 0.00, False, 35.300, False, 0, '', 1, 0, 0, 0, 348, '', '', False, '', '', '', 0, False, 446, None, '1010221038290475')
+print(l1.count(','))
+print(l2.count(','))
+print(l3.count(','))
+print(l4.count(','))
 
 
-print("📌 Comparación de columnas y valores:")
-for i, (col, val) in enumerate(zip(columnas, datos[0])):
-    print(f"{i + 1}. {col}: {val}")
+# from datetime import datetime, timedelta
 
-# Si hay más valores en datos de los que hay en columnas
-if len(datos[0]) > len(columnas):
-    print("⚠️ Hay más valores en los datos que columnas en la consulta.")
-elif len(datos[0]) < len(columnas):
-    print("⚠️ Hay menos valores en los datos que columnas en la consulta.")
+
+# columnas = [
+#     "Fecha", "Hora_Cobro", "Tiempo", "Id_Salon", "Id_Mesa", "Comensales", "Tarifa", "Idioma", "Id_Turno", 
+#     "Id_Camarero", "Id_Cliente_Habitacion", "Id_Apertura_Puesto_Cobro", "Factura_Num", "Iva_porc", "Descuento_porc", 
+#     "Base", "Descuento", "Impuesto", "Total", "Propina", "Serie_Puesto_Facturacion", "Id_Relacion", "Id_Relacion_Cocina", 
+#     "Recien_Abierta", "Bk", "Bk1", "Nombre_Cajero", "Anulada", "Fusion", "Base2", "Descuento2", "Iva2_porc", "Impuesto2", 
+#     "Dcto_Manual", "Importe_Impresion", "Salida_Receta", "IdCobro_Propina", "Descripcion_Cobro_Propina", "lVeces_Impreso", 
+#     "Edad", "VIdTipoCli", "IdEvento", "Factura_Num_Cliente", "Cocina_Evento", "Cocina_Pedido", "bDetenerComandaCocina_Mesa", 
+#     "Cocina_Pedido_2", "CM_Id_Reserva", "CM_Id_Cliente", "Id_Envio_GS", "bEnviando", "Id_Envio_Realizado", "bNoCompCocina", "stIdEnt"
+# ]
+
+# datos = (datetime.datetime(2023, 7, 12, 8, 23, 2), None, datetime.datetime(2023, 7, 12, 8, 23, 2), 9, 218, 1, 1, 0, 1, 0, 81, 4614, 32725, 10.00, 0.00, 32.090, 0.000, 3.210, 35.300, 0.000, 'MN', 462640, 1883477, False, False, False, 'DIRECCION', False, False, 0.000, 0.000, 0.00, 0.00, False, 35.300, False, 0, '', 1, 0, 0, 0, 348, '', '', False, '', '', '', 0, False, 446, None, '1010221038290475')
+
+
+# print("📌 Comparación de columnas y valores:")
+# for i, (col, val) in enumerate(zip(columnas, datos[0])):
+#     print(f"{i + 1}. {col}: {val}")
+
+# # Si hay más valores en datos de los que hay en columnas
+# if len(datos[0]) > len(columnas):
+#     print("⚠️ Hay más valores en los datos que columnas en la consulta.")
+# elif len(datos[0]) < len(columnas):
+#     print("⚠️ Hay menos valores en los datos que columnas en la consulta.")
 
 
 

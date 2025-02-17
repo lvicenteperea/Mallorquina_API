@@ -261,9 +261,9 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
         # y por otro las que tienen un tratamiento específico
         # ----------------------------------------------------------------------------------------
         if tabla_config["proceso_carga"]:
-            resultados = proceso_especifico.proceso(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config)
+            resultados = proceso_especifico.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
         else:
-            resultados = proceso_general.proceso(param, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config)
+            resultados = proceso_general.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
         # ----------------------------------------------------------------------------------------
 
         return resultados

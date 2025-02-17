@@ -1,14 +1,36 @@
-l1= "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-
-l2= "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-l3= "('2025-02-12 08:05:36', None, '2025-02-12 08:05:36', 4, 107, 1, 0, 0, 1, 0, 0, 8868, 173783, 10.0, 0.0, 1.64, 0.0, 0.16, 1.8, 0.0, 'V1', 1157175, 4495500, 0, 0, 0, 'CAMARERO = 1', 0, 0, 0.0, 0.0, 0.0, 0.0, 0, 1.8, 0, 0, None, 1, 0, 0, 0, 0, None, None, 0, None, None, None, 0, 0, 3714, None, '2202232042133764', 5, 5)"
-l4 = "(Fecha, Hora_Cobro, Tiempo, Id_Salon, Id_Mesa, Comensales, Tarifa, Idioma, Id_Turno, Id_Camarero, Id_Cliente_Habitacion, Id_Apertura_Puesto_Cobro, Factura_Num, Iva_porc, Descuento_porc, Base, Descuento, Impuesto, Total, Propina, Serie_Puesto_Facturacion, Id_Relacion, Id_Relacion_Cocina, Recien_Abierta, Bk, Bk1, Nombre_Cajero, Anulada, Fusion, Base2, Descuento2, Iva2_porc, Impuesto2, Dcto_Manual, Importe_Impresion, Salida_Receta, IdCobro_Propina, Descripcion_Cobro_Propina, lVeces_Impreso, Edad, IdTipoCli, IdEvento, Factura_Num_Cliente, Cocina_Evento, Cocina_Pedido, bDetenerComandaCocina_Mesa, Cocina_Pedido_2, CM_Id_Reserva, CM_Id_Cliente, Id_Envio_GS, bEnviando, Id_Envio_Realizado, bNoCompCocina, stIdEnt, id_entidad)"
+l1= """[Id Plato], 
+[Orden Factura], Descripcion, Importe, Raciones, Peso, [Impuesto Incluido], [Total Base], [Total Impuesto], [Total Total], [Fecha Invitacion], [Id Relacion], [Serie Puesto Facturacion], Modo, [Fusion], Iva2Sn, Modo2, bPrimerCombinado, [Id Camarero], [Id Usuario], [Nombre Camarero], [Nombre Usuario], [Id Familia], [Des Familia], [Id SubFamilia], [Des SubFamilia], [Id Grupo], [Des Grupo], [Peso 100], [Dcto %], [Total Dcto], 
+Rac_Ini, 
+[Modo Botella], Refrescos, [Id Clase], 
+[Id Principal], 
+Fecha_Hora, 
+[Cantidad Receta], [Desc Cantidad], [Tipo Bono Tarjeta PP], [Id Tarjeta PP], 
+stIdEnt , {entidad['ID']}  as id_entidad"""
+l2= """Id_Plato, 
+Orden_Factura, Descripcion, Importe, Raciones, Peso, Impuesto_Incluido, Total_Base, Total_Impuesto, Total_Total, Fecha_Invitacion, Id_Relacion, Serie_Puesto_Facturacion, Modo, Fusion, Iva2Sn, Modo2, bPrimerCombinado, Id_Camarero, Id_Usuario, Nombre_Camarero, Nombre_Usuario, Id_Familia, Des_Familia, Id_SubFamilia, Des_SubFamilia, Id_Grupo, Des_Grupo, Peso_100, Dcto_pct, Total_Dcto,
+Rac_Ini, 
+Modo_Botella, Refrescos, Id_Clase, 
+Id_Principal,  
+Fecha_Hora, 
+Cantidad_Receta, Desc_Cantidad, Tipo_Bono_Tarjeta_PP, Id_Tarjeta_PP, 
+stIdEnt, id_entidad"""
+l3= "(stIdEnt, Id_Principal, Orden_Factura, Descripcion, Importe, Raciones, Peso, Impuesto_Incluido, Total_Base, Total_Impuesto, Total_Total, Fecha_Invitacion, Id_Relacion, Serie_Puesto_Facturacion, Modo, Fusion, Iva2Sn, Modo2, bPrimerCombinado, Id_Camarero, Id_Usuario, Nombre_Camarero, Nombre_Usuario, Id_Familia, Des_Familia, Id_SubFamilia, Des_SubFamilia, Id_Grupo, Des_Grupo, Peso_100, Dcto_pct, Total_Dcto, id_entidad, Modo_Botella, Refrescos, Id_Clase, Id_Plato, Rac_Ini, Cantidad_Receta, Desc_Cantidad, Tipo_Bono_Tarjeta_PP, Id_Tarjeta_PP, Fecha_Hora) "
+l4= "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
 
 print(l1.count(','))
 print(l2.count(','))
 print(l3.count(','))
 print(l4.count(','))
+
+
+# Datos:       (200004, 0, 'CROISSANT', Decimal('1.800'), Decimal('1.000'), Decimal('0.000'), True, Decimal('1.640'), Decimal('0.160'), Decimal('1.800'), None, 1158479, 'V1', 0, False, False, 0, False, 0, 2, '', 'CAMARERO = 1', 0, '', 0, '', 1, 'BOLLERIA', 0, Decimal('0.00'), Decimal('0.00'), Decimal('0.00'), 0, Decimal('0.00'), 0, 2845056, datetime.datetime(2025, 2, 14, 8, 1, 46, 307000), Decimal('1.000'), '', 0, 0, '2202232042133764', 5)
+# Convertidos: (200004, 0, 'CROISSANT', 1.8, 1.0, 0.0, 1, 1.64, 0.16, 1.8, None, 1158479, 'V1', 0, 0, 0, 0, 0, 0, 2, None, 'CAMARERO = 1', 0, None, 0, None, 1, 'BOLLERIA', 0, 0.0, 0.0, 0.0, 0, 0.0, 0, 2845056, '2025-02-14 08:01:46', 1.0, None, 0, 0, '2202232042133764', 5)
+# INSERT: INSERT INTO TPV_FACTURAS_COMANDA (stIdEnt, Id_Principal, Orden_Factura, Descripcion, Importe, Raciones, Peso, Impuesto_Incluido, Total_BaseTotal_Impuesto, Total_Total, Fecha_Invitacion, Id_Relacion, Serie_Puesto_Facturacion, Modo, Fusion, Iva2Sn, Modo2, bPrimerCombinado, Id_Camarero, Id_Usuario, Nombre_Camarero, Nombre_Usuario, Id_Familia, Des_Familia, Id_SubFamilia, Des_SubFamilia, Id_Grupo, Des_Grupo, Peso_100, Dcto_pct, Total_Dcto, id_entidad, Modo_Botella, Refrescos, Id_Clase, Id_Plato, Rac_Ini, Cantidad_Receta, Desc_Cantidad, Tipo_Bono_Tarjeta_PP, Id_Tarjeta_PP, Fecha_Hora, Origen_BBDD)
+#                                                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+
+
+
 
 
 # from datetime import datetime, timedelta

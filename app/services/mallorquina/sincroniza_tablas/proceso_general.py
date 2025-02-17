@@ -12,7 +12,7 @@ PAGINACION: int = 100
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nombre_tabla, campos, tabla_config) -> list:  # retorna el [valor_max, insertados, Actualizados]
+def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config) -> list:  # retorna el [valor_max, insertados, Actualizados]
     param.debug="proceso_general"
     cursor_mysql = None # para que no de error en el finally
     valor_max = None
@@ -23,6 +23,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nom
         salto = 0
         proximo_valor = tabla["ult_valor"]
         nombre_tabla_destino = tabla_config['Tabla_Destino'] 
+        nombre_tabla_origen  = tabla_config['Tabla_Origen'] 
         # imprime([entidad], "* --- entidad ---", 2)
         # imprime([bbdd_config], "* --- bbdd_config ---", 2)
         # imprime([nombre_tabla], "* --- nombre_tabla ---", 2)
@@ -32,7 +33,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nom
         # z=1/0
 
         while True:
-            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla, campos, tabla_config["campos_PK"], proximo_valor, salto)
+            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor, salto)
             if len(registros) == 0:
                 break
 
@@ -42,7 +43,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, nom
             # Identificar el campo PK basado en mll_cfg_campos
             pk_campos = [campo for campo in campos if campo.get("PK", 0) >= 1]
             if not pk_campos:
-                param.registrar_error(ret_txt=f"No se encontró ningún campo PK en {nombre_tabla}.", debug=f"Campos: {campos}")
+                param.registrar_error(ret_txt=f"No se encontró ningún campo PK en {nombre_tabla_origen}.", debug=f"Campos: {campos}")
                 raise MiException(param = param)
 
             # Usamos el primer campo PK encontrado

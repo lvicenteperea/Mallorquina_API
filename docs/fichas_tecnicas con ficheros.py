@@ -213,6 +213,6 @@ def generar_html(param: InfoTransaccion) -> list:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "generar_html.Exception", e)
         raise 

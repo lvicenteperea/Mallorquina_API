@@ -60,7 +60,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         return registros
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "proceso_general.Exception", e)
         raise 
 
@@ -146,7 +146,7 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
         return registros
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "Obtener_datos_origen.Exception", e)
         raise 
         
@@ -196,7 +196,7 @@ def grabar_datos(param: InfoTransaccion, conn_mysql, id_BBDD, datos, hasta, camp
         return [valor_max, insertados, actualizados]
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "grabar_datos.Exception", e)
         raise 
 

@@ -59,7 +59,6 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         return param
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, f"Error no controlado en {funcion}", e)
+        param.error_sistema(e=e, debug=f"Error no controlado en {funcion}")
         raise
 

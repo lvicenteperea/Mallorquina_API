@@ -95,7 +95,7 @@ def proceso(param: InfoTransaccion) -> list:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "proceso.Exception", e)
         raise 
         
@@ -182,7 +182,7 @@ def convierte_con_pd(param: InfoTransaccion, origen_path, output_path):
         return resultado
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "proceso.Exception", e)
         raise
 
@@ -289,7 +289,7 @@ def convierte_con_pd (param: InfoTransaccion, origen_path, output_path):
         return resultado
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "proceso.Exception", e)
         raise         
 

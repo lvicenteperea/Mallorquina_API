@@ -82,8 +82,7 @@ def proceso(param: InfoTransaccion):
 
 
     except Exception as e:
-        param.error_sistema(txt_adic=f"emai: {id_email}")
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, txt_adic=f"emai: {id_email}", debug="proceso.Exception")
         raise 
 
     finally:
@@ -117,8 +116,7 @@ def marcar_email(param: InfoTransaccion, cursor_mysql, email_id, texto, estado):
         
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "marcar_email.Exception", e)
+        param.error_sistema(e=e, debug="marcar_email.Exception")
         raise 
 
 
@@ -267,8 +265,7 @@ def obtener_emails_pendientes(param: InfoTransaccion, conn_mysql, servidor, offs
         return emails
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "obtener_emails_pendientes.Exception", e)
+        param.error_sistema(e=e, debug="obtener_emails_pendientes.Exception")
         raise 
 
     finally:
@@ -291,8 +288,7 @@ def obtener_datos_conexion(param: InfoTransaccion, conn_mysql, servidor):
         return datos
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "obtener_datos_conexion.Exception", e)
+        param.error_sistema(e=e, debug="obtener_datos_conexion.Exception")
         raise 
 
     finally:

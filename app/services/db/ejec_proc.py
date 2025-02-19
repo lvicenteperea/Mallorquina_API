@@ -94,8 +94,7 @@ def call_proc_bbdd(param: InfoTransaccion, procedimiento:str, conn_mysql = None,
         return infoTrans
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
 
     finally:

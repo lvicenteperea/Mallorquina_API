@@ -116,8 +116,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         return [valor_max, insertados, actualizados]
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso_general.Exception", e)
+        param.error_sistema(e=e, debug="proceso_general.Exception")
         raise 
 
 
@@ -155,8 +154,7 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
         return [registros, lista_pk, lista_max_valor]
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "Obtener_datos_origen.Exception", e)
+        param.error_sistema(e=e, debug="Obtener_datos_origen.Exception")
         raise 
 
     finally:
@@ -201,13 +199,12 @@ def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, ca
                     FETCH NEXT {PAGINACION} ROWS ONLY; -- Toma las siguientes 100"""
         
 
-        imprime([query, lista_pk, lista_max_valor], "*  construir_consulta", 2)
+        # imprime([query, lista_pk, lista_max_valor], "*  construir_consulta", 2)
 
         return [query, lista_pk, lista_max_valor]
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "Obtener_datos_origen.Exception", e)
+        param.error_sistema(e=e, debug="Obtener_datos_origen.Exception")
         raise 
 
 
@@ -266,7 +263,7 @@ def generar_where(param: InfoTransaccion, lista_pk_campos, lista_pk_valores, lis
     try:    
         # Verificar que todas las listas tengan la misma longitud
 
-        imprime([lista_pk_campos, lista_pk_valores, lista_pk_formato], "*  Lista PK2", 2)
+        # imprime([lista_pk_campos, lista_pk_valores, lista_pk_formato], "*  Lista PK2", 2)
 
         if not (len(lista_pk_campos) == len(lista_pk_valores) == len(lista_pk_formato)):
             param.debug = f"Campos({len(lista_pk_campos)}): {lista_pk_campos}  --  Valores ({len(lista_pk_valores)}): {lista_pk_valores}  --  Formato ({len(lista_pk_formato)}): {lista_pk_formato}"
@@ -289,8 +286,7 @@ def generar_where(param: InfoTransaccion, lista_pk_campos, lista_pk_valores, lis
         return f"WHERE {' AND '.join(where_clause)}"
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "generar_where.Exception", e)
+        param.error_sistema(e=e, debug="generar_where.Exception")
         raise 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------

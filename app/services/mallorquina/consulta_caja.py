@@ -69,8 +69,7 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
         return resultado 
        
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, f"Excepción consulta_caja.recorre_consultas_tiendas-{param.debug}", e)
+        param.error_sistema(e=e, debug="Excepción consulta_caja.recorre_consultas_tiendas")
         raise
 
     finally:
@@ -153,8 +152,7 @@ def procesar_consulta(param: InfoTransaccion, Nombre_BBDD, id_BBDD, fecha, stIdE
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, f"Excepción tarifas_a_TPV.proceso-{param.debug}", e)
+        param.error_sistema(e=e, debug="Excepción tarifas_a_TPV.proceso")
         raise
 
     finally:

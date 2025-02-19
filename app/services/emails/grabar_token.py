@@ -69,12 +69,10 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         return param
 
     except MiException as e:
-        param.error_sistema()
-        graba_log(param, f"Excepción en {funcion}", e)
+        param.error_sistema(e=e, debug=f"Excepción en {funcion}")
         raise
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, f"Error no controlado en {funcion}", e)
+        param.error_sistema(e=e, debug=f"Error no controlado en {funcion}")
         raise
 

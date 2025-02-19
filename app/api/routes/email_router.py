@@ -45,7 +45,7 @@ async def eml_grabar_token( request: Request,  # Para acceder a request.state.us
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
-            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+            param.sistem_error(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
             raise MiException(param,"Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
@@ -62,9 +62,7 @@ async def eml_grabar_token( request: Request,  # Para acceder a request.state.us
         graba_log(param, "eml_grabar_token.MiException", e)
                 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "eml_grabar_token.Exception", e)
-
+        param.error_sistema(e=e, txt_adic="", debug="eml_grabar_token.Exception")
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -111,7 +109,7 @@ async def eml_grabar_email( request: Request,  # Para acceder a request.state.us
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
             imprime([user, authenticated_user], "@")
-            param.error_sistema(txt_adic=f"Error de usuario{user} != {authenticated_user}", debug=f"{user} - {authenticated_user}")
+            param.sistem_error(txt_adic=f"Error de usuario{user} != {authenticated_user}", debug=f"{user} - {authenticated_user}")
             raise MiException(param, "Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
@@ -135,9 +133,7 @@ async def eml_grabar_email( request: Request,  # Para acceder a request.state.us
         
                 
     except Exception as e:
-        imprime(["param.ret_txt, param.ret_code, e"], "@")
-        param.error_sistema()
-        graba_log(param, "eml_grabar_email.Exception", e)
+        param.error_sistema(e=e, txt_adic="", debug="eml_grabar_email.Exception")
 
         
 
@@ -172,10 +168,8 @@ async def eml_envia_emails(id_App: int = Query(..., description="Identificador d
         graba_log(param, "eml_envia_emails.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "eml_envia_emails.HTTPException", e)
+        param.error_sistema(e=e, txt_adic="", debug="eml_envia_emails.HTTPException")
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "eml_envia_emails.Exception", e)
+        param.error_sistema(e=e, txt_adic="", debug="eml_envia_emails.Exception")

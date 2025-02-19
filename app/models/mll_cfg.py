@@ -26,8 +26,7 @@ def obtener_cfg_general(param: InfoTransaccion):
         return config
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "Excepción mll_cfg.obtener_cfg_general", e)
+        param.error_sistema(e=e, debug="Excepción mll_cfg.obtener_cfg_general")
         raise
 
     finally:
@@ -46,8 +45,7 @@ def actualizar_en_ejecucion(param: InfoTransaccion, estado: int):
         close_connection_mysql(conn, cursor)
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "Excepción mll_cfg.obtener_cfg_general", e)
+        param.error_sistema(e=e, debug="Excepción mll_cfg.obtener_cfg_general")
         raise
 
     finally:

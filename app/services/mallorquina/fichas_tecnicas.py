@@ -38,8 +38,7 @@ def imprimible(param: InfoTransaccion, fila):
         return composicion
    
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "cargar_plantilla.Exception", e)
+        param.error_sistema(e=e, debug="cargar_plantilla.Exception")
         raise 
 
 #----------------------------------------------------------------------------------------
@@ -52,8 +51,7 @@ def cargar_plantilla(param, ruta):
 
    
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "cargar_plantilla.Exception", e)
+        param.error_sistema(e=e, debug="cargar_plantilla.Exception")
         raise 
 
 #----------------------------------------------------------------------------------------
@@ -94,8 +92,7 @@ def reemplazar_fijos(param, plantilla):
         return html
     
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "reemplazar_fijos.Exception", e)
+        param.error_sistema(e=e, debug="reemplazar_fijos.Exception")
         raise 
 
 #----------------------------------------------------------------------------------------
@@ -130,8 +127,7 @@ def indice(param, productos):
         return indice_alergenos
     
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "indice.Exception", e)
+        param.error_sistema(e=e, debug="indice.Exception")
         raise 
 
 #----------------------------------------------------------------------------------------
@@ -235,8 +231,7 @@ def fichas(param: InfoTransaccion, productos: list, precios: dict):
         return True # fichas_content
     
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "fichas.Exception", e)
+        param.error_sistema(e=e, debug="fichas.Exception")
         raise 
 
 
@@ -267,8 +262,7 @@ def generar_html(param: InfoTransaccion, productos: list, precios: dict) -> str:
         return html_final
     
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "generar_html.Exception", e)
+        param.error_sistema(e=e, debug="generar_html.Exception")
         raise 
 
 
@@ -324,8 +318,7 @@ def proceso(param: InfoTransaccion) -> list:
     
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
 
     finally:

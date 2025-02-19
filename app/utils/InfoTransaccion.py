@@ -2,7 +2,10 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional, Any
 import json
+import traceback
 
+
+from app.utils.utilidades import graba_log, imprime
 
 class ParamRequest(BaseModel):
     id_App: int = 1
@@ -42,13 +45,6 @@ class InfoTransaccion(BaseModel):
         )
 
 
-
-
-
-
-
-
-
     def set_parametros(self, datos):
         self.parametros = datos
 
@@ -61,12 +57,33 @@ class InfoTransaccion(BaseModel):
         if debug:
             self.debug = debug
 
-    def error_sistema(self, txt_adic: str = '.', debug: str = ""):
-        if self.ret_code is None or self.ret_code >= 0:
-            self.ret_code = -99
-            self.ret_txt = f"Error general. contacte con su administrador ({datetime.now().strftime('%Y%m%d%H%M%S')}){txt_adic}"
-        
-        self.debug = self.debug if not debug else debug
+    # --------------------------------------------------------------------------------------------------------
+    # Va a ser una EXCEPTION controlada o no, pero siempre es una salida abrupta del programa
+    # --------------------------------------------------------------------------------------------------------
+    def error_sistema(self, e: Exception = None, txt_adic: str = '.', debug: str = ""):
+        loc = ""
+        param = self.copy()
+
+        if self.ret_code != -99:
+            if self.ret_code is None or self.ret_code >= 0:
+                self.ret_code = -99
+            param.ret_txt = f"{self.ret_txt}{txt_adic}"
+            param.debug = self.debug if not debug else f"{self.debug} + {debug}"
+
+            
+            if isinstance(e, BaseException): # Comprueba si es una excepción, Debería serlo siempre
+                tb = traceback.extract_tb(e.__traceback__)
+                archivo, linea, funcion, texto_err = tb[-1]
+                loc = f'{texto_err.replace("-", "_")} - {archivo.replace("-", "_")} - {linea} - {funcion}'
+
+            imprime([f"param: {self}",
+                    f"Excepción: {str(e) if e else 'No es una excepción'}",
+                    f"Parametros: {txt_adic}, {debug}",
+                    f"Traza: {loc}",
+                    ],"* --- LOG error_sistema --- ",2)
+
+            graba_log(param, f"error_sistema: {loc}", e)
+
 
     #----------------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------------
@@ -113,3 +130,18 @@ class InfoTransaccion(BaseModel):
     
     def __str__(self):
         return f"App: {self.id_App}, Usuario: {self.user}, Error: {self.ret_code} - {self.ret_txt}, debug: {self.debug}, parametros: {self.parametros}"
+    
+
+
+
+
+
+
+    def sistem_error(self, txt_adic: str = '.', debug: str = ""):
+        if self.ret_code is None or self.ret_code >= 0:
+            self.ret_code = -99
+            self.ret_txt = f"Error general. contacte con su administrador ({datetime.now().strftime('%Y%m%d%H%M%S')}){txt_adic}"
+        
+        self.debug = self.debug if not debug else debug
+
+    

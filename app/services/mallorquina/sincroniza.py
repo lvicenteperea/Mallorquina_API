@@ -26,11 +26,11 @@ def proceso(param: InfoTransaccion) -> list:
         config = obtener_cfg_general(param)
 
         if not config.get("ID", False):
-            param.error_sistema(txt_adic=f'No se han encontrado datos de configuración: config["En_Ejecucion"]', debug=f"{funcion}.config-ID")
+            param.sistem_error(txt_adic=f'No se han encontrado datos de configuración: config["En_Ejecucion"]', debug=f"{funcion}.config-ID")
             raise MiException(param,"No se han encontrado datos de configuración", -1)
 
         if config["En_Ejecucion"]:
-            param.error_sistema(debug=f"{funcion}.config-en_ejecucion")
+            param.sistem_error(debug=f"{funcion}.config-en_ejecucion")
             raise MiException(param,"El proceso ya está en ejecución.", -1)
 
         param.debug = "actualiza ejec 1" 
@@ -44,12 +44,13 @@ def proceso(param: InfoTransaccion) -> list:
         return resultado
                   
     except MiException as e:
+        param.error_sistema(e=e, debug="Sincroniza.Proceso.MiExcepcion")
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=e)
+        param.error_sistema(e=e, debug="Sincroniza.Proceso.Excepcion")
+        raise e # HTTPException(status_code=500, detail=e)
 
     finally:
-        param.debug = "Actualiza Ejec 0"
         actualizar_en_ejecucion(param, 0)
 
 #----------------------------------------------------------------------------------------
@@ -95,12 +96,10 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
 
                   
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.Exception", e)
+        param.error_sistema(e=e, debug="sincroniza.recorretiendas.Excepcion")
         raise
 
     finally:
-        param.debug = "cierra conn"
         close_connection_mysql(conn_mysql, cursor_mysql)
 
 #----------------------------------------------------------------------------------------
@@ -140,13 +139,12 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
 
                   
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.Exception", e)
+        param.error_sistema(e=e, debug="Sincroniza.recorre_entidades.excepcion")
         raise
 
     finally:
-        param.debug = "cierra conn"
-        cursor_mysql.close()
+        if cursor_mysql is not None:
+            cursor_mysql.close()
 
 
 #----------------------------------------------------------------------------------------
@@ -158,7 +156,6 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
 #----------------------------------------------------------------------------------------
 def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> list:
     resultado = []
-    valor_max: str = None
 
     try:
         # ----------------------------------------------------------------------------------------------------
@@ -213,13 +210,12 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tablas.Exception", e)
+        param.error_sistema(e=e, debug="Sincroniza.recorre_tablas.excepcion")
         raise 
             
     finally:
-        param.debug = "Cierra Cursor"
-        cursor_mysql.close()
+        if cursor_mysql is not None:
+            cursor_mysql.close()
 
 
 
@@ -227,21 +223,9 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
 #----------------------------------------------------------------------------------------
 def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_config) -> list:   # retorna  [valor_max, insertados, Actualizados]
     param.debug="Inicio"
-    cursor_mysql = None # para que no de error en el finally
 
     try:
-        param.debug = "Obtener cursor"
-        # Obtener configuración y campos necesarios
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
-        
-        # param.debug = "Select cfg_tablas"
-        # # Obtener nombre de la tabla y si se debe borrar
-        # cursor_mysql.execute("SELECT * FROM mll_cfg_tablas WHERE ID = %s", (tabla["ID_Tabla"],))
-
-        # tabla_config = cursor_mysql.fetchone()
-        # cursor_mysql.close()
-
-        nombre_tabla = tabla_config["Tabla_Origen"]
+        # nombre_tabla_origen = tabla_config["Tabla_Origen"]
         nombre_tabla_destino = tabla_config["Tabla_Destino"]
 
         param.debug = "obtener campos"
@@ -269,8 +253,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
         return resultados
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "procesar_tabla.Exception", e)
+        param.error_sistema(e=e, debug="Sincroniza.procesar_tabla.excepción")
         raise 
 
 

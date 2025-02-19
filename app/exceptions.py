@@ -2,6 +2,7 @@ from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 import json
 import traceback
+from datetime import datetime
 
 from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
@@ -29,17 +30,43 @@ async def mi_exception_handler(request: Request, exc: MiException):
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
 async def generic_exception_handler(request: Request, exc: Exception):
+    loc = "no disponible"
     imprime([f"ERROR GENERAL: {str(exc)}"], "=   generic_exception_handler   ")
+
+    # ---------------------------------------------------------------------------------------------------------------------------
+    param = InfoTransaccion(id_App=1, user="Vamos a ver1", ret_code=-1, ret_txt=str(exc), parametros=[])
+
+    if isinstance(exc, BaseException): # Comprueba si es una excepción
+        tb = traceback.extract_tb(exc.__traceback__)
+        archivo, linea, funcion, texto_err = tb[-1]
+        loc = f'{texto_err.replace("-", "_")} - {archivo.replace("-", "_")} - {linea} - {funcion}'
+
+    graba_log(param, f"generic_exception_handler: {loc}", exc)
+
+    imprime([f"HTTP ERROR: {exc}", 
+             f"📌 URL: {request.url}",
+             f"📌 Método: {request.method}",
+             f"📌 Headers: {dict(request.headers)}",
+             #f"📌 Body: {await request.body()}",  # Para leer el cuerpo de la solicitud
+             #f"📌 Detalles del error: {exc.detail}",
+             f"📌 Localización: {loc}"
+            ], "=   http_exception_handler   ", 2)
+    # ---------------------------------------------------------------------------------------------------------------------------
 
     return JSONResponse(
         status_code=500,
-        content={"status_code": 500, "message": "Contacte con su administrador"}
+        content={"status_code": 500, 
+                 "message": f"Error general. contacte con su administrador ({datetime.now().strftime('%Y%m%d%H%M%S')})"
+                }
     )
 
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------
 async def http_exception_handler(request: Request, exc: HTTPException):
     loc = "no disponible"
+    imprime([f"ERROR HTTP: {str(exc)}"], "=   http_exception_handler   ")
+
+    # ---------------------------------------------------------------------------------------------------------------------------
     param = InfoTransaccion(id_App=1, user="Vamos a ver", ret_code=-1, ret_txt="pues el RET_TXT", parametros=[])
 
     if isinstance(exc, BaseException): # Comprueba si es una excepción
@@ -58,10 +85,13 @@ async def http_exception_handler(request: Request, exc: HTTPException):
              f"📌 Detalles del error: {exc.detail}",
              f"📌 Localización: {loc}"
             ], "=   http_exception_handler   ", 2)
+    # ---------------------------------------------------------------------------------------------------------------------------
 
     return JSONResponse(
         status_code=exc.status_code,
-        content={"status_code": exc.status_code, "message": "Contacte con su administrador"}
+        content={"status_code": exc.status_code, 
+                 "message": f"Error general. contacte con su administrador ({datetime.now().strftime('%Y%m%d%H%M%S')})"
+                }
     )
 
 # ---------------------------------------------------------------------------------------

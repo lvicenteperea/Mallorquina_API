@@ -54,7 +54,6 @@ async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
         param = InfoTransaccion.from_request(body_params)
         
         tiempo = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # imprime([tiempo], "*  INICIO  ")
 
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
@@ -68,7 +67,7 @@ async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if param.user != authenticated_user:
-            param.error_sistema(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
+            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
             raise MiException(param,"Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
@@ -87,13 +86,14 @@ async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
    
 
     except MiException as e:
+        print("---------------- MiException ---------------------")
         raise e
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_sincroniza.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_sincroniza.HTTP_Exception")
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=e)
+        param.error_sistema(e=e, debug="mll_sincroniza.Exception")
+        raise e
 
 
 
@@ -127,7 +127,7 @@ async def mll_consultas_cierre( request: Request,  # Para acceder a request.stat
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if param.user != authenticated_user:
-            param.error_sistema(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
+            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
             raise MiException(param,"Los usuarios no corresponden", -1)
         # else:
         #     print(f"Usuario autenticado: {authenticated_user}")
@@ -146,8 +146,7 @@ async def mll_consultas_cierre( request: Request,  # Para acceder a request.stat
         graba_log(param, "mll_consultas_cierre.MiException", e)
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_consultas_cierre.Exception", e)
+        param.error_sistema(e=e, debug="mll_consultas_cierre.Exception")
 
 
 
@@ -172,7 +171,7 @@ async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.us
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
-            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+            param.sistem_error(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
             raise MiException(param,"Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
@@ -187,13 +186,11 @@ async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.us
         graba_log(param, "mll_arqueo_caja.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_arqueo_caja.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_arqueo_caja.HTTPException")
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_arqueo_caja.Exception", e)
+        param.error_sistema(e=e, debug="mll_arqueo_caja.Exception")
 
     finally:
         return param
@@ -233,12 +230,10 @@ async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificado
         graba_log(param, "mll_inf_arqueo_caja.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_inf_arqueo_caja.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_inf_arqueo_caja.HTTPException")
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_inf_arqueo_caja.Exception", e)
+        param.error_sistema(e=e, debug="mll_inf_arqueo_caja.Exception")
 
     finally:
         return param
@@ -270,13 +265,11 @@ async def mll_convierte_tarifas(id_App: int = Query(..., description="Identifica
         graba_log(param, "mll_convierte_tarifas.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_convierte_tarifas.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_convierte_tarifas.HTTPException")
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_convierte_tarifas.Exception", e)
+        param.error_sistema(e=e, debug="mll_convierte_tarifas.Exception")
 
     finally:
         return param
@@ -307,7 +300,7 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         if user != authenticated_user:
-            param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+            param.sistem_error(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
             raise MiException(param,"Los usuarios no corresponden", -1)
         # else:
         #     print(f"Usuario autenticado: {authenticated_user}")
@@ -326,13 +319,11 @@ async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.
         graba_log(param, "mll_fichas_tecnicas.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_fichas_tecnicas.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_fichas_tecnicas.HTTPException")
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_fichas_tecnicas.Exception", e)
+        param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
 
 
 #----------------------------------------------------------------------------------
@@ -370,13 +361,11 @@ async def mll_carga_prod_erp(id_App: int = Form(..., description="Identificador 
         graba_log(param, "mll_carga_prod_erp.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_carga_prod_erp.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_carga_prod_erp.HTTPException")
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_fichas_tecnicas.Exception", e)
+        param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
 
     finally:
         return param
@@ -409,13 +398,11 @@ async def mll_carga_prod_erp2(request: Request,  # Para acceder a request.state.
         graba_log(param, "mll_carga_prod_erp.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_carga_prod_erp.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_carga_prod_erp.HTTPException")
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_fichas_tecnicas.Exception", e)
+        param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
 
     finally:
         return param
@@ -449,7 +436,7 @@ async def mll_descarga(request: Request,
         # Verificar la autenticación
         # authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
         # if user != authenticated_user:
-        #     param.error_sistema(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
+        #     param.sistem_error(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
         #     raise MiException(param,"Los usuarios no corresponden", -1)
         # else:
         #     print(f"Usuario autenticado: {authenticated_user}")
@@ -465,14 +452,12 @@ async def mll_descarga(request: Request,
         raise
 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_sync_todo.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_sync_todo.HTTPException")
         raise
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_descarga.Exception", e)
+        param.error_sistema(e=e, debug="mll_descarga.Exception")
         raise
 
  
@@ -500,13 +485,11 @@ async def mll_encargos_navidad(id_App: int = Query(..., description="Identificad
         graba_log(param, "mll_carga_prod_erp.MiException", e)
                 
     except HTTPException as e:
-        param.error_sistema()
-        graba_log(param, "mll_carga_prod_erp.HTTPException", e)
+        param.error_sistema(e=e, debug="mll_carga_prod_erp.HTTPException")
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "mll_fichas_tecnicas.Exception", e)
+        param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
 
     finally:
         return param_resultado

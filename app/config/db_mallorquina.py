@@ -77,8 +77,7 @@ def get_db_connection_mysql():
         return connection
     
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "db_mallorquina.get_db_connection_mysql", e)
+        param.error_sistema(e=e, debug="db_mallorquina.get_db_connection_mysql")
         raise
 
 #----------------------------------------------------------------------------------------

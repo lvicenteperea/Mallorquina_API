@@ -43,7 +43,7 @@ def proceso(param: InfoTransaccion) -> list:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "proceso.Exception", e)
         raise 
         
@@ -120,7 +120,7 @@ def carga (param: InfoTransaccion, archivos: list, conn_mysql, cursor):
 
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "carga.Exception", e)
         raise 
 

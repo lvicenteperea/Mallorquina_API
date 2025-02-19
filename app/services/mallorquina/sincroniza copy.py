@@ -29,11 +29,11 @@ def proceso(param: InfoTransaccion) -> list:
         config = obtener_cfg_general(param)
 
         if not config.get("ID", False):
-            param.error_sistema(txt_adic=f'No se han encontrado datos de configuración: config["En_Ejecucion"]', debug=f"{funcion}.config-ID")
+            param.sistem_error(txt_adic=f'No se han encontrado datos de configuración: config["En_Ejecucion"]', debug=f"{funcion}.config-ID")
             raise MiException(param,"No se han encontrado datos de configuración", -1)
 
         if config["En_Ejecucion"]:
-            param.error_sistema(debug=f"{funcion}.config-en_ejecucion")
+            param.sistem_error(debug=f"{funcion}.config-en_ejecucion")
             raise MiException(param,"El proceso ya está en ejecución.", -1)
 
         param.debug = "actualiza ejec 1" 
@@ -103,8 +103,7 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
 
                   
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.Exception", e)
+        param.error_sistema(e=e, debug="recorre_tiendas.Exception")
         raise
 
     finally:
@@ -148,8 +147,7 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
 
                   
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.Exception", e)
+        param.error_sistema(e=e, debug="recorre_tiendas.Exception")
         raise
 
     finally:
@@ -221,8 +219,7 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tablas.Exception", e)
+        param.error_sistema(e=e, debug="recorre_tablas.Exception")
         raise 
             
     finally:
@@ -277,8 +274,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
         return resultados
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "procesar_tabla.Exception", e)
+        param.error_sistema(e=e, debug="procesar_tabla.Exception")
         raise 
 
 
@@ -387,7 +383,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
 #         return [valor_max, insertados, actualizados]
 
 #     except Exception as e:
-#         param.error_sistema()
+#         param.error_sistema(e=e)
 #         graba_log(param, "proceso_general.Exception", e)
 #         raise 
 
@@ -426,7 +422,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
 #         return [registros, lista_pk, lista_max_valor]
 
 #     except Exception as e:
-#         param.error_sistema()
+#         param.error_sistema(e=e)
 #         graba_log(param, "Obtener_datos_origen.Exception", e)
 #         raise 
 
@@ -477,7 +473,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
 #         return [query, lista_pk, lista_max_valor]
 
 #     except Exception as e:
-#         param.error_sistema()
+#         param.error_sistema(e=e)
 #         graba_log(param, "Obtener_datos_origen.Exception", e)
 #         raise 
 
@@ -560,7 +556,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
 #         return f"WHERE {' AND '.join(where_clause)}"
 
 #     except Exception as e:
-#         param.error_sistema()
+#         param.error_sistema(e=e)
 #         graba_log(param, "generar_where.Exception", e)
 #         raise 
 # #----------------------------------------------------------------------------------------
@@ -640,7 +636,7 @@ def proceso_especifico(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_
         return resultado
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "proceso_especifico.Exception", e)
         raise 
 

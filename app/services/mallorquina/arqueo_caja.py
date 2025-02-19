@@ -84,8 +84,7 @@ def proceso(param: InfoTransaccion) -> list:
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise
         
     finally:
@@ -160,8 +159,7 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql, fecha) -> dict
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "consultar_y_grabar.Exception", e)
+        param.error_sistema(e=e, debug="consultar_y_grabar.Exception")
         raise 
 
     finally:
@@ -200,8 +198,7 @@ def busca_tvp(param: InfoTransaccion, conn_mysql, id_tienda,  id_tpv) -> int:
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "busca_tvp.Exception", e)
+        param.error_sistema(e=e, debug="busca_tvp.Exception")
  
 
     finally:
@@ -321,7 +318,6 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos, fecha) -> dict:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "grabar.Exception", e)
+        param.error_sistema(e=e, debug="grabar.Exception")
         raise 
 

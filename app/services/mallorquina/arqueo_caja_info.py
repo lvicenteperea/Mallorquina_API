@@ -55,8 +55,7 @@ def informe(param: InfoTransaccion) -> list:
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
 
     finally:
@@ -122,8 +121,7 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
 
 
@@ -175,8 +173,7 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
         return f"Se ha generado el fichero {fichero} correctamente."
     
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
 
 #----------------------------------------------------------------------------------------
@@ -291,6 +288,5 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         return f"Se ha generado el fichero {fichero} correctamente"
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 

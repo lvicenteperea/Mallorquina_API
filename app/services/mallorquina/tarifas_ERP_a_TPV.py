@@ -57,8 +57,7 @@ def proceso(param: InfoTransaccion) -> list:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
         
 
@@ -124,8 +123,7 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -145,8 +143,7 @@ def obtener_datos(param: InfoTransaccion) -> pd.DataFrame:
         return df
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "obtener_datos.Exception", e)
+        param.error_sistema(e=e, debug="obtener_datos.Exception")
         raise 
 
     finally:

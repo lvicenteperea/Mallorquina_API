@@ -34,8 +34,7 @@ def proceso(param: InfoTransaccion) -> list:
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "proceso.Exception", e)
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
         
     finally:
@@ -231,8 +230,7 @@ def carga (param: InfoTransaccion, excel):
 
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "carga.Exception", e)
+        param.error_sistema(e=e, debug="carga.Exception")
         raise 
 
     finally:

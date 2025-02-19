@@ -78,7 +78,7 @@ def crear_tabla_destino(param: InfoTransaccion, conn_mysql, nombre_tabla, campos
         conn_mysql.commit()
 
     except Exception as e:
-        param.error_sistema()
+        param.error_sistema(e=e)
         graba_log(param, "recorre_tiendas.Exception", e)
         raise e
     
@@ -132,8 +132,7 @@ def crear_tabla_destino(param: InfoTransaccion, conn_mysql, nombre_tabla, campos
         conn_mysql.commit()
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, "recorre_tiendas.Exception", e)
+        param.error_sistema(e=e, debug="recorre_tiendas.Exception")
         raise e
     
     finally:

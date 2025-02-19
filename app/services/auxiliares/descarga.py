@@ -32,8 +32,7 @@ def proceso(param: InfoTransaccion):
     
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, f"Excepción descarga.proceso-{param.debug}", e)
+        param.error_sistema(e=e, debug="Excepción descarga.proceso")
         raise
 
 
@@ -61,8 +60,7 @@ def descarga_precios_tpv(param: InfoTransaccion, nombres: list):
         return resultado
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, f"Excepción descarga.descarga_precios_tpv-{param.debug}", e)
+        param.error_sistema(e=e, debug="Excepción descarga.descarga_precios_tpv")
         raise
 
 
@@ -111,7 +109,6 @@ def descarga_alergenos(param: InfoTransaccion):
         return FileResponse(zip_filename, filename=nombre)
 
     except Exception as e:
-        param.error_sistema()
-        graba_log(param, f"Excepción descarga.descarga_alergenos-{param.debug}", e)
+        param.error_sistema(e=e, debug="Excepción descarga.descarga_alergenos")
         raise
 

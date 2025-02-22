@@ -100,7 +100,7 @@ async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-class ConsultaCierreRequest(ParamRequest):
+class FechaRequest(ParamRequest):
     fecha: str    # Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual
     tienda: Optional[int] = 0   # Tienda de la que queremos sacar la información
     
@@ -115,7 +115,7 @@ class ConsultaCierreRequest(ParamRequest):
              response_description="📌 -------------------------------------------------"
             )
 async def mll_consultas_cierre( request: Request,  # Para acceder a request.state.user
-                                body_params: ConsultaCierreRequest = Body(...),
+                                body_params: FechaRequest = Body(...),
                                ):
     try:
         # --------------------------------------------------------------------------------
@@ -162,9 +162,6 @@ async def mll_consultas_cierre( request: Request,  # Para acceder a request.stat
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-class ArqueoCajaRequest(ParamRequest):
-    fecha: str    # Fecha de la solicitud en formato 'YYYY-MM-DD'
-
 @router.get("/mll_arqueo_caja", response_model=InfoTransaccion,
              summary="🔄 Generación de los arqueos de caja pra un dia",
              description="""Retorna un JSON con los datos.
@@ -176,26 +173,24 @@ class ArqueoCajaRequest(ParamRequest):
              response_description="📌 -------------------------------------------------"
             )
 async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.user
-                            body_params: ArqueoCajaRequest = Body(...),
+                            id_App: int = Query(..., description="Identificador de la aplicación"),
+                            user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                            ret_code: int = Query(..., description="Código de retorno inicial"),
+                            ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                            fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD'"),
                          ):
     try:
-        # --------------------------------------------------------------------------------
-        # Validaciones y construcción Básica
-        # --------------------------------------------------------------------------------
-        # Si no se proporciona `fecha`, usar la actual
-        if not body_params.fecha:
-            body_params.fecha = datetime.now().strftime('%Y-%m-%d')
+        resultado = []
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha])
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha}"
 
         # --------------------------------------------------------------------------------
-        param = InfoTransaccion.from_request(body_params)
-
-         # --------------------------------------------------------------------------------
         # Control de autenticación de usuario
         # --------------------------------------------------------------------------------
         # Verificar la autenticación
         authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if param.user != authenticated_user:
-            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
+        if user != authenticated_user:
+            param.sistem_error(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
             raise MiException(param,"Los usuarios no corresponden", -1)
 
         # --------------------------------------------------------------------------------
@@ -205,22 +200,24 @@ async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.us
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
         param.ret_txt = "OK"
-
-        return param
-
+    
     except MiException as e:
         graba_log(param, "mll_arqueo_caja.MiException", e)
+                
+    except HTTPException as e:
+        param.error_sistema(e=e, debug="mll_arqueo_caja.HTTPException")
+
 
     except Exception as e:
         param.error_sistema(e=e, debug="mll_arqueo_caja.Exception")
-   
+
+    finally:
+        return param
+
+    
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
-class InfArqueoCajaRequest(ParamRequest):
-    fecha: str    # Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual
-    tienda: Optional[int] = 0   # BBDD/Tienda (mll_cfg_bbdd) de la que queremos la información, 0 --> Todas
-
 @router.get("/mll_inf_arqueo_caja", response_model=InfoTransaccion,
              summary="🔄 Informe de uno de los arqueos de caja realizados",
              description="""Retorna un JSON con los datos.
@@ -231,29 +228,24 @@ class InfArqueoCajaRequest(ParamRequest):
                          """,
              response_description="📌 -------------------------------------------------"
             )
-async def mll_inf_arqueo_caja( request: Request,  # Para acceder a request.state.user
-                               body_params: InfArqueoCajaRequest = Body(...),
+async def mll_inf_arqueo_caja(id_App: int = Query(..., description="Identificador de la aplicación"),
+                              user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
+                              ret_code: int = Query(..., description="Código de retorno inicial"),
+                              ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
+                              fecha: str = Query(None, description="Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual"),
+                              tienda: int = Query(0, description="BBDD/Tienda (mll_cfg_bbdd) de la que queremos la información, 0 --> Todas"),
                              ):
 
     try:
-        # --------------------------------------------------------------------------------
-        # Validaciones y construcción Básica
-        # --------------------------------------------------------------------------------
-        # Si no se proporciona `fecha`, usar la actual
+        resultado = []
         if not fecha: # si no tiene parametro fecha
             fecha = datetime.now().strftime('%Y-%m-%d')
 
-        # --------------------------------------------------------------------------------
-        param = InfoTransaccion.from_request(body_params)
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fecha, tienda], debug="Inicio")
+        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fecha} - {tienda}"
 
-        # --------------------------------------------------------------------------------
-        # Control de autenticación de usuario
-        # --------------------------------------------------------------------------------
-        # Verificar la autenticación
-        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if param.user != authenticated_user:
-            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
-            raise MiException(param,"Los usuarios no corresponden", -1)
+        imprime("Llegamos", "*")
+
 
         # --------------------------------------------------------------------------------
         resultado = arqueo_caja_info.informe(param = param)
@@ -261,18 +253,18 @@ async def mll_inf_arqueo_caja( request: Request,  # Para acceder a request.state
                 
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
-
-        return param
     
     except MiException as e:
         graba_log(param, "mll_inf_arqueo_caja.MiException", e)
                 
-    # except HTTPException as e:
-    #     param.error_sistema(e=e, debug="mll_inf_arqueo_caja.HTTPException")
+    except HTTPException as e:
+        param.error_sistema(e=e, debug="mll_inf_arqueo_caja.HTTPException")
 
     except Exception as e:
         param.error_sistema(e=e, debug="mll_inf_arqueo_caja.Exception")
 
+    finally:
+        return param
  
 
 #----------------------------------------------------------------------------------

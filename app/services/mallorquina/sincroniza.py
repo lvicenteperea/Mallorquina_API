@@ -76,7 +76,7 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime([f"Procesando BBDD(Tienda): {bbdd['ID']}-{bbdd['Nombre']}", f"Conexión: {json.loads(bbdd['Conexion'])['database']}", bbdd], "*")
+            imprime([f"📚 Procesando BBDD(Tienda): {bbdd['ID']}-{bbdd['Nombre']}", f"Conexión: {json.loads(bbdd['Conexion'])['database']}", bbdd], "*")
 
             # ---------------------------------------------------------------------------------------
             param.debug = "por tablas"
@@ -119,7 +119,7 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
         lista_entidades = cursor_mysql.fetchall()
 
         for entidad in lista_entidades:
-            imprime([f"Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", entidad], "-")
+            imprime([f"📒 Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", entidad], "-")
             
             # -------------------------------------------------------------------------
             param.debug = "por tablas"
@@ -193,7 +193,7 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
                 tabla_config = cursor_mysql.fetchone()
                 # -----------------------------------------------------------------------------------------
 
-                imprime([f"Procesando TABLA:", tabla_config["Tabla_Origen"], tabla, [datetime.now(),  ultima_actualizacion, timedelta(days=intervalo)]], "-")
+                imprime([f"🔖 Procesando TABLA:", tabla_config["Tabla_Origen"], tabla, [datetime.now(),  ultima_actualizacion, timedelta(days=intervalo)]], "-")
                 param.debug = f"Procesando tabla: {tabla}"
 
                 # -----------------------------------------------------------------------------------------

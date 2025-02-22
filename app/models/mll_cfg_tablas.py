@@ -15,11 +15,11 @@ def obtener_campos_tabla(conn, id_entidad, id_tabla):
     query = """SELECT a.*, b.ult_valor FROM mll_cfg_campos a
                 inner join mll_cfg_tablas_entidades b on a.id_tabla = b.id_tabla and id_entidad = %s
                 WHERE a.ID_Tabla = %s
-                ORDER BY CASE 
-							WHEN a.PK = 0 THEN 99 
-							ELSE a.PK 
-						 END
-            """
+                ORDER BY a.orden"""
+                # ORDER BY CASE 
+				#			WHEN a.PK = 0 THEN 99 
+				#			ELSE a.PK 
+				#		   END"""
     # imprime([id_bbdd, id_tabla, query], '$')
     cursor = conn.cursor(dictionary=True)
     cursor.execute(query, (id_entidad, id_tabla))

@@ -8,7 +8,7 @@ from app.config.db_mallorquina import get_db_connection_sqlserver, close_connect
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
 
-PAGINACION: int = 100
+# PAGINACION: int = 500   ... esto no está hecho para tablas en las que haya que paginar....
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
@@ -18,9 +18,8 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
     valor_max = None
     insertados = 0
     actualizados = 0
-
+    # salto = 0  ... esto no está hecho para tablas en las que haya que paginar....
     try:
-        salto = 0
         proximo_valor = tabla["ult_valor"]
         nombre_tabla_destino = tabla_config['Tabla_Destino'] 
         nombre_tabla_origen  = tabla_config['Tabla_Origen'] 
@@ -33,11 +32,11 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         # z=1/0
 
         while True:
-            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor, salto)
+            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor) # , salto)
             if len(registros) == 0:
                 break
 
-            salto += PAGINACION
+            # salto += PAGINACION  ... esto no está hecho para tablas en las que haya que paginar....
 
             param.debug = "A por los campos"
             # Identificar el campo PK basado en mll_cfg_campos
@@ -65,6 +64,8 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
                 pk_value = registro[pk_index]
 
                 proximo_valor = ", ".join(str(registro[i]) for i in lista_max_valor)
+                param.debug = f"Proximo valor: {proximo_valor}"
+
                 if "U" in tabla_config["insert_update"]:
                     if nombre_tabla_destino == "___tpv_salones_restaurante":
                         select = f"""SELECT COUNT(*) 
@@ -91,7 +92,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
                     campos_update_filtrado = [campo for campo in campos_update if not (campo['Nombre'].startswith('{') and campo['Nombre'].endswith('}'))]
                     valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
                                                 for campo in campos_update_filtrado] + [pk_value, entidad["id_bbdd"]]
-                    # imprime(["update:......", pk_value, update_query, valores_update], "=")
+                    # imprime(["update:......", pk_value, update_query, valores_update], "=......UPDATE......")
                     cursor_mysql.execute(update_query, valores_update)
                     actualizados += cursor_mysql.rowcount
                 else:
@@ -100,7 +101,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
                         registro_destino = list(registro) + [entidad["id_bbdd"]] + [entidad['stIdEnt']] # Campos + Origen + stIdEnt
                     else:
                         registro_destino = list(registro) + [entidad["id_bbdd"]]  # Campos + Origen
-                    # imprime([insert_query, registro_destino, entidad], "=......INSERT:......", 2)
+                    # imprime([insert_query, registro_destino, entidad], "=......INSERT......", 2)
                     cursor_mysql.execute(insert_query, registro_destino)
                     insertados += cursor_mysql.rowcount
 
@@ -123,7 +124,15 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor, salto) -> list: # el primer dato son los registros y el segundo la lista de PKs de la tabla
+# Función para convertir datetime en string
+# def convertir_fechas(tupla):
+#     return tuple(
+#         elemento.strftime("%Y-%m-%d %H:%M:%S") if isinstance(elemento, datetime) else elemento
+#         for elemento in tupla
+#     )
+
+
+def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor) -> list: 
     param.debug="Inicio"
     conn_sqlserver = None # para que no de error en el finally
     cursor_sqlserver = None # para que no de error en el finally
@@ -144,12 +153,17 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
 
         # Contruimos la SELECT que va a recoger los datos de ORIGEN
         param.debug = "Construir Select"
-        select_query, lista_pk, lista_max_valor = construir_consulta(param, entidad, campos, nombre_tabla, campos_PK, ult_valor, salto)
+        select_query, lista_pk, lista_max_valor = construir_consulta(param, entidad, campos, nombre_tabla, campos_PK, ult_valor) # ya no se recibe como parametro, salto)
 
         # Ejecución del cursor
+        imprime([select_query], "*")
         param.debug = "Ejecutar select"
         cursor_sqlserver.execute(select_query)
+
         registros = cursor_sqlserver.fetchall()
+        # datos = cursor_sqlserver.fetchall()
+        # registros = [convertir_fechas(tupla) for tupla in datos]
+        # imprime(registros, "* --- REGISTROS ---",2)
 
         return [registros, lista_pk, lista_max_valor]
 
@@ -163,7 +177,7 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, campos_PK, ult_valor, salto) -> list: # el primer elemento la query y el segundo la lista de PKs
+def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, campos_PK, ult_valor) -> list: 
     try:
         # Construcción de la lista de campos para la SELECT
         campos_select = [campo['Nombre'] for campo in campos if not campo['Nombre'].startswith('{')]
@@ -173,8 +187,6 @@ def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, ca
         lista_pk_campos, lista_pk_formato, lista_pk_para_order = separar_campos_pk(campos_PK)
 
         condiciones_where = generar_where(param, lista_pk_campos, lista_pk_valores, lista_pk_formato, lista_pk_para_order)
-        if nombre_tabla == "[___Salones Restaurante]":
-            condiciones_where =f"{condiciones_where} AND stIdEnt = {entidad['stIdEnt']}"
 
         lista_max_valor = []
 
@@ -194,9 +206,11 @@ def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, ca
         query = f"SELECT {', '.join(campos_select)} FROM {nombre_tabla} {condiciones_where}"
         if condiciones_order:
             query += f" ORDER BY {' , '.join(condiciones_order)}"
-            query = f"""{query} 
-                    OFFSET {salto} ROWS            -- Salta 0 filas
-                    FETCH NEXT {PAGINACION} ROWS ONLY; -- Toma las siguientes 100"""
+
+            # ... esto no está hecho para tablas en las que haya que paginar....
+            # query = f"""{query} 
+            #         OFFSET {salto} ROWS            -- Salta 0 filas
+            #         FETCH NEXT {PAGINACION} ROWS ONLY; -- Toma las siguientes 100"""
         
 
         # imprime([query, lista_pk, lista_max_valor], "*  construir_consulta", 2)

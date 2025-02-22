@@ -1,27 +1,35 @@
-l1= """[Id Plato], 
-[Orden Factura], Descripcion, Importe, Raciones, Peso, [Impuesto Incluido], [Total Base], [Total Impuesto], [Total Total], [Fecha Invitacion], [Id Relacion], [Serie Puesto Facturacion], Modo, [Fusion], Iva2Sn, Modo2, bPrimerCombinado, [Id Camarero], [Id Usuario], [Nombre Camarero], [Nombre Usuario], [Id Familia], [Des Familia], [Id SubFamilia], [Des SubFamilia], [Id Grupo], [Des Grupo], [Peso 100], [Dcto %], [Total Dcto], 
-Rac_Ini, 
-[Modo Botella], Refrescos, [Id Clase], 
-[Id Principal], 
-Fecha_Hora, 
-[Cantidad Receta], [Desc Cantidad], [Tipo Bono Tarjeta PP], [Id Tarjeta PP], 
-stIdEnt , {entidad['ID']}  as id_entidad"""
-l2= """Id_Plato, 
-Orden_Factura, Descripcion, Importe, Raciones, Peso, Impuesto_Incluido, Total_Base, Total_Impuesto, Total_Total, Fecha_Invitacion, Id_Relacion, Serie_Puesto_Facturacion, Modo, Fusion, Iva2Sn, Modo2, bPrimerCombinado, Id_Camarero, Id_Usuario, Nombre_Camarero, Nombre_Usuario, Id_Familia, Des_Familia, Id_SubFamilia, Des_SubFamilia, Id_Grupo, Des_Grupo, Peso_100, Dcto_pct, Total_Dcto,
-Rac_Ini, 
-Modo_Botella, Refrescos, Id_Clase, 
-Id_Principal,  
-Fecha_Hora, 
-Cantidad_Receta, Desc_Cantidad, Tipo_Bono_Tarjeta_PP, Id_Tarjeta_PP, 
-stIdEnt, id_entidad"""
-l3= "(stIdEnt, Id_Principal, Orden_Factura, Descripcion, Importe, Raciones, Peso, Impuesto_Incluido, Total_Base, Total_Impuesto, Total_Total, Fecha_Invitacion, Id_Relacion, Serie_Puesto_Facturacion, Modo, Fusion, Iva2Sn, Modo2, bPrimerCombinado, Id_Camarero, Id_Usuario, Nombre_Camarero, Nombre_Usuario, Id_Familia, Des_Familia, Id_SubFamilia, Des_SubFamilia, Id_Grupo, Des_Grupo, Peso_100, Dcto_pct, Total_Dcto, id_entidad, Modo_Botella, Refrescos, Id_Clase, Id_Plato, Rac_Ini, Cantidad_Receta, Desc_Cantidad, Tipo_Bono_Tarjeta_PP, Id_Tarjeta_PP, Fecha_Hora) "
-l4= "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+import datetime
+print(datetime.datetime(2055, 1, 1, 0, 0))
 
 
-print(l1.count(','))
-print(l2.count(','))
-print(l3.count(','))
-print(l4.count(','))
+
+
+# l1= """[Id Plato], 
+# [Orden Factura], Descripcion, Importe, Raciones, Peso, [Impuesto Incluido], [Total Base], [Total Impuesto], [Total Total], [Fecha Invitacion], [Id Relacion], [Serie Puesto Facturacion], Modo, [Fusion], Iva2Sn, Modo2, bPrimerCombinado, [Id Camarero], [Id Usuario], [Nombre Camarero], [Nombre Usuario], [Id Familia], [Des Familia], [Id SubFamilia], [Des SubFamilia], [Id Grupo], [Des Grupo], [Peso 100], [Dcto %], [Total Dcto], 
+# Rac_Ini, 
+# [Modo Botella], Refrescos, [Id Clase], 
+# [Id Principal], 
+# Fecha_Hora, 
+# [Cantidad Receta], [Desc Cantidad], [Tipo Bono Tarjeta PP], [Id Tarjeta PP], 
+# stIdEnt , {entidad['ID']}  as id_entidad"""
+# l2= """Id_Plato, 
+# Orden_Factura, Descripcion, Importe, Raciones, Peso, Impuesto_Incluido, Total_Base, Total_Impuesto, Total_Total, Fecha_Invitacion, Id_Relacion, Serie_Puesto_Facturacion, Modo, Fusion, Iva2Sn, Modo2, bPrimerCombinado, Id_Camarero, Id_Usuario, Nombre_Camarero, Nombre_Usuario, Id_Familia, Des_Familia, Id_SubFamilia, Des_SubFamilia, Id_Grupo, Des_Grupo, Peso_100, Dcto_pct, Total_Dcto,
+# Rac_Ini, 
+# Modo_Botella, Refrescos, Id_Clase, 
+# Id_Principal,  
+# Fecha_Hora, 
+# Cantidad_Receta, Desc_Cantidad, Tipo_Bono_Tarjeta_PP, Id_Tarjeta_PP, 
+# stIdEnt, id_entidad"""
+# l3= "(stIdEnt, Id_Principal, Orden_Factura, Descripcion, Importe, Raciones, Peso, Impuesto_Incluido, Total_Base, Total_Impuesto, Total_Total, Fecha_Invitacion, Id_Relacion, Serie_Puesto_Facturacion, Modo, Fusion, Iva2Sn, Modo2, bPrimerCombinado, Id_Camarero, Id_Usuario, Nombre_Camarero, Nombre_Usuario, Id_Familia, Des_Familia, Id_SubFamilia, Des_SubFamilia, Id_Grupo, Des_Grupo, Peso_100, Dcto_pct, Total_Dcto, id_entidad, Modo_Botella, Refrescos, Id_Clase, Id_Plato, Rac_Ini, Cantidad_Receta, Desc_Cantidad, Tipo_Bono_Tarjeta_PP, Id_Tarjeta_PP, Fecha_Hora) "
+# l4= "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+# print(l1.count(','))
+# print(l2.count(','))
+# print(l3.count(','))
+# print(l4.count(','))
+
+
+
 
 
 # Datos:       (200004, 0, 'CROISSANT', Decimal('1.800'), Decimal('1.000'), Decimal('0.000'), True, Decimal('1.640'), Decimal('0.160'), Decimal('1.800'), None, 1158479, 'V1', 0, False, False, 0, False, 0, 2, '', 'CAMARERO = 1', 0, '', 0, '', 1, 'BOLLERIA', 0, Decimal('0.00'), Decimal('0.00'), Decimal('0.00'), 0, Decimal('0.00'), 0, 2845056, datetime.datetime(2025, 2, 14, 8, 1, 46, 307000), Decimal('1.000'), '', 0, 0, '2202232042133764', 5)

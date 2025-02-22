@@ -44,7 +44,8 @@ class SincronizaRequest(ParamRequest):
                                 - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
                                 - ✅ **Retorna `status` y `message` indicando el éxito o error**
                          """,
-             response_description="📌 Respuesta de un objeto tipo InfoTransaccion, y en el atributo 'resultados' habrá una lista de textos")
+             response_description="📌 Respuesta de un objeto tipo InfoTransaccion, y en el atributo 'resultados' habrá una lista de textos"
+            )
 @router.get("/mll_sincroniza", response_model=InfoTransaccion)
 async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
                          body_params: SincronizaRequest = Body(...)
@@ -103,7 +104,16 @@ class FechaRequest(ParamRequest):
     fecha: str    # Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual
     tienda: Optional[int] = 0   # Tienda de la que queremos sacar la información
     
-@router.post("/mll_consultas_cierre", response_model=InfoTransaccion)
+@router.post("/mll_consultas_cierre", response_model=InfoTransaccion,
+             summary="🔄 Consulta de los datos de cierre una fecha de una tienda",
+             description="""Retorna un JSON con los datos.
+
+                                - ✅ **Requiere autenticación**
+                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
+                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
+                         """,
+             response_description="📌 Respuesta de un objeto tipo InfoTransaccion, y en el atributo 'resultados' habrá una lista de textos"
+)
 async def mll_consultas_cierre( request: Request,  # Para acceder a request.state.user
                                 body_params: FechaRequest = Body(...),
                                ):

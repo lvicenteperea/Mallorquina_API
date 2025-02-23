@@ -1,567 +1,215 @@
+from fastapi import APIRouter, HTTPException, Body, Request, Depends, File, UploadFile, Form
 from fastapi.responses import FileResponse
-from fastapi import APIRouter, HTTPException, Query, Body, Depends
-from fastapi import File, UploadFile, Form
-from starlette.requests import Request
-from datetime import datetime
-# from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 import os
 
-
-# mias
-import app.services.mallorquina.sincroniza as sincroniza
-import app.services.mallorquina.consulta_caja as consulta_caja
-import app.services.mallorquina.arqueo_caja as arqueo_caja
-import app.services.mallorquina.arqueo_caja_info as arqueo_caja_info
-import app.services.mallorquina.tarifas_ERP_a_TPV as tarifas_ERP_a_TPV  # tarifas_a_TPV as tarifas_a_TPV
-import app.services.mallorquina.fichas_tecnicas as fichas_tecnicas
-import app.services.mallorquina.carga_productos_erp as carga_productos_erp
-import app.services.mallorquina.encargos_navidad as encargos_navidad
-import app.services.auxiliares.descarga as descarga
-
+# Importaciones propias del proyecto
+from app.services.mallorquina import (
+    sincroniza, consulta_caja, arqueo_caja, arqueo_caja_info, tarifas_ERP_a_TPV, fichas_tecnicas, carga_productos_erp
+)
+from app.services.auxiliares import descarga
 from app.config.settings import settings
-
-from app.utils.functions import graba_log, imprime
+from app.utils.functions import control_usuario
+from app.utils.utilidades import imprime
 from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion, ParamRequest
 
-# Definimos el router
 router = APIRouter()
 
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-class SincronizaRequest(ParamRequest):
-    tiendas: Optional[List] = 0   # Tienda de la que queremos sacar la información
-    
-@router.post("/mll_sincroniza", response_model=InfoTransaccion,
-             summary="🔄 Sincroniza datos con el sistema",
-             description="""Este servicio sincroniza los datos entre la aplicación y el servidor.
-
-                                - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
-                         """,
-             response_description="📌 Respuesta de un objeto tipo InfoTransaccion, y en el atributo 'resultados' habrá una lista de textos"
-            )
-@router.get("/mll_sincroniza", response_model=InfoTransaccion)
-async def mll_sincroniza(request: Request,  # Para acceder a request.state.user
-                         body_params: SincronizaRequest = Body(...)
-                        ):
-    try:
-        # --------------------------------------------------------------------------------
-        param = InfoTransaccion.from_request(body_params)
-        
-        tiempo = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        # --------------------------------------------------------------------------------
-        # Validaciones y construcción Básica
-        # --------------------------------------------------------------------------------
-        # -------------------------------------------------------------
-        
-
-        # --------------------------------------------------------------------------------
-        # Control de autenticación de usuario
-        # --------------------------------------------------------------------------------
-        # Verificar la autenticación
-        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if param.user != authenticated_user:
-            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
-            raise MiException(param,"Los usuarios no corresponden", -1)
-
-        # --------------------------------------------------------------------------------
-        # Servicio
-        # --------------------------------------------------------------------------------
-        resultado = sincroniza.proceso(param = param)
-        # --------------------------------------------------------------------------------
-
-        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "*  FIN TIEMPOS  ")
-
-
-        param.debug = f"Retornando: {type(resultado)}"
-        param.resultados = resultado or []
-
-        return param
-   
-
-    except MiException as e:
-        print("---------------- MiException ---------------------")
+# -----------------------------------------------
+# Función para manejar excepciones de manera estándar
+# -----------------------------------------------
+def manejar_excepciones(e: Exception, param: InfoTransaccion, endpoint: str):
+    if isinstance(e, MiException):
         raise e
-    except HTTPException as e:
-        param.error_sistema(e=e, debug="mll_sincroniza.HTTP_Exception")
+    elif isinstance(e, HTTPException):
+        param.error_sistema(e=e, debug=f"{endpoint}.HTTP_Exception")
         raise e
-    except Exception as e:
-        param.error_sistema(e=e, debug="mll_sincroniza.Exception")
+    else:
+        param.error_sistema(e=e, debug=f"{endpoint}.Exception")
         raise e
 
 
+# -----------------------------------------------
+# Función común para procesar requests
+# -----------------------------------------------
+async def procesar_request(
+    request: Request, body_params: ParamRequest, servicio, endpoint: str
+) -> InfoTransaccion:
+    tiempo = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-class ConsultaCierreRequest(ParamRequest):
-    fecha: str    # Dia de cierre que se necesita en formato 'YYYY-MM-DD', por defecto la actual
-    tienda: Optional[int] = 0   # Tienda de la que queremos sacar la información
-    
-@router.post("/mll_consultas_cierre", response_model=InfoTransaccion,
-             summary="🔄 Consulta de los datos de cierre una fecha de una tienda",
-             description="""Retorna un JSON con los datos.
-
-                                - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
-                         """,
-             response_description="📌 -------------------------------------------------"
-            )
-async def mll_consultas_cierre( request: Request,  # Para acceder a request.state.user
-                                body_params: ConsultaCierreRequest = Body(...),
-                               ):
     try:
-        # --------------------------------------------------------------------------------
-        # Validaciones y construcción Básica
-        # --------------------------------------------------------------------------------
-        # Si no se proporciona `fecha`, usar la actual
-        if not body_params.fecha:
-            body_params.fecha = datetime.now().strftime('%Y-%m-%d')
-
-        if not body_params.tienda:
-            body_params.tienda = 0
-
-        # --------------------------------------------------------------------------------
+        # Validación y construcción de parámetros
         param = InfoTransaccion.from_request(body_params)
+        control_usuario(param, request)
 
-        # --------------------------------------------------------------------------------
-        # Control de autenticación de usuario
-        # --------------------------------------------------------------------------------
-        # Verificar la autenticación
-        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if param.user != authenticated_user:
-            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
-            raise MiException(param,"Los usuarios no corresponden", -1)
-        # else:
-        #     print(f"Usuario autenticado: {authenticated_user}")
+        # Ejecución del servicio correspondiente
+        resultado = servicio.proceso(param=param)
 
-        # --------------------------------------------------------------------------------
-        # Servicio
-        # --------------------------------------------------------------------------------
-        resultado = consulta_caja.recorre_consultas_tiendas(param=param)
-
+        # Construcción de respuesta
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
-
         return param
 
-    except MiException as e:
-        graba_log(param, "mll_consultas_cierre.MiException", e)
-
     except Exception as e:
-        param.error_sistema(e=e, debug="mll_consultas_cierre.Exception")
-
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-class ArqueoCajaRequest(ParamRequest):
-    fecha: str    # Fecha de la solicitud en formato 'YYYY-MM-DD'
-
-@router.get("/mll_arqueo_caja", response_model=InfoTransaccion,
-             summary="🔄 Generación de los arqueos de caja pra un dia",
-             description="""Retorna un JSON con los datos.
-
-                                - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
-                         """,
-             response_description="📌 -------------------------------------------------"
-            )
-async def mll_arqueo_caja(  request: Request,  # Para acceder a request.state.user
-                            body_params: ArqueoCajaRequest = Body(...),
-                         ):
-    try:
-        # --------------------------------------------------------------------------------
-        # Validaciones y construcción Básica
-        # --------------------------------------------------------------------------------
-        # Si no se proporciona `fecha`, usar la actual
-        if not body_params.fecha:
-            body_params.fecha = datetime.now().strftime('%Y-%m-%d')
-
-        # --------------------------------------------------------------------------------
-        param = InfoTransaccion.from_request(body_params)
-
-         # --------------------------------------------------------------------------------
-        # Control de autenticación de usuario
-        # --------------------------------------------------------------------------------
-        # Verificar la autenticación
-        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if param.user != authenticated_user:
-            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
-            raise MiException(param,"Los usuarios no corresponden", -1)
-
-        # --------------------------------------------------------------------------------
-        resultado = arqueo_caja.proceso(param = param)
-        # --------------------------------------------------------------------------------
-        
-        param.debug = f"Retornando: {type(resultado)}"
-        param.resultados = resultado or []
-        param.ret_txt = "OK"
-
-        return param
-
-    except MiException as e:
-        graba_log(param, "mll_arqueo_caja.MiException", e)
-
-    except Exception as e:
-        param.error_sistema(e=e, debug="mll_arqueo_caja.Exception")
-   
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-class InfArqueoCajaRequest(ParamRequest):
-    fecha: str    # Fecha de la solicitud en formato 'YYYY-MM-DD', por defecto la actual
-    tienda: Optional[int] = 0   # BBDD/Tienda (mll_cfg_bbdd) de la que queremos la información, 0 --> Todas
-
-@router.get("/mll_inf_arqueo_caja", response_model=InfoTransaccion,
-             summary="🔄 Informe de uno de los arqueos de caja realizados",
-             description="""Retorna un JSON con los datos.
-
-                                - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
-                         """,
-             response_description="📌 -------------------------------------------------"
-            )
-async def mll_inf_arqueo_caja( request: Request,  # Para acceder a request.state.user
-                               body_params: InfArqueoCajaRequest = Body(...),
-                             ):
-
-    try:
-        # --------------------------------------------------------------------------------
-        # Validaciones y construcción Básica
-        # --------------------------------------------------------------------------------
-        # Si no se proporciona `fecha`, usar la actual
-        if not fecha: # si no tiene parametro fecha
-            fecha = datetime.now().strftime('%Y-%m-%d')
-
-        # --------------------------------------------------------------------------------
-        param = InfoTransaccion.from_request(body_params)
-
-        # --------------------------------------------------------------------------------
-        # Control de autenticación de usuario
-        # --------------------------------------------------------------------------------
-        # Verificar la autenticación
-        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if param.user != authenticated_user:
-            param.sistem_error(txt_adic="Error de usuario", debug=f"{param.user} - {authenticated_user}")
-            raise MiException(param,"Los usuarios no corresponden", -1)
-
-        # --------------------------------------------------------------------------------
-        resultado = arqueo_caja_info.informe(param = param)
-        # --------------------------------------------------------------------------------
-                
-        param.debug = f"Retornando: {type(resultado)}"
-        param.resultados = resultado or []
-
-        return param
-    
-    except MiException as e:
-        graba_log(param, "mll_inf_arqueo_caja.MiException", e)
-                
-    # except HTTPException as e:
-    #     param.error_sistema(e=e, debug="mll_inf_arqueo_caja.HTTPException")
-
-    except Exception as e:
-        param.error_sistema(e=e, debug="mll_inf_arqueo_caja.Exception")
-
- 
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.get("/mll_convierte_tarifas", response_model=InfoTransaccion,
-             summary="🔄 Genera desde los datos del ERP los ficheros para la carga en los TPVs",
-             description="""Retorna un JSON con los datos.
-
-                                - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
-                         """,
-             response_description="📌 -------------------------------------------------"
-            )
-async def mll_convierte_tarifas(id_App: int = Query(..., description="Identificador de la aplicación"),
-                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                        ret_code: int = Query(..., description="Código de retorno inicial"),
-                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                       ):
-    
-    try:
-        resultado = []
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])  # origen_path]) #, output_path])
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}" # - {origen_path}" # - {output_path}"
-        
-        # --------------------------------------------------------------------------------
-        # resultado = tarifas_a_TPV.proceso(param = param)
-        resultado = tarifas_ERP_a_TPV.proceso(param = param)
-        # --------------------------------------------------------------------------------
-
-        param.debug = f"Retornando un lista: {type(resultado)}"
-        param.resultados = resultado or []
-    
-    except MiException as e:
-        graba_log(param, "mll_convierte_tarifas.MiException", e)
-                
-    except HTTPException as e:
-        param.error_sistema(e=e, debug="mll_convierte_tarifas.HTTPException")
-
-
-    except Exception as e:
-        param.error_sistema(e=e, debug="mll_convierte_tarifas.Exception")
+        manejar_excepciones(e, param, endpoint)
 
     finally:
-        return param
+        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
 
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.get("/mll_fichas_tecnicas", response_model=InfoTransaccion,
-             summary="🔄 Generación de los ficheros de alergenos y fichas técnicas",
-             description="""Retorna un JSON con los datos.
+# -----------------------------------------------
+# Endpoints optimizados
+# -----------------------------------------------
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+class SincronizaRequest(ParamRequest):
+    tiendas: Optional[List] = None  # Si es None, asumimos todas
 
-                                - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
-                         """,
-             response_description="📌 -------------------------------------------------"
-            )
-async def mll_fichas_tecnicas(request: Request,  # Para acceder a request.state.user
-                              id_App: int = Query(..., description="Identificador de la aplicación"),
-                              user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                              ret_code: int = Query(..., description="Código de retorno inicial"),
-                              ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                              output_path: str = Query(..., description="Fichero destino")
-                             ):
-    
+@router.post("/mll_sincroniza", response_model=InfoTransaccion)
+async def mll_sincroniza(request: Request, body_params: SincronizaRequest = Body(...)):
+    """ Sincroniza datos entre diferentes BBDD (TPV, nube y servidor). """
+    return await procesar_request(request, body_params, sincroniza, "mll_sincroniza")
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+class ConsultaCierreRequest(ParamRequest):
+    fecha: str = datetime.now().strftime('%Y-%m-%d')
+    tienda: Optional[int] = 0  # Por defecto, todas las tiendas
+
+@router.post("/mll_consultas_cierre", response_model=InfoTransaccion)
+async def mll_consultas_cierre(request: Request, body_params: ConsultaCierreRequest = Body(...)):
+    """ Retorna el cierre de un día determinado (por defecto, hoy). """
+    return await procesar_request(request, body_params, consulta_caja, "mll_consultas_cierre")
+
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+class ArqueoCajaRequest(ParamRequest):
+    fecha: str = datetime.now().strftime('%Y-%m-%d')
+
+@router.post("/mll_arqueo_caja", response_model=InfoTransaccion)
+async def mll_arqueo_caja(request: Request, body_params: ArqueoCajaRequest = Body(...)):
+    """ Genera información del arqueo de caja en una fecha determinada. """
+    return await procesar_request(request, body_params, arqueo_caja, "mll_arqueo_caja")
+
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+class InfArqueoCajaRequest(ParamRequest):
+    fecha: str = datetime.now().strftime('%Y-%m-%d')
+    tienda: Optional[int] = 0  # Todas las tiendas
+
+@router.post("/mll_inf_arqueo_caja", response_model=InfoTransaccion)
+async def mll_inf_arqueo_caja(request: Request, body_params: InfArqueoCajaRequest = Body(...)):
+    """ Genera archivos con resultados del arqueo de caja. """
+    return await procesar_request(request, body_params, arqueo_caja_info, "mll_inf_arqueo_caja")
+
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+@router.post("/mll_carga_prod_erp", response_model=InfoTransaccion)
+async def mll_carga_prod_erp(
+    request: Request,
+    id_App: int = Form(...),
+    user: str = Form(...),
+    ret_code: int = Form(...),
+    ret_txt: str = Form(...),
+    file: UploadFile = File(...),
+):
+    """ Carga un archivo de productos del ERP SQLPYME en la BBDD de La Mallorquina. """
+    tiempo = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
     try:
-        resultado = []
-        if not output_path:
-            output_path = "fichas_tecnicas.html"
-            
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[output_path])
-        param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {output_path}"
-
-        # --------------------------------------------------------------------------------
-        # Control de autenticación de usuario
-        # --------------------------------------------------------------------------------
-        # Verificar la autenticación
-        authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        if user != authenticated_user:
-            param.sistem_error(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
-            raise MiException(param,"Los usuarios no corresponden", -1)
-        # else:
-        #     print(f"Usuario autenticado: {authenticated_user}")
-
-
-        # --------------------------------------------------------------------------------
-        resultado = fichas_tecnicas.proceso(param = param)
-        # --------------------------------------------------------------------------------
-
-        param.debug = f"Retornando un lista: {type(resultado)}"
-        param.resultados = resultado or []
-
-        return param
-    
-    except MiException as e:
-        graba_log(param, "mll_fichas_tecnicas.MiException", e)
-                
-    except HTTPException as e:
-        param.error_sistema(e=e, debug="mll_fichas_tecnicas.HTTPException")
-
-
-    except Exception as e:
-        param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.post("/mll_carga_prod_erp", response_model=InfoTransaccion,
-             summary="🔄 Carga el fichero de productos que se genera desde el ERP en nuestro entorno",
-             description="""Retorna un JSON con los datos.
-
-                                - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
-                         """,
-             response_description="📌 -------------------------------------------------"
-            )
-async def mll_carga_prod_erp(id_App: int = Form(..., description="Identificador de la aplicación"),
-                             user: str = Form(..., description="Nombre del usuario que realiza la solicitud"),
-                             ret_code: int = Form(..., description="Código de retorno inicial"),
-                             ret_txt: str = Form(..., description="Texto descriptivo del estado inicial"),
-                             file: UploadFile = File(..., description="Archivo subido por el usuario")
-                            ):
-    
-    try:
-        resultado = []
         fichero = file.filename
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
-                                parametros=[fichero],
-                                debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {fichero}")
+        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[fichero])
 
-
-        # Guardar el archivo subido en el servidor
-        # origen_path  = f"./uploads/{file.filename}"
-        excel = os.path.join(f"{settings.RUTA_DATOS}/erp", f"{fichero}")
-        with open(excel, "wb") as f:
+        # Guardar archivo
+        excel_path = os.path.join(f"{settings.RUTA_DATOS}/erp", fichero)
+        with open(excel_path, "wb") as f:
             f.write(await file.read())
 
-        # --------------------------------------------------------------------------------
-        resultado = carga_productos_erp.proceso(param = param)
-        # --------------------------------------------------------------------------------
+        control_usuario(param, request)
 
+        resultado = carga_productos_erp.proceso(param=param)
         param.debug = f"Retornando un lista: {type(resultado)}"
         param.resultados = resultado or []
-    
-    except MiException as e:
-        graba_log(param, "mll_carga_prod_erp.MiException", e)
-                
-    except HTTPException as e:
-        param.error_sistema(e=e, debug="mll_carga_prod_erp.HTTPException")
-
-
-    except Exception as e:
-        param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
-
-    finally:
         return param
 
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-# @router.get("/mll_carga_prod_erp_2", response_model=InfoTransaccion)
-# async def mll_carga_prod_erp2(request: Request,  # Para acceder a request.state.user,
-#                              id_App: int = Query(..., description="Identificador de la aplicación"),
-#                              user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-#                              ret_code: int = Query(..., description="Código de retorno inicial"),
-#                              ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-#                              origen_path: str = Query(..., description="Fichero origen"),
-#                             ):
-    
-#     try:
-#         resultado = []
-#         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
-#                                 parametros=[origen_path],
-#                                 debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt} - {origen_path}")
+    except Exception as e:
+        manejar_excepciones(e, param, "mll_carga_prod_erp")
 
-#         # --------------------------------------------------------------------------------
-#         resultado = carga_productos_erp.proceso(param = param)
-#         # --------------------------------------------------------------------------------
-
-#         param.debug = f"Retornando un lista: {type(resultado)}"
-#         param.resultados = resultado or []
-    
-#     except MiException as e:
-#         graba_log(param, "mll_carga_prod_erp.MiException", e)
-                
-#     except HTTPException as e:
-#         param.error_sistema(e=e, debug="mll_carga_prod_erp.HTTPException")
+    finally:
+        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
 
-#     except Exception as e:
-#         param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
-
-#     finally:
-#         return param
-
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
 class DescargaRequest(ParamRequest):
     tipo: str = "TPV"
     nombres: List[str] = []
 
-@router.post("/mll_descarga", response_model=InfoTransaccion,
-             summary="🔄 Descarga de los ficheros o ficheros para la carga en TPVs",
-             description="""Retorna un JSON con los datos.
-
+@router.post("/mll_descarga", # response_model=InfoTransaccion,
+             summary="🔄 Genera las fichas técnicas y listado de alergenos",
+             description="""Genera las fichas técnicas de los productos y el listado de alergenos
                                 - ✅ **Requiere autenticación**
-                                - ✅ **Recibe un `id_App` y un `user`** para identificar la sincronización
-                                - ✅ **Retorna `status` y `message` indicando el éxito o error**
+                                - ✅ **Recibe un `id_App` y un `user`** para identificar al peticionario
+                                - ✅ **Retorna `status` y `message` indicando error**
                          """,
-             response_description="📌 -------------------------------------------------"
-            )
+             response_description="""📌 En caso de éxito retorna una clase InfoTransaccion y en resultados una lista de textos con un regsitros por fichero generado:
+                                    ["Ficheros generados correctamente"]
+                                  """
+           )
 async def mll_descarga(request: Request,
-                       body_params: DescargaRequest = Body(...)):
-    try:
+                       body_params: DescargaRequest = Body(...)
+                      ):
 
+    tiempo = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    try:
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
         # --------------------------------------------------------------------------------
-
-        # --------------------------------------------------------------------------------
         imprime([type(body_params.nombres), len(body_params.nombres), body_params.nombres], "*")
-        
         param = InfoTransaccion.from_request(body_params)
 
-        imprime([param], "*")
-
-        # --------------------------------------------------------------------------------
-        # Control de autenticación de usuario
-        # --------------------------------------------------------------------------------
-        # Verificar la autenticación
-        # authenticated_user = request.state.user # AuthMiddleware.get_current_user(credentials)
-        # if user != authenticated_user:
-        #     param.sistem_error(txt_adic="Error de usuario", debug=f"{user} - {authenticated_user}")
-        #     raise MiException(param,"Los usuarios no corresponden", -1)
-        # else:
-        #     print(f"Usuario autenticado: {authenticated_user}")
+        control_usuario (param,  request)
 
         # --------------------------------------------------------------------------------
         # Servicio
         # --------------------------------------------------------------------------------
         return descarga.proceso(param=param)
-         
+        # resultado = descarga.proceso(param=param)
 
-    except MiException as e:
-        graba_log(param, "mll_descarga.MiException", e)
-        raise
+        # param.debug = f"Retornando: {type(resultado)}"
+        # param.resultados = resultado or []
+        # print("3")
 
-    except HTTPException as e:
-        param.error_sistema(e=e, debug="mll_sync_todo.HTTPException")
-        raise
+        # return param
 
 
     except Exception as e:
-        param.error_sistema(e=e, debug="mll_descarga.Exception")
-        raise
-
- 
-
-#----------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------
-@router.get("/mll_encargos_navidad", response_model=InfoTransaccion)
-async def mll_encargos_navidad(id_App: int = Query(..., description="Identificador de la aplicación"),
-                        user: str = Query(..., description="Nombre del usuario que realiza la solicitud"),
-                        ret_code: int = Query(..., description="Código de retorno inicial"),
-                        ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
-                       ):
-    
-    try:
-        param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, 
-                                debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}")
-
-        # --------------------------------------------------------------------------------
-        param_resultado = encargos_navidad.proceso(param = param)
-        # --------------------------------------------------------------------------------
-
-        param.debug = f"Esto debería ser <infoTransaccion>: {type(param_resultado)}"
-    
-    except MiException as e:
-        graba_log(param, "mll_carga_prod_erp.MiException", e)
-                
-    except HTTPException as e:
-        param.error_sistema(e=e, debug="mll_carga_prod_erp.HTTPException")
-
-
-    except Exception as e:
-        param.error_sistema(e=e, debug="mll_fichas_tecnicas.Exception")
+        manejar_excepciones(e, param, "mll_descarga")
 
     finally:
-        return param_resultado
+        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+class FichasTecnicasRequest(ParamRequest):
+    output_path: str = "fichas_tecnicas.html"
+
+@router.post("/mll_fichas_tecnicas", response_model=InfoTransaccion)
+async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
+    """ Genera fichas técnicas y listado de alérgenos. """
+    return await procesar_request(request, body_params, fichas_tecnicas, "mll_fichas_tecnicas")
+
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+@router.post("/mll_convierte_tarifas", response_model=InfoTransaccion)
+async def mll_convierte_tarifas(request: Request, body_params: ParamRequest = Body(...)):
+    """ Genera tarifas para los TPVs de Infosoft. """
+    return await procesar_request(request, body_params, tarifas_ERP_a_TPV, "mll_convierte_tarifas")

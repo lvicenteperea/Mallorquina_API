@@ -7,7 +7,7 @@ import app.services.emails.grabar_token as grabar_token
 import app.services.emails.grabar_email as grabar_email
 import app.services.emails.enviar_emails as enviar_emails
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
 

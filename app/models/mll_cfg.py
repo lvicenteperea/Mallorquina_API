@@ -1,7 +1,7 @@
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 
 #----------------------------------------------------------------------------------------
 def obtener_cfg_general(param: InfoTransaccion):

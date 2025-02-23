@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from fastapi.security import HTTPBearer
 from app.config.settings import settings
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 
 """
 Lo ideal es que se guarde en el sistema:

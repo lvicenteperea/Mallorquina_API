@@ -11,14 +11,14 @@ from app.models.mll_cfg import obtener_cfg_general
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 from app.utils.mis_excepciones import MiException
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def informe(param: InfoTransaccion) -> list:
+def proceso(param: InfoTransaccion) -> list:
     param.debug="Inicio"
     resultado = ["",""]
     datos = []

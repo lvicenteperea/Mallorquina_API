@@ -8,7 +8,7 @@ from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connec
 from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.mis_excepciones import MiException
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------
@@ -99,13 +99,13 @@ def proceso(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql, fecha) -> dict:
+def consultar_y_grabar(param: InfoTransaccion, id_bbdd, conn_mysql, fecha) -> dict:
     resultado = {}
     param.debug = "Inicio"
 
     try:
         param.debug = "Buscamos la conexión que necesitamos para esta bbdd origen"
-        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,tabla)
+        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,id_bbdd)
 
         param.debug = "conectamos con esta bbdd origen"
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
@@ -153,7 +153,7 @@ def consultar_y_grabar(param: InfoTransaccion, tabla, conn_mysql, fecha) -> dict
                 datos = cursor_sqlserver.fetchall()
 
                 param.debug = "Llamada a Grabar"
-                resultado = grabar(param, conn_mysql, tabla, datos, fecha)
+                resultado = grabar(param, conn_mysql, id_bbdd, datos, fecha)
 
         return resultado
 
@@ -208,9 +208,9 @@ def busca_tvp(param: InfoTransaccion, conn_mysql, id_tienda,  id_tpv) -> int:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def grabar(param: InfoTransaccion, conn_mysql, tabla, datos, fecha) -> dict:
+def grabar(param: InfoTransaccion, conn_mysql, id_bbdd, datos, fecha) -> dict:
     param.debug = "Inicio"
-    resultado = []
+    resultado = None
     ventas_registros = 0
     total_ventas = 0
     total_operaciones = 0
@@ -222,17 +222,16 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos, fecha) -> dict:
         # Agrupar resultados por tienda, puesto y apertura
         ventas_diarias = {}
         for row in datos:
-            id_tienda = tabla
             id_puesto = row.ID_Puesto
             id_apertura = row.ID_Apertura
             fecha = row.Fecha
 
             # Clave única para agrupación
-            key = (id_tienda, id_puesto, id_apertura)
+            key = (id_bbdd, id_puesto, id_apertura)
 
             if key not in ventas_diarias:
                 ventas_diarias[key] = {
-                    "id_tienda": id_tienda,
+                    "id_tienda": id_bbdd,
                     "id_tpv": id_puesto,
                     "fecha": fecha,
                     "ventas": 0,
@@ -278,8 +277,7 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos, fecha) -> dict:
             # Insertar en mll_rec_ventas_medio_pago
             for detalle in data["detalles"]:
                 if detalle.Importe != 0 or detalle.Operaciones != 0:
-                    clave = (ID_Apertura, data["fecha"], data["id_tpv"], data["id_tienda"], cierre_descs[orden])
-
+                    # clave = (ID_Apertura, data["fecha"], data["id_tpv"], data["id_tienda"], cierre_descs[orden])
                     # # Comprobamos si la clave existe en el diccionario
                     # if clave not in resultado:
                     #     # Creamos el registro si no existe
@@ -313,8 +311,7 @@ def grabar(param: InfoTransaccion, conn_mysql, tabla, datos, fecha) -> dict:
                     )
                     medios_pago_registros  += cursor_mysql.rowcount
                
-        resultado = [f"para el {fecha}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} oepraciones. En Medios de pago se han creado {medios_pago_registros} registros"]
-
+        resultado = [f"para el {fecha} y tienda {id_bbdd}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"]
         return resultado
 
     except Exception as e:

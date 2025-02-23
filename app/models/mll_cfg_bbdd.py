@@ -1,5 +1,5 @@
 import json
-from app.utils.functions import graba_log
+from app.utils.utilidades import graba_log
 
 def obtener_conexion_bbdd_origen(conn, id_bbdd):
     try:

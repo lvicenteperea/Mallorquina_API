@@ -3,7 +3,7 @@ import json
 import re
 from fastapi import HTTPException
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 
 from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen

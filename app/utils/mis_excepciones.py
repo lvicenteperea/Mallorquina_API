@@ -1,4 +1,4 @@
-from app.utils.functions import imprime
+from app.utils.utilidades import imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 class MiException(Exception):

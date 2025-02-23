@@ -1,7 +1,7 @@
 from datetime import datetime
 import re
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 
 from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
 

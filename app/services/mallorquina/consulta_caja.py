@@ -3,7 +3,8 @@ from datetime import datetime
 import json
 import pyodbc
 
-from app.utils.functions import graba_log, row_to_dict, imprime
+from app.utils.functions import row_to_dict
+from app.utils.utilidades import imprime
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver
 from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion

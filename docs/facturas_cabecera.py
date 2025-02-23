@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 
 from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
 

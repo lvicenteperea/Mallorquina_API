@@ -6,7 +6,7 @@ from datetime import datetime
 
 from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 
 # ---------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------

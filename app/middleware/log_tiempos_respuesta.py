@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 import time
 # import logging
-from app.utils.functions import graba_log_info, imprime
+from app.utils.utilidades import graba_log_info, imprime
 
 # Configuración básica de logging
 # print("inciando loger tiempos respuesa: logger = logging.getLogger('tiempo_respuesta')")

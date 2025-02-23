@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from datetime import datetime
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver, close_connection_sqlserver
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings

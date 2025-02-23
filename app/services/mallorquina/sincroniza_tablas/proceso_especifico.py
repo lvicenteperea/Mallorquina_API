@@ -1,6 +1,6 @@
 import importlib
 
-from app.utils.functions import graba_log, imprime
+from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------

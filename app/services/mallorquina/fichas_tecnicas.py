@@ -17,29 +17,95 @@ PLANTILLA_FICHA = os.path.join(settings.RUTA_ALERGENOS, "plantilla_producto.html
 FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_ALERGENOS_HTML, "no_imprimibles.csv")
 
 #----------------------------------------------------------------------------------------
-# Comprueba que tenemos descripción de la composición del productos, porque si no tiene, 
-# no se puede imprimir
+# Principal del Proceso de generación de html
 #----------------------------------------------------------------------------------------
-def imprimible(param: InfoTransaccion, fila):
-    try:
-        composicion = fila.get("composicion_completa", "").strip() or ""
-        if not composicion: 
-            composicion = fila.get("composicion_etiqueta", "").strip() or ""
-            
-        if not composicion:
-            if param.ret_code == 0:
-                modo_apertura = "w"
-            else:
-                modo_apertura = "a"
-            param.ret_code += 1
-            with open(FICH_NO_IMPRIMIBLES, modo_apertura) as f:
-                f.write(f"{fila.get('codigo')};{fila.get('nombre')}" + "\n")  # Escribir el registro con salto de línea
+def proceso(param: InfoTransaccion) -> list:
+    resultado = []
+    param.debug = "proceso"
 
-        return composicion
-   
+    try:
+        param.debug = "rutas"
+        if not param.parametros[0]:
+            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")
+        else:
+            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, param.parametros[0]) # Nombre del archivo HTML viene en el segundo parámetro
+
+        param.debug = f"{salida}"
+        # Conectar a la base de datos
+        conn_mysql = get_db_connection_mysql()
+        cursor_mysql = conn_mysql.cursor(dictionary=True)
+
+        # Consultar los datos principales
+        cursor_mysql.execute("SELECT * FROM erp_productos WHERE alta_tpv = 'Sí' ORDER BY familia_desc, nombre")
+        productos = cursor_mysql.fetchall()
+
+        # Consultar los precios
+        cursor_mysql.execute("""SELECT a.id, a.id_producto, a.id_bbdd, a.tipo, a.pvp , b.nombre 
+                                  FROM erp_productos_pvp a
+                                 inner join mll_cfg_bbdd b on b.id = a.id_bbdd
+                                 order by a.id_producto, a.id_bbdd, a.tipo""")
+        precios = cursor_mysql.fetchall()
+
+        # Crear un diccionario de precios por ID
+        precios_dict = {}
+        for precio in precios:
+            id_producto = precio['id_producto']
+            if id_producto not in precios_dict:
+                precios_dict[id_producto] = []
+            precios_dict[id_producto].append(precio)
+
+        close_connection_mysql(conn_mysql, cursor_mysql)
+
+        # Generación del HTML
+        html = generar_html(param, productos, precios_dict)
+
+        # Guardar el archivo HTML
+        with open(salida, 'w', encoding='utf-8') as f:
+            f.write(html)
+
+        resultado = [f"Ficheros generados correctamente"]
+        return resultado
+    
+
     except Exception as e:
-        param.error_sistema(e=e, debug="cargar_plantilla.Exception")
+        param.error_sistema(e=e, debug="proceso.Exception")
         raise 
+
+    finally:
+        param.debug = "cierra conn"
+        close_connection_mysql(conn_mysql, cursor_mysql)
+
+
+#----------------------------------------------------------------------------------------
+# Generar el HTML completo
+#----------------------------------------------------------------------------------------
+def generar_html(param: InfoTransaccion, productos: list, precios: dict) -> str: 
+    param.debug = "generar_html"
+    html_final = ""
+
+    try:
+        # Cargar la plantilla
+        plantilla = cargar_plantilla(param, PLANTILLA)
+        plantilla_html = reemplazar_fijos(param, plantilla)
+
+        # Secciones dinámicas
+        indice_alergenos = indice(param, productos)
+
+        # Reemplazar las secciones dinámicas en la plantilla
+        html_final = reemplazar_campos(plantilla_html, {
+            'indice_alergenos': indice_alergenos,
+            # 'fichas': fichas_content
+        })
+
+        # fichas_content = 
+        fichas(param, productos, precios)
+
+        return html_final
+    
+    except Exception as e:
+        param.error_sistema(e=e, debug="generar_html.Exception")
+        raise 
+
 
 #----------------------------------------------------------------------------------------
 # Leer la plantilla HTML
@@ -53,16 +119,6 @@ def cargar_plantilla(param, ruta):
     except Exception as e:
         param.error_sistema(e=e, debug="cargar_plantilla.Exception")
         raise 
-
-#----------------------------------------------------------------------------------------
-# Reemplazar placeholders en la plantilla
-#----------------------------------------------------------------------------------------
-def reemplazar_campos(plantilla, campos):
-    for placeholder, valor in campos.items():
-        #imprime([placeholder, "{"+f"{placeholder}"+"}", valor, valor or f"{placeholder}"],'=')
-        plantilla = plantilla.replace("{"+f"{placeholder}"+"}", f"{valor}" or f"{placeholder}")
-
-    return plantilla
 
 
 #----------------------------------------------------------------------------------------
@@ -94,6 +150,8 @@ def reemplazar_fijos(param, plantilla):
     except Exception as e:
         param.error_sistema(e=e, debug="reemplazar_fijos.Exception")
         raise 
+
+
 
 #----------------------------------------------------------------------------------------
 # Reemplazar INDICE
@@ -129,6 +187,19 @@ def indice(param, productos):
     except Exception as e:
         param.error_sistema(e=e, debug="indice.Exception")
         raise 
+
+
+#----------------------------------------------------------------------------------------
+# Reemplazar placeholders en la plantilla
+#----------------------------------------------------------------------------------------
+def reemplazar_campos(plantilla, campos):
+    for placeholder, valor in campos.items():
+        #imprime([placeholder, "{"+f"{placeholder}"+"}", valor, valor or f"{placeholder}"],'=')
+        plantilla = plantilla.replace("{"+f"{placeholder}"+"}", f"{valor}" or f"{placeholder}")
+
+    return plantilla
+
+
 
 #----------------------------------------------------------------------------------------
 # Reemplazar FICHAS
@@ -236,91 +307,27 @@ def fichas(param: InfoTransaccion, productos: list, precios: dict):
 
 
 #----------------------------------------------------------------------------------------
-# Generar el HTML completo
+# Comprueba que tenemos descripción de la composición del productos, porque si no tiene, 
+# no se puede imprimir
 #----------------------------------------------------------------------------------------
-def generar_html(param: InfoTransaccion, productos: list, precios: dict) -> str: 
-    param.debug = "generar_html"
-    html_final = ""
-
+def imprimible(param: InfoTransaccion, fila):
     try:
-        # Cargar la plantilla
-        plantilla = cargar_plantilla(param, PLANTILLA)
-        plantilla_html = reemplazar_fijos(param, plantilla)
+        composicion = fila.get("composicion_completa", "").strip() or ""
+        if not composicion: 
+            composicion = fila.get("composicion_etiqueta", "").strip() or ""
+            
+        if not composicion:
+            if param.ret_code == 0:
+                modo_apertura = "w"
+            else:
+                modo_apertura = "a"
+            param.ret_code += 1
+            with open(FICH_NO_IMPRIMIBLES, modo_apertura) as f:
+                f.write(f"{fila.get('codigo')};{fila.get('nombre')}" + "\n")  # Escribir el registro con salto de línea
 
-        # Secciones dinámicas
-        indice_alergenos = indice(param, productos)
-
-        # Reemplazar las secciones dinámicas en la plantilla
-        html_final = reemplazar_campos(plantilla_html, {
-            'indice_alergenos': indice_alergenos,
-            # 'fichas': fichas_content
-        })
-
-        # fichas_content = 
-        fichas(param, productos, precios)
-
-        return html_final
-    
+        return composicion
+   
     except Exception as e:
-        param.error_sistema(e=e, debug="generar_html.Exception")
+        param.error_sistema(e=e, debug="cargar_plantilla.Exception")
         raise 
 
-
-#----------------------------------------------------------------------------------------
-# Principal del Proceso de generación de html
-#----------------------------------------------------------------------------------------
-def proceso(param: InfoTransaccion) -> list:
-    resultado = []
-    param.debug = "proceso"
-
-    try:
-        param.debug = "rutas"
-        if not param.parametros[0]:
-            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")
-        else:
-            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, param.parametros[0]) # Nombre del archivo HTML viene en el segundo parámetro
-
-        param.debug = f"{salida}"
-        # Conectar a la base de datos
-        conn_mysql = get_db_connection_mysql()
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
-
-        # Consultar los datos principales
-        cursor_mysql.execute("SELECT * FROM erp_productos WHERE alta_tpv = 'Sí' ORDER BY familia_desc, nombre")
-        productos = cursor_mysql.fetchall()
-
-        # Consultar los precios
-        cursor_mysql.execute("""SELECT a.id, a.id_producto, a.id_bbdd, a.tipo, a.pvp , b.nombre 
-                                  FROM erp_productos_pvp a
-                                 inner join mll_cfg_bbdd b on b.id = a.id_bbdd
-                                 order by a.id_producto, a.id_bbdd, a.tipo""")
-        precios = cursor_mysql.fetchall()
-
-        # Crear un diccionario de precios por ID
-        precios_dict = {}
-        for precio in precios:
-            id_producto = precio['id_producto']
-            if id_producto not in precios_dict:
-                precios_dict[id_producto] = []
-            precios_dict[id_producto].append(precio)
-
-        close_connection_mysql(conn_mysql, cursor_mysql)
-
-        # Generación del HTML
-        html = generar_html(param, productos, precios_dict)
-
-        # Guardar el archivo HTML
-        with open(salida, 'w', encoding='utf-8') as f:
-            f.write(html)
-
-        resultado = [f"Ficheros generados correctamente"]
-        return resultado
-    
-
-    except Exception as e:
-        param.error_sistema(e=e, debug="proceso.Exception")
-        raise 
-
-    finally:
-        param.debug = "cierra conn"
-        close_connection_mysql(conn_mysql, cursor_mysql)

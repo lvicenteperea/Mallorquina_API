@@ -14,10 +14,10 @@ async def mi_exception_handler(request: Request, exc: MiException):
     if exc.status_code >= 0: 
         status_code = 200
         mensaje = exc.detail
-    elif -90 < exc.status_code < 0:
+    elif exc.status_code > -90: # -1, -2.... no son errores graves de cortar el programa
         status_code = 401
         mensaje = exc.detail
-    else:
+    else:                       # -90.... no deberían salir por aquí, pero serían para cortar el programa.
         status_code = 525
         imprime([f"ERROR CRÍTICO: {exc.detail}"], "=   mi_exception_handler   ")
         mensaje = "Contacte con su administrador"

@@ -8,10 +8,10 @@ import traceback
 from app.utils.utilidades import graba_log, imprime
 
 class ParamRequest(BaseModel):
-    id_App: int = 1
-    user: str = "usuario_dev"
-    ret_code: int = 0
-    ret_txt: str = "OK"
+    id_App: int = 1           # aplicación a la que conectarse  
+    user: str = "usuario_dev" # usuario de autenticación en el servidor
+    ret_code: int = 0         # debería llegar siempre a cero
+    ret_txt: str = "OK"       # Debería llegar siempre a Ok o vacio
 
 
 

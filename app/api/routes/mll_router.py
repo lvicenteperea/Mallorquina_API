@@ -43,7 +43,8 @@ async def procesar_request(
     try:
         # Validación y construcción de parámetros
         param = InfoTransaccion.from_request(body_params)
-        control_usuario(param, request)
+        if not control_usuario(param, request):
+            return param
 
         # Ejecución del servicio correspondiente
         resultado = servicio.proceso(param=param)
@@ -68,9 +69,26 @@ async def procesar_request(
 class SincronizaRequest(ParamRequest):
     tiendas: Optional[List] = None  # Si es None, asumimos todas
 
-@router.post("/mll_sincroniza", response_model=InfoTransaccion)
+@router.post("/mll_sincroniza", response_model=InfoTransaccion,
+             summary="🔄 Sincroniza datos con el sistema dependiente de la parametrización en trabla mll_cfg_*",
+             description="""Este servicio sincroniza los datos entre diferentes BBDD como los TPV, la nube de infosoft y el servidor.\n
+                                - ✅ **Requiere autenticación**
+                                - ✅ **Recibe un `id_App` y un `user`** para identificar al peticionario
+                                - ✅ **Retorna `status` y `message` indicando error**
+                         """,
+             response_description="""📌 En caso de éxito retorna una clase InfoTransaccion y en resultados una lista json con cada BBDD/entidad/tabla tratada, tipo:\n
+                                    {
+                                        "nombre_bbdd": "Tienda Velázquez",
+                                        "entidad": "Tienda - Velázquez",
+                                        "tabla_origen": "[Mesas Restaurante]",
+                                        "valor_max": null,
+                                        "insertados": 0,
+                                        "actualizados": 0
+                                    }
+                                  """
+            )
 async def mll_sincroniza(request: Request, body_params: SincronizaRequest = Body(...)):
-    """ Sincroniza datos entre diferentes BBDD (TPV, nube y servidor). """
+    """ Sincroniza datos entre diferentes BBDD (TPV, nube,..) y servidor. """
     return await procesar_request(request, body_params, sincroniza, "mll_sincroniza")
 
 #------------------------------------------------------------------------------------------------------

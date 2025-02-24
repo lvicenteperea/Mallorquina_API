@@ -6,6 +6,6 @@ class MiException(Exception):
         self.status_code = status_code
         self.detail = detail
         self.param = param if param else InfoTransaccion()
-        imprime([f"Codigo - Msg - Param: {self.status_code}-{self.detail}-{self.param}"], "=   MiException   ")
+        imprime([f"Codigo - Msg - Param: <{self.status_code}> - <{self.detail}> - <{self.param}>"], "=   MiException   ")
 
 

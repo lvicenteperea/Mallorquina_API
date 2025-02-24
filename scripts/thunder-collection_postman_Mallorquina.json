@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "4459549d-0d2a-42ae-9e88-6130ff76dee6",
+        "_postman_id": "6c94b2a7-eb22-4b21-a299-1364c00abf37",
         "name": "Mallorquina",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -141,14 +141,14 @@
                             "language": "json"
                         }
                     },
-                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\",\n  \"fecha\": \"2025-02-01\"\n}"
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\",\n  \"fecha\": \"2025-01-17\"\n}"
                 }
             }
         },
         {
             "name": "mll_inf_arqueo_caja",
             "request": {
-                "method": "GET",
+                "method": "POST",
                 "url": {
                     "raw": "http://localhost:8000/mallorquina/mll_inf_arqueo_caja",
                     "path": [

@@ -32,6 +32,26 @@ def proceso(param: InfoTransaccion) -> list:
             param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
             raise MiException(param = param)
 
+        fechas = []
+        if not fecha: # si no tiene parametro fecha
+            # if bbdd['ultimo_cierre']: # si tiene último cierre
+            #     fecha_inicial = datetime.strptime(bbdd['ultimo_cierre'].isoformat(), "%Y-%m-%d")
+            #     fecha_final = datetime.now()
+            #     imprime(["Uno:", type(bbdd['ultimo_cierre']),  bbdd['ultimo_cierre'], fecha_inicial, fecha_final], "=")
+            # else:
+            #     # Crear una lista de fechas
+            #     fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
+            #     fecha_final = datetime.now()
+            #     imprime(["Dos:", fecha_inicial, fecha_final], "=")
+
+            fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
+            fecha_final = datetime.now()
+            while fecha_inicial <= fecha_final:
+                fechas.append(fecha_inicial.strftime("%Y-%m-%d"))
+                fecha_inicial += timedelta(days=1)
+        else:
+            fechas = [fecha]
+
         param.debug="actualizar_en_ejecucion"
         actualizar_en_ejecucion(param, 1)
 
@@ -39,47 +59,30 @@ def proceso(param: InfoTransaccion) -> list:
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        param.debug = "Select"
-        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") 
-        lista_bbdd = cursor_mysql.fetchall()
+        # Aquí va la lógica específica para cada bbdd
+        for fecha in fechas:
+            param.debug = "Select"
+            # cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") 
+            cursor_mysql.execute("""SELECT e.ID, e.nombre, e.id_bbdd, e.stIdEnt, e.ultimo_cierre
+                                      FROM mll_cfg_entidades e
+                                      inner join mll_cfg_bbdd bd on e.id_bbdd = bd.id
+                                     WHERE bd.cierre_caja = 'S'
+                                       AND ifnull(ultimo_cierre, '2000-01-01') < %s""",
+                                 (fecha,)) 
+            lista_bbdd = cursor_mysql.fetchall()
 
-        for bbdd in lista_bbdd:
-            imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
-            fechas = []
-            if not fecha: # si no tiene parametro fecha
-                # if bbdd['ultimo_cierre']: # si tiene último cierre
-                #     fecha_inicial = datetime.strptime(bbdd['ultimo_cierre'].isoformat(), "%Y-%m-%d")
-                #     fecha_final = datetime.now()
-                #     imprime(["Uno:", type(bbdd['ultimo_cierre']),  bbdd['ultimo_cierre'], fecha_inicial, fecha_final], "=")
-                # else:
-                #     # Crear una lista de fechas
-                #     fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
-                #     fecha_final = datetime.now()
-                #     imprime(["Dos:", fecha_inicial, fecha_final], "=")
-
-                fecha_inicial = datetime.strptime("2024-12-01", "%Y-%m-%d")
-                fecha_final = datetime.now()
-                while fecha_inicial <= fecha_final:
-                    fechas.append(fecha_inicial.strftime("%Y-%m-%d"))
-                    fecha_inicial += timedelta(days=1)
-            else:
-                fechas = [fecha]
-
-
-            # Aquí va la lógica específica para cada bbdd
-            for fecha in fechas:
-                print(fecha)
+            for bbdd in lista_bbdd:
+                imprime([f"Procesando TIENDA: {bbdd}", fecha], "-")
                 resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql, fecha)
                 resultado.extend(resultado_dict)
                 conn_mysql.commit()
 
-            param.debug = "update"
-            cursor_mysql.execute(
-                "UPDATE mll_cfg_bbdd SET ultimo_cierre = %s WHERE ID = %s",
-                (fecha, bbdd["ID"])
-            )
-        
-        conn_mysql.commit()
+                param.debug = "update"
+                cursor_mysql.execute("UPDATE mll_cfg_entidades SET ultimo_cierre = %s WHERE ID = %s",
+                                    (fecha, bbdd["ID"],)
+                                    )
+            
+                conn_mysql.commit()
 
         return resultado
 

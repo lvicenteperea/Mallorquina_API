@@ -71,6 +71,7 @@ def proceso(param: InfoTransaccion) -> list:
                 print(fecha)
                 resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql, fecha)
                 resultado.extend(resultado_dict)
+                conn_mysql.commit()
 
             param.debug = "update"
             cursor_mysql.execute(

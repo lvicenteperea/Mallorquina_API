@@ -63,15 +63,15 @@ def proceso(param: InfoTransaccion) -> list:
 
         for fecha in fechas:
             param.debug = "Select"
-            cursor_mysql.execute("""SELECT e.ID, e.nombre, e.id_bbdd, e.stIdEnt, ifnull(e.ultimo_cierre, '2025-01-01') as ultimo_cierre
+            cursor_mysql.execute("""SELECT e.ID, e.nombre, e.id_bbdd, e.stIdEnt, e.ultimo_cierre
                                       FROM mll_cfg_entidades e
                                       inner join mll_cfg_bbdd bd on e.id_bbdd = bd.id
-                                     WHERE bd.cierre_caja = 'S'""") 
+                                     WHERE bd.cierre_caja = 'S'
+                                       AND ifnull(ultimo_cierre, '2000-01-01') < %s""",
+                                 (fecha,)) 
             lista_bbdd = cursor_mysql.fetchall()
 
             for bbdd in lista_bbdd:
-                fecha = datetime.strptime(bbdd["ultimo_cierre"], "%Y-%m-%d")
-
                 imprime([f"Procesando TIENDA: {bbdd}", fecha], "-")
                 resultado_dict = consultar_y_grabar(param, bbdd["ID"], conn_mysql, fecha)
                 resultado.extend(resultado_dict)

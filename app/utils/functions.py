@@ -63,3 +63,21 @@ def control_usuario (param,  request):
 #         return False
 #     return True
 
+
+# --------------------------------------------------------------------------------
+# Función para obtener el último cierre de caja de una tienda
+# --------------------------------------------------------------------------------
+def select_mysql(param: InfoTransaccion, conn_mysql, query: str, parametros: tuple = None, diccionario: bool = True) -> list:
+    try:
+        cursor_mysql = conn_mysql.cursor(dictionary=True)
+        cursor_mysql.execute(query, parametros) 
+        lista_bbdd = cursor_mysql.fetchall()
+        cursor_mysql.close()
+
+        return lista_bbdd
+    
+    except Exception as e:
+        param.error_sistema(e=e, debug="select_mysql.Exception")
+        raise 
+
+

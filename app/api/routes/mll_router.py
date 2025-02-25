@@ -23,7 +23,7 @@ router = APIRouter()
 # -----------------------------------------------
 def manejar_excepciones(e: Exception, param: InfoTransaccion, endpoint: str):
     if isinstance(e, MiException):
-        raise e
+        return None
     elif isinstance(e, HTTPException):
         param.error_sistema(e=e, debug=f"{endpoint}.HTTP_Exception")
         raise e
@@ -54,9 +54,11 @@ async def procesar_request(
         param.resultados = resultado or []
         return param
 
+
     except Exception as e:
         manejar_excepciones(e, param, endpoint)
-
+        return param  # si no es MiException, se retorna el param
+    
     finally:
         imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
@@ -106,7 +108,8 @@ async def mll_consultas_cierre(request: Request, body_params: ConsultaCierreRequ
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
 class ArqueoCajaRequest(ParamRequest):
-    fecha: str = datetime.now().strftime('%Y-%m-%d')
+    # fecha: str  #= datetime.now().strftime('%Y-%m-%d')
+    dias: int # = 1
 
 @router.post("/mll_arqueo_caja", response_model=InfoTransaccion)
 async def mll_arqueo_caja(request: Request, body_params: ArqueoCajaRequest = Body(...)):

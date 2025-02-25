@@ -12,10 +12,6 @@ from app.utils.utilidades import graba_log, imprime
 from app.utils.functions import select_mysql
 from app.utils.InfoTransaccion import InfoTransaccion
 
-
-NUBE = 1
-
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> list:
@@ -23,7 +19,6 @@ def proceso(param: InfoTransaccion) -> list:
     param.debug="Inicio"
     resultado = []
     conn_mysql = None # para que no de error en el finally
-    conn_sqlserver = None
     cursor_mysql = None # para que no de error en el finally
     dias = param.parametros[0]
 
@@ -39,19 +34,11 @@ def proceso(param: InfoTransaccion) -> list:
             param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
             raise MiException(param = param)
 
-        # Buscamos la conexión a MySQL porque es donde vamos a grabar y donde vamos a buscar datos auxiliares del arqueo de caja
         param.debug="actualizar_en_ejecucion"
         actualizar_en_ejecucion(param, 1)
+
         param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
-        # ----------------------------------------------------------------------------------------------------------------------------------
-
-        # Buscamos la conexión que necesitamos para esta bbdd origen SQLSERVER en la NUBe que es con la que vamos a hacer el arqueo de caja
-        param.debug = "Buscamos la conexión que necesitamos para esta bbdd origen"
-        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, NUBE)
-        param.debug = "conectamos con esta bbdd origen"
-        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-        # ----------------------------------------------------------------------------------------------------------------------------------
 
         # for fecha in fechas:
         param.debug = "Select"
@@ -59,14 +46,14 @@ def proceso(param: InfoTransaccion) -> list:
                                                                                 FROM mll_cfg_entidades e
                                                                                inner join mll_cfg_bbdd bd on e.id_bbdd = bd.id
                                                                                WHERE bd.cierre_caja = 'S'""")
-                   
+                    
         for x in range(1, dias+1):
             cursor_mysql = conn_mysql.cursor(dictionary=True)
 
             for bbdd in lista_bbdd:
                 fecha = datetime.strptime(bbdd["ultimo_cierre"], "%Y-%m-%d") + timedelta(days=x)
                 imprime([f"Procesando TIENDA: {bbdd}", fecha, bbdd["ultimo_cierre"], x], "-")
-                resultado_dict = consultar_y_grabar(param, conn_mysql, conn_sqlserver, bbdd["ID"], bbdd["stIdEnt"], fecha)
+                resultado_dict = consultar_y_grabar(param, conn_mysql, bbdd["ID"], bbdd["stIdEnt"], fecha)
                 resultado.extend(resultado_dict)
                 conn_mysql.commit()
 
@@ -87,8 +74,6 @@ def proceso(param: InfoTransaccion) -> list:
         
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
-        if conn_sqlserver:
-            conn_sqlserver.close()
 
         actualizar_en_ejecucion(param, 0)
         enviar_email(config["Lista_emails"],
@@ -99,9 +84,10 @@ def proceso(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bbdd, stIdEnt, fecha) -> dict:
+def consultar_y_grabar(param: InfoTransaccion, conn_mysql, id_bbdd, stIdEnt, fecha) -> dict:
     resultado = []
     param.debug = "Inicio"
+    conn_sqlserver = None
 
     try:
         # fecha_mas_1 = (datetime.strptime(fecha, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
@@ -126,32 +112,40 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bb
         imprime([query, len(ids_cierre), (fecha, fecha_mas_1, stIdEnt)], "* query", 2)
         
         for cierre in ids_cierre:
-            # Leer datos desde SQL Server
-            cursor_sqlserver = conn_sqlserver.cursor()
-            param.debug = "Ejecución select 2"
-            select_query = """SELECT Ca.stIdEnt, Ca.[Id Apertura Puesto Cobro] as ID_Apertura,
-                                        FORMAT(Ca.[Fecha], 'dd/MM/yyyy') as Fecha,
-                                        Ca.[Id Cobro] as ID_Cobro,
-                                        Ca.[Descripcion Cobro] as Medio_Cobro,
-                                        Ca.[Serie Puesto Facturacion] as ID_Puesto,
-                                        sum(Ca.[Entrada]-Ca.[Salida]) as Importe,
-                                        count(*) as Operaciones
-                                    FROM Caja Ca
-                                WHERE Ca.[Id Apertura Puesto Cobro]  = ?
-                                        AND Ca.[Serie Puesto Facturacion] = ?
-                                        AND Ca.[Id Cobro] = ?
-                                        AND Ca.stIdEnt = ?
-                                group by Ca.stIdEnt,    Ca.[Id Apertura Puesto Cobro], FORMAT(Ca.[Fecha], 'dd/MM/yyyy'),
-                                            Ca.[Id Cobro], Ca.[Descripcion Cobro],        Ca.[Serie Puesto Facturacion]"""
+            param.debug = "Buscamos la conexión que necesitamos para esta bbdd origen"
+            bbdd_config = obtener_conexion_bbdd_origen(conn_mysql,id_bbdd)
+            imprime([bbdd_config], "* bbdd_config")
 
-            cursor_sqlserver.execute(select_query, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],))
-            datos = cursor_sqlserver.fetchall()
-            cursor_sqlserver.close()
+            param.debug = "conectamos con esta bbdd origen"
+            conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
-            imprime([select_query, len(datos), (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'])], "* select_query", 2)
+            if conn_sqlserver:
+                # Leer datos desde SQL Server
+                cursor_sqlserver = conn_sqlserver.cursor()
+                param.debug = "Ejecución select 2"
+                select_query = """SELECT Ca.stIdEnt, Ca.[Id Apertura Puesto Cobro] as ID_Apertura,
+                                            FORMAT(Ca.[Fecha], 'dd/MM/yyyy') as Fecha,
+                                            Ca.[Id Cobro] as ID_Cobro,
+                                            Ca.[Descripcion Cobro] as Medio_Cobro,
+                                            Ca.[Serie Puesto Facturacion] as ID_Puesto,
+                                            sum(Ca.[Entrada]-Ca.[Salida]) as Importe,
+                                            count(*) as Operaciones
+                                        FROM Caja Ca
+                                    WHERE Ca.[Id Apertura Puesto Cobro]  = ?
+                                         AND Ca.[Serie Puesto Facturacion] = ?
+                                         AND Ca.[Id Cobro] = ?
+                                         AND Ca.stIdEnt = ?
+                                    group by Ca.stIdEnt,    Ca.[Id Apertura Puesto Cobro], FORMAT(Ca.[Fecha], 'dd/MM/yyyy'),
+                                             Ca.[Id Cobro], Ca.[Descripcion Cobro],        Ca.[Serie Puesto Facturacion]"""
 
-            param.debug = "Llamada a Grabar"
-            resultado.extend(grabar(param, conn_mysql, id_bbdd, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"])))
+                cursor_sqlserver.execute(select_query, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],))
+                datos = cursor_sqlserver.fetchall()
+                cursor_sqlserver.close()
+
+                imprime([select_query, len(datos), (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'])], "* select_query", 2)
+
+                param.debug = "Llamada a Grabar"
+                resultado.extend(grabar(param, conn_mysql, id_bbdd, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"])))
 
         return resultado
 
@@ -159,6 +153,10 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bb
     except Exception as e:
         param.error_sistema(e=e, debug="consultar_y_grabar.Exception")
         raise 
+
+    finally:
+        if conn_sqlserver:
+            conn_sqlserver.close()
 
     
 #----------------------------------------------------------------------------------------
@@ -212,15 +210,14 @@ def grabar(param: InfoTransaccion, conn_mysql, id_bbdd, datos, fecha, cierre) ->
             id_mae_tpv = 0  # busca_tvp(param, conn_mysql, data["id_tienda"],  data["id_tpv"])
 
             insert_diarias = """
-                INSERT INTO mll_rec_ventas_diarias (id_tienda, Serie, id_mae_tpv, fecha, imp_arqueo_ciego, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
-                VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s, %s)
+                INSERT INTO mll_rec_ventas_diarias (id_tienda, Serie, id_mae_tpv, fecha, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
+                VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s)
             """
             cursor_mysql.execute( insert_diarias,
                                   (data["id_tienda"],
                                    data["id_tpv"],
                                    id_mae_tpv,
                                    data["fecha"],
-                                   cierre[4],
                                    data["ventas"],
                                    data["operaciones"],
                                    ID_Apertura,

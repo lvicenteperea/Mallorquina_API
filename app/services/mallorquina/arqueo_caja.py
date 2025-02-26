@@ -13,7 +13,9 @@ from app.utils.functions import select_mysql
 from app.utils.InfoTransaccion import InfoTransaccion
 
 
-NUBE = 1
+# Constantes globales
+ID_NUBE = 1   # ID de BBDD de la nube (infosoft) que es donde están todos los datos de CAJA
+
 
 
 #----------------------------------------------------------------------------------------
@@ -48,36 +50,39 @@ def proceso(param: InfoTransaccion) -> list:
 
         # Buscamos la conexión que necesitamos para esta bbdd origen SQLSERVER en la NUBe que es con la que vamos a hacer el arqueo de caja
         param.debug = "Buscamos la conexión que necesitamos para esta bbdd origen"
-        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, NUBE)
+        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, ID_NUBE)
         param.debug = "conectamos con esta bbdd origen"
         conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
         # ----------------------------------------------------------------------------------------------------------------------------------
 
         # for fecha in fechas:
         param.debug = "Select"
-        lista_bbdd = select_mysql(param=param, conn_mysql=conn_mysql, query="""SELECT e.ID, e.nombre, e.id_bbdd, e.stIdEnt, ifnull(e.ultimo_cierre, '2025-01-01') as ultimo_cierre
-                                                                                FROM mll_cfg_entidades e
-                                                                               inner join mll_cfg_bbdd bd on e.id_bbdd = bd.id
-                                                                               WHERE bd.cierre_caja = 'S'""")
+        lista_entidades = select_mysql(param=param, conn_mysql=conn_mysql, query="""SELECT e.ID, e.nombre, e.id_bbdd, e.stIdEnt, ifnull(e.ultimo_cierre, '2025-01-01') as ultimo_cierre
+                                                                                      FROM mll_cfg_entidades e
+                                                                                     inner join mll_cfg_bbdd bd on e.id_bbdd = bd.id
+                                                                                     WHERE bd.cierre_caja = 'S'""")
                    
         for x in range(1, dias+1):
             cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-            for bbdd in lista_bbdd:
-                fecha = datetime.strptime(bbdd["ultimo_cierre"], "%Y-%m-%d") + timedelta(days=x)
-                imprime([f"Procesando TIENDA: {bbdd}", fecha, bbdd["ultimo_cierre"], x], "-")
-                resultado_dict = consultar_y_grabar(param, conn_mysql, conn_sqlserver, bbdd["ID"], bbdd["stIdEnt"], fecha)
+            for entidad in lista_entidades:
+                fecha = datetime.strptime(entidad["ultimo_cierre"], "%Y-%m-%d") + timedelta(days=x)
+                imprime([f"Procesando TIENDA: {entidad}", fecha, entidad["ultimo_cierre"], x], "-")
+                resultado_dict = consultar_y_grabar(param, conn_mysql, conn_sqlserver, entidad["ID"], entidad["stIdEnt"], fecha)
                 resultado.extend(resultado_dict)
                 conn_mysql.commit()
 
-                param.debug = "update"
-                cursor_mysql.execute("UPDATE mll_cfg_entidades SET ultimo_cierre = %s WHERE ID = %s",
-                                    (fecha, bbdd["ID"],)
-                                    )
+                if resultado_dict:  # es muy raro no que se tengan datos, algo ha pasado, nos quedamos que el último cierre 
+                    param.debug = "update"
+                    cursor_mysql.execute("UPDATE mll_cfg_entidades SET ultimo_cierre = %s WHERE ID = %s",
+                                        (fecha, entidad["ID"],)
+                                        )
         
             conn_mysql.commit()        
 
-        return resultado if resultado else [f"No se han encontrado datos desde el {datetime.strptime(bbdd['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=1)} al {datetime.strptime(bbdd['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=dias+1)}"]
+        actualizar_en_ejecucion(param, 0)
+
+        return resultado if resultado else [f"No se han encontrado datos desde el {datetime.strptime(entidad['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=1)} al {datetime.strptime(entidad['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=dias+1)}"]
 
 
     except Exception as e:
@@ -90,7 +95,6 @@ def proceso(param: InfoTransaccion) -> list:
         if conn_sqlserver:
             conn_sqlserver.close()
 
-        actualizar_en_ejecucion(param, 0)
         enviar_email(config["Lista_emails"],
                      "Proceso finalizado",
                      "El proceso de sincronización ha terminado."
@@ -99,7 +103,7 @@ def proceso(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bbdd, stIdEnt, fecha) -> dict:
+def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_entidad, stIdEnt, fecha) -> dict:
     resultado = []
     param.debug = "Inicio"
 
@@ -114,7 +118,7 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bb
                     WHERE Fecha_hora >= %s 
                       AND Fecha_hora < %s
                       AND fc.activo_arqueo = 1
-                      AND ac.importe != 0
+                      -- AND ac.importe != 0
                       AND ac.stIdEnt = %s
                     ORDER by ac.stIdEnt, ac.fecha_hora, ac.id_cobro, cc.Id_Cierre, pt.Serie"""  # Vamos a coger todas las tiendas del dia
         
@@ -123,7 +127,7 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bb
         cursor_mysql.execute(query, (fecha, fecha_mas_1, stIdEnt))
         ids_cierre = cursor_mysql.fetchall()
 
-        imprime([query, len(ids_cierre), (fecha, fecha_mas_1, stIdEnt)], "* query", 2)
+        # imprime([query, len(ids_cierre), (fecha, fecha_mas_1, stIdEnt)], "* query", 2)
         
         for cierre in ids_cierre:
             # Leer datos desde SQL Server
@@ -151,7 +155,7 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bb
             imprime([select_query, len(datos), (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'])], "* select_query", 2)
 
             param.debug = "Llamada a Grabar"
-            resultado.extend(grabar(param, conn_mysql, id_bbdd, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"])))
+            resultado.extend(grabar(param, conn_mysql, id_entidad, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"])))
 
         return resultado
 
@@ -163,7 +167,7 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_bb
     
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def grabar(param: InfoTransaccion, conn_mysql, id_bbdd, datos, fecha, cierre) -> dict:
+def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre) -> dict:
     param.debug = "Inicio"
     resultado = []
     ventas_registros = 0
@@ -179,17 +183,16 @@ def grabar(param: InfoTransaccion, conn_mysql, id_bbdd, datos, fecha, cierre) ->
 
 
         for row in datos:
-            imprime([row], "* DATOS ", 2)
             id_puesto = row.ID_Puesto
             id_apertura = row.ID_Apertura
             fecha = row.Fecha
 
             # Clave única para agrupación
-            key = (id_bbdd, id_puesto, id_apertura)
+            key = (id_entidad, id_puesto, id_apertura)
 
             if key not in ventas_diarias:
                 ventas_diarias[key] = {
-                    "id_tienda": id_bbdd,
+                    "id_entidad": id_entidad,
                     "id_tpv": id_puesto,
                     "fecha": fecha,
                     "ventas": 0,
@@ -209,14 +212,16 @@ def grabar(param: InfoTransaccion, conn_mysql, id_bbdd, datos, fecha, cierre) ->
             param.debug = "insert mll_rec_ventas_diarias"
             ID_Apertura = key[2]
             # esto igual es mejor meterlo en un array todo y aquí buscar en el array
-            id_mae_tpv = 0  # busca_tvp(param, conn_mysql, data["id_tienda"],  data["id_tpv"])
+            id_mae_tpv = 0  # busca_tvp(param, conn_mysql, data["id_entidad"],  data["id_tpv"])
 
-            insert_diarias = """
-                INSERT INTO mll_rec_ventas_diarias (id_tienda, Serie, id_mae_tpv, fecha, imp_arqueo_ciego, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
-                VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s, %s)
-            """
+            insert_diarias = """INSERT INTO mll_rec_ventas_diarias (id_entidad, Serie, id_mae_tpv, fecha, imp_arqueo_ciego, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
+                                                            VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s, %s)"""
+            imprime([insert_diarias, 
+                     (data["id_entidad"],data["id_tpv"],id_mae_tpv,data["fecha"],cierre[4],data["ventas"],data["operaciones"],ID_Apertura,cierre_descs[orden],)
+                    ], 
+                    "* DATOS ", 2)
             cursor_mysql.execute( insert_diarias,
-                                  (data["id_tienda"],
+                                  (data["id_entidad"],
                                    data["id_tpv"],
                                    id_mae_tpv,
                                    data["fecha"],
@@ -248,10 +253,10 @@ def grabar(param: InfoTransaccion, conn_mysql, id_bbdd, datos, fecha, cierre) ->
 
 
         if cierre[4] != total_ventas:
-            imprime([cierre , f"para el {fecha} y tienda {id_bbdd}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"], "* diferencias importe", 2)
+            imprime([cierre , f"para el {fecha} y entidad {id_entidad}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"], "* diferencias importe", 2)
 
         if ventas_registros != 0:
-            resultado = [f"para el {fecha} y tienda {id_bbdd}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"]
+            resultado = [f"para el {fecha} y entidad {id_entidad}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"]
 
         return resultado
 

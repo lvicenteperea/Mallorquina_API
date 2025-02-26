@@ -32,17 +32,17 @@ def proceso(param: InfoTransaccion) -> list:
 
         param.debug = "Select"
         if tienda == 0:
-            query = "SELECT * FROM mll_cfg_bbdd WHERE activo='S'"
+            query = "SELECT * FROM mll_cfg_entidades WHERE activo='S'"
             cursor_mysql.execute(query)
         else:
-            query = "SELECT * FROM mll_cfg_bbdd WHERE id = %s AND activo='S'"
+            query = "SELECT * FROM mll_cfg_entidades WHERE id = %s AND activo='S'"
             cursor_mysql.execute(query, (tienda,))
 
-        lista_bbdd = cursor_mysql.fetchall()
+        lista_entidades = cursor_mysql.fetchall()
 
-        for bbdd in lista_bbdd:
-            imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
-            datos.append(consultar(param, bbdd["ID"], conn_mysql))
+        for entidad in lista_entidades:
+            imprime([f"Procesando TIENDA: {entidad['ID']}-{entidad['Nombre']}. De la BBDD: {entidad['id_bbdd']}"], "-")
+            datos.append(consultar(param, entidad["ID"], conn_mysql))
 
         if datos:
             resultado[0] = a_excel_con_pd(param, datos)
@@ -69,7 +69,7 @@ def proceso(param: InfoTransaccion) -> list:
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
+def consultar(param: InfoTransaccion, id_entidad, conn_mysql) -> list:
     resultado = []
     param.debug="Inicio"
     fecha = param.parametros[0]
@@ -80,9 +80,9 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
 
         param.debug = "Select"
         query = f"""SELECT 
-                        vd.id_tienda,
+                        vd.id_entidad,
                         t.nombre Tienda,
-                        vd.id_tpv,
+                        vd.serie,
                         tpv.descripcion Nombre_TPV,
                         vd.fecha,
                         vd.cierre_tpv_id,
@@ -93,15 +93,15 @@ def consultar(param: InfoTransaccion, tienda, conn_mysql) -> list:
                         SUM(vmp.operaciones) AS total_operaciones
                     FROM mll_rec_ventas_diarias vd
                         JOIN  mll_rec_ventas_medio_pago vmp ON vd.id = vmp.id_ventas_diarias
-                    LEFT JOIN mll_cfg_bbdd t         ON vd.id_tienda = t.id
-                    LEFT JOIN tpv_puestos_facturacion tpv ON vd.id_tpv = tpv.id_puesto and vd.id_tienda = tpv.Origen_BBDD
+                    LEFT JOIN mll_cfg_entidades t         ON vd.id_entidad = t.id
+                    LEFT JOIN tpv_puestos_facturacion tpv ON vd.serie = tpv.serie and vd.id_entidad = tpv.id_entidad
                     LEFT JOIN mll_mae_medios_pago mp ON vmp.id_medios_pago = mp.id
-                    where vd.id_tienda={tienda}
+                    where vd.id_entidad={id_entidad}
                       and vd.fecha = STR_TO_DATE('{fecha}', '%Y-%m-%d')
                     GROUP BY 
-                        vd.id_tienda,
+                        vd.id_entidad,
                         t.nombre,
-                        vd.id_tpv,
+                        vd.serie,
                         tpv.descripcion,
                         vd.fecha,
                         vd.cierre_tpv_id,
@@ -146,7 +146,7 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 df = pd.DataFrame(sublista)
 
                 # 2. Eliminamos las columnas que NO queremos exportar
-                columnas_a_eliminar = ["id_tienda", "id_tpv", "cierre_tpv_id", "id_medios_pago"]
+                columnas_a_eliminar = ["id_entidad", "id_tpv", "cierre_tpv_id", "id_medios_pago"]
                 df.drop(columns=columnas_a_eliminar, axis=1, inplace=True)
 
                 param.debug = "convertimos fecha"
@@ -191,7 +191,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
 
         param.debug = "2. Elimiar Columnas"
         # 2. Columnas que NO queremos mostrar
-        columnas_excluir = {"id_tienda", "id_tpv", "cierre_tpv_id", "id_medios_pago"}
+        columnas_excluir = {"id_entidad", "id_tpv", "cierre_tpv_id", "id_medios_pago"}
 
         for sublista in todos_los_conjuntos:
             # Si la sublista está vacía, la saltamos

@@ -1,5 +1,5 @@
 import json
-from app.utils.utilidades import graba_log
+from app.utils.utilidades import graba_log, imprime
 
 def obtener_conexion_bbdd_origen(conn, id_bbdd):
     try:
@@ -17,7 +17,7 @@ def obtener_conexion_bbdd_origen(conn, id_bbdd):
         
         cursor.close()
         # conn.close()
-    
+
         return conexion
     
     except Exception as e:

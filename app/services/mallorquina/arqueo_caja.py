@@ -19,6 +19,14 @@ ID_NUBE = 1   # ID de BBDD de la nube (infosoft) que es donde están todos los d
 
 
 #----------------------------------------------------------------------------------------
+# Este proceso se encarga de recorrer todas las tiendas/BBDD y entidades para hacer el arqueo de caja       
+# para ello:
+#   - Recorre todas las entidades cuya tienda/bb tenga cierre_caja=S
+#   - Para cada entidad, busca en arque_ciego de BBDD La Mallorquina, todos los datos para la fecha elegida y que tenga una forma de pago que se tenga en cuanta en el arqueo de caja tpv_formas_de_cobro.activo_arqueo = 1
+#       - Los datos son  entidad, id_cierre, id_cobro, puesto, serie, importe
+#   - Con los datos de arque_ciego, se consulta en Caja de SQLSERVER, los datos de la entidad, id_cierre, id_cobro, puesto, serie, importe
+#   - Se graba el arqueo de caja en la BBDD de La Mallorquina
+#   - Se actualiza la fecha de último cierre de la entidad
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> list:
     funcion = "arqueo_caja.proceso"
@@ -85,9 +93,12 @@ def proceso(param: InfoTransaccion) -> list:
         return resultado if resultado else [f"No se han encontrado datos desde el {datetime.strptime(entidad['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=1)} al {datetime.strptime(entidad['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=dias+1)}"]
 
 
+    except MiException as e:
+        param.error_sistema(e=e, debug="Sincroniza.Proceso.MiExcepcion")
+        raise e
+    
     except Exception as e:
-        print("---------------- Exception2 ---------------------")
-        param.error_sistema(e=e, debug="proceso.Exception")
+        param.error_sistema(e=e, debug="Sincroniza.proceso.Exception")
         raise e
         
     finally:
@@ -152,7 +163,7 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_en
             datos = cursor_sqlserver.fetchall()
             cursor_sqlserver.close()
 
-            imprime([select_query, len(datos), (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'])], "* select_query", 2)
+            # imprime([select_query, len(datos), (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'])], "* select_query", 2)
 
             param.debug = "Llamada a Grabar"
             resultado.extend(grabar(param, conn_mysql, id_entidad, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"])))
@@ -216,10 +227,10 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
 
             insert_diarias = """INSERT INTO mll_rec_ventas_diarias (id_entidad, Serie, id_mae_tpv, fecha, imp_arqueo_ciego, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
                                                             VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s, %s)"""
-            imprime([insert_diarias, 
-                     (data["id_entidad"],data["id_tpv"],id_mae_tpv,data["fecha"],cierre[4],data["ventas"],data["operaciones"],ID_Apertura,cierre_descs[orden],)
-                    ], 
-                    "* DATOS ", 2)
+            # imprime([insert_diarias, 
+            #          (data["id_entidad"],data["id_tpv"],id_mae_tpv,data["fecha"],cierre[4],data["ventas"],data["operaciones"],ID_Apertura,cierre_descs[orden],)
+            #         ], 
+            #         "* DATOS ", 2)
             cursor_mysql.execute( insert_diarias,
                                   (data["id_entidad"],
                                    data["id_tpv"],
@@ -251,12 +262,8 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
                     )
                     medios_pago_registros  += cursor_mysql.rowcount
 
-
-        if cierre[4] != total_ventas:
-            imprime([cierre , f"para el {fecha} y entidad {id_entidad}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"], "* diferencias importe", 2)
-
         if ventas_registros != 0:
-            resultado = [f"para el {fecha} y entidad {id_entidad}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"]
+            resultado = [f"para el {fecha} y entidad {id_entidad}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ ({cierre[4]}) para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"]
 
         return resultado
 

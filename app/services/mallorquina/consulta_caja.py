@@ -14,8 +14,8 @@ from app.utils.mis_excepciones import MiException
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
-    funcion = "consulta.caja.recorre_consultas_tiendas"
+def proceso(param: InfoTransaccion) -> list:
+    funcion = "consulta_caja.proceso"
     param.debug="Inicio"
     resultado = []
     conn_mysql = None # para que no de error en el finally
@@ -69,8 +69,12 @@ def recorre_consultas_tiendas(param: InfoTransaccion) -> list:
 
         return resultado 
        
+    except MiException as e:
+        param.error_sistema(e=e, debug=f"MiException {funcion}")
+        raise e
+    
     except Exception as e:
-        param.error_sistema(e=e, debug="Excepción consulta_caja.recorre_consultas_tiendas")
+        param.error_sistema(e=e, debug=f"Excepción {funcion}")
         raise
 
     finally:

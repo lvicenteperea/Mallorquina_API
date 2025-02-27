@@ -85,7 +85,8 @@ class SincronizaRequest(ParamRequest):
                                         "tabla_origen": "[Mesas Restaurante]",
                                         "valor_max": null,
                                         "insertados": 0,
-                                        "actualizados": 0
+                                        "actualizados": 0,
+                                        "error": null     ## Si no hay error, se retorna None y si retorna mensaje cuando no hay conexión a la BBDD
                                     }
                                   """
             )
@@ -112,7 +113,7 @@ class ArqueoCajaRequest(ParamRequest):
     dias: int # = 1
 
 @router.post("/mll_arqueo_caja", response_model=InfoTransaccion,
-             summary="🔄 Genera la información del araqueo de caja a un día determinado",
+             summary="🔄 Genera la información del araqueo de caja a un día determinado en las tablas mll_rec_ventas_diarias y mll_rec_ventas_medio_pago",
              description="""Genera la información del araqueo de caja para todas las entidades que su Tiendas/BBDD que tengan cierre_caja='S'
                             También la forma de cobro debe estar activa en el TPV (activo_arqueo=1)
                             La fecha que trata es ultimo_cierre de cfg_entidades
@@ -138,7 +139,19 @@ class InfArqueoCajaRequest(ParamRequest):
     fecha: str = datetime.now().strftime('%Y-%m-%d')
     tienda: Optional[int] = 0  # Todas las tiendas
 
-@router.post("/mll_inf_arqueo_caja", response_model=InfoTransaccion)
+@router.post("/mll_inf_arqueo_caja", response_model=InfoTransaccion,
+             summary="🔄 Busca los datos para una tienda determinada en las tablas mll_rec_ventas_diarias y mll_rec_ventas_medio_pago",
+             description="""Este servicio sincroniza los datos entre diferentes BBDD como los TPV, la nube de infosoft y el servidor.\n
+                                - ✅ **Requiere autenticación**
+                                - ✅ **Recibe un `id_App` y un `user`** para identificar al peticionario
+                                - ✅ **Retorna `status` y `message` indicando error**
+                         """,
+             response_description="""📌 En caso de éxito retorna una clase InfoTransaccion y en resultados una lista con los ficheros generados:\n
+                                    [ "Se ha generado el fichero app/xxxxx/xxxxx/resultado_panda.xlsx correctamente.",
+                                      "Se ha generado el fichero app/xxxxx/xxxxx/resultado_openpyxl.xlsx correctamente"
+                                      ]
+                                  """
+            )
 async def mll_inf_arqueo_caja(request: Request, body_params: InfArqueoCajaRequest = Body(...)):
     """ Genera archivos con resultados del arqueo de caja. """
     return await procesar_request(request, body_params, arqueo_caja_info, "mll_inf_arqueo_caja")
@@ -146,7 +159,16 @@ async def mll_inf_arqueo_caja(request: Request, body_params: InfArqueoCajaReques
 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
-@router.post("/mll_carga_prod_erp", response_model=InfoTransaccion)
+@router.post("/mll_carga_prod_erp", response_model=InfoTransaccion,
+             summary="🔄 Carga el fichero de productos excel del ERP SQLPYME en la BBDD de La Mallorquina",
+             description="""Carga el fichero de productos excel del ERP SQLPYME en la BBDD de La Mallorquina.\n
+                                - ✅ **Requiere autenticación**
+                                - ✅ **Recibe un `id_App` y un `user`** para identificar al peticionario
+                                - ✅ **Retorna `status` y `message` indicando error**
+                         """,
+             response_description="""📌 En caso de éxito retorna una clase InfoTransaccion y en resultados una lista con los ficheros generados:\n
+                                  """
+            )
 async def mll_carga_prod_erp(
     request: Request,
     id_App: int = Form(...),

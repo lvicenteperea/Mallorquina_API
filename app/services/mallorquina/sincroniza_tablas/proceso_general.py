@@ -18,6 +18,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
     valor_max = None
     insertados = 0
     actualizados = 0
+    txt_conexion = None
     # salto = 0  ... esto no está hecho para tablas en las que haya que paginar....
     try:
         proximo_valor = tabla["ult_valor"]
@@ -32,7 +33,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         # z=1/0
 
         while True:
-            registros,lista_pk,lista_max_valor = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor) # , salto)
+            registros,lista_pk,lista_max_valor,txt_conexion = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor) # , salto)
             if len(registros) == 0:
                 break
 
@@ -97,10 +98,21 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
                     actualizados += cursor_mysql.rowcount
                 else:
                     # Realizar un INSERT
-                    if insert_query.count(", stIdEnt)") == 1:
-                        registro_destino = list(registro) + [entidad["id_bbdd"]] + [entidad['stIdEnt']] # Campos + Origen + stIdEnt
-                    else:
-                        registro_destino = list(registro) + [entidad["id_bbdd"]]  # Campos + Origen
+                    registro_destino = list(registro) + [entidad["id_bbdd"]]  # Campos + Origen
+                    # if insert_query.count(", stIdEnt)") == 1:
+                    #     registro_destino += [entidad['stIdEnt']] # Campos + stIdEnt
+                    # if insert_query.count(", id_entidad)") == 1:
+                    #     registro_destino += [entidad['ID']] # Campos + id_entidad
+
+                    # if any(campo["Nombre"] == "{stIdEnt}" for campo in campos):
+                    if  existe_en_campos(campos, "{stIdEnt}"):
+                        registro_destino += [entidad['stIdEnt']] # Campos + stIdEnt
+
+                    # if any(campo["Nombre"] == "{id_entidad}" for campo in campos):
+                    if  existe_en_campos(campos, "{id_entidad}"):
+                        registro_destino += [entidad['ID']] # Campos + id_entidad
+
+
                     # imprime([insert_query, registro_destino, entidad], "=......INSERT......", 2)
                     cursor_mysql.execute(insert_query, registro_destino)
                     insertados += cursor_mysql.rowcount
@@ -114,7 +126,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
                                     )
             conn_mysql.commit()
 
-        return [valor_max, insertados, actualizados]
+        return [valor_max, insertados, actualizados, txt_conexion]
 
     except Exception as e:
         param.error_sistema(e=e, debug="proceso_general.Exception")
@@ -141,8 +153,11 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
 
     try:
         param.debug = "conn origen"
-        # conextamos con esta bbdd origen
-        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+        try:
+            # conextamos con esta bbdd origen
+            conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+        except Exception as e:
+            return [ [], [], [], "No se ha podido conectar con la BBDD origen"]
 
         # Leer datos desde SQL Server
         param.debug = "crear cursor"
@@ -156,7 +171,7 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
         select_query, lista_pk, lista_max_valor = construir_consulta(param, entidad, campos, nombre_tabla, campos_PK, ult_valor) # ya no se recibe como parametro, salto)
 
         # Ejecución del cursor
-        imprime([select_query], "*")
+        # imprime([select_query], "*")
         param.debug = "Ejecutar select"
         cursor_sqlserver.execute(select_query)
 
@@ -165,7 +180,7 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
         # registros = [convertir_fechas(tupla) for tupla in datos]
         # imprime(registros, "* --- REGISTROS ---",2)
 
-        return [registros, lista_pk, lista_max_valor]
+        return [registros, lista_pk, lista_max_valor, None]
 
     except Exception as e:
         param.error_sistema(e=e, debug="Obtener_datos_origen.Exception")
@@ -321,8 +336,13 @@ def comando_insert(campos, nombre_tabla_destino):
     columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")]
     columnas_mysql.append("Origen_BBDD")
     # Si existe un campo con 'Nombre' igual a '{stIdEnt}', agregamos 'stIdEnt' a la lista
-    if any(campo["Nombre"] == "{stIdEnt}" for campo in campos):
+    # if any(campo["Nombre"] == "{stIdEnt}" for campo in campos):
+    if  existe_en_campos(campos, "{stIdEnt}"):
         columnas_mysql.append("stIdEnt")
+
+    # if any(campo["Nombre"] == "{id_entidad}" for campo in campos):
+    if  existe_en_campos(campos, "{id_entidad}"):
+        columnas_mysql.append("id_entidad")
 
     return f"""
             INSERT INTO {nombre_tabla_destino} ({', '.join(columnas_mysql)})
@@ -355,3 +375,12 @@ def comando_update(campos_update, pk_campo, nombre_tabla_destino):
                         WHERE {pk_campo} = %s AND Origen_BBDD = %s
                    """
     return update_query
+
+
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def existe_en_campos(campos, valor):
+    return any(campo["Nombre"] == valor for campo in campos)
+      
+

@@ -16,6 +16,15 @@ from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
 
 #----------------------------------------------------------------------------------------
+# Este proceso se encarga de recorrer todas las tiendas y entidades y tablas que se van a tratar para sincronizar desde esas Tiendas/BBDD a la BBDD de La Mallorquina
+# para ello:
+#   - Recorre todas las tiendas activas: mll_cfg_bbdd.activo=S
+#   - Recorre todas las entidades activas: mll_cfg_entidades.activo=S
+#   - Recorre todas las tablas de cada entidad y para cada una de ellas:
+#       - Si la tabla no tiene fecha de última actualización, se toma como fecha de última actualización la fecha 01/01/2025    
+#       - Se calcula si se debe procesar en función de la diferencia entre la fecha de última actualización y la fecha actual
+#       - Si se debe procesar, se ejecuta el proceso de sincronización
+#       - Se actualiza la fecha de última actualización de la tabla
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> list:
     funcion = "sincroniza.proceso"
@@ -203,7 +212,8 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
                                    "tabla_origen": tabla_config["Tabla_Origen"],
                                     "valor_max": resultados[0],
                                     "insertados": resultados[1],
-                                    "actualizados": resultados[2]
+                                    "actualizados": resultados[2],
+                                    "error": resultados[3]
                                 } )
                 # -----------------------------------------------------------------------------------------
        
@@ -238,17 +248,19 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
 
         param.debug = f'obt. Origen: {entidad["id_bbdd"]}' 
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, entidad["id_bbdd"])   # Buscamos la conexión que necesitamos para esta bbdd origen
-
-        # ----------------------------------------------------------------------------------------
-        # Dependiendo de la tabla, se ejecuta un proceso u otro.
-        # por un lado estan las tablas generales que se tratan de una forma 
-        # y por otro las que tienen un tratamiento específico
-        # ----------------------------------------------------------------------------------------
-        if tabla_config["proceso_carga"]:
-            resultados = proceso_especifico.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
+        if bbdd_config:
+            # ----------------------------------------------------------------------------------------
+            # Dependiendo de la tabla, se ejecuta un proceso u otro.
+            # por un lado estan las tablas generales que se tratan de una forma 
+            # y por otro las que tienen un tratamiento específico
+            # ----------------------------------------------------------------------------------------
+            if tabla_config["proceso_carga"]:
+                resultados = proceso_especifico.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
+            else:
+                resultados = proceso_general.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
+            # ----------------------------------------------------------------------------------------
         else:
-            resultados = proceso_general.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
-        # ----------------------------------------------------------------------------------------
+            resultados = [0, 0, 0, "Sin conexión a la BBDD"]
 
         return resultados
 

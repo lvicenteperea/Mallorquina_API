@@ -23,7 +23,8 @@ def proceso(param: InfoTransaccion) -> list:
     resultado = ["",""]
     datos = []
     config = obtener_cfg_general(param)
-    tienda = param.parametros[1]
+    # fecha = param.parametros[0] # el primer  atributo de InfArqueoCajaRequest
+    tienda = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
 
     param.debug = "get_db_connection_mysql"
     try:
@@ -54,9 +55,14 @@ def proceso(param: InfoTransaccion) -> list:
             return ["No se ha generado fichero porque no hay datos"]
 
 
+
+    except MiException as e:
+        param.error_sistema(e=e, debug="arqueo_caja_info.Proceso.MiExcepcion")
+        raise e
     except Exception as e:
-        param.error_sistema(e=e, debug="proceso.Exception")
-        raise 
+        param.error_sistema(e=e, debug="arqueo_caja_info.Proceso.Excepcion")
+        raise e # HTTPException(status_code=500, detail=e)
+
 
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
@@ -83,7 +89,7 @@ def consultar(param: InfoTransaccion, id_entidad, conn_mysql) -> list:
                         vd.id_entidad,
                         t.nombre Tienda,
                         vd.serie,
-                        tpv.descripcion Nombre_TPV,
+                        pf.descripcion Nombre_TPV,
                         vd.fecha,
                         vd.cierre_tpv_id,
                         vd.cierre_tpv_desc,
@@ -94,7 +100,7 @@ def consultar(param: InfoTransaccion, id_entidad, conn_mysql) -> list:
                     FROM mll_rec_ventas_diarias vd
                         JOIN  mll_rec_ventas_medio_pago vmp ON vd.id = vmp.id_ventas_diarias
                     LEFT JOIN mll_cfg_entidades t         ON vd.id_entidad = t.id
-                    LEFT JOIN tpv_puestos_facturacion tpv ON vd.serie = tpv.serie and vd.id_entidad = tpv.id_entidad
+                    LEFT JOIN tpv_puestos_facturacion pf ON vd.serie = pf.serie and vd.id_entidad = pf.id_entidad
                     LEFT JOIN mll_mae_medios_pago mp ON vmp.id_medios_pago = mp.id
                     where vd.id_entidad={id_entidad}
                       and vd.fecha = STR_TO_DATE('{fecha}', '%Y-%m-%d')
@@ -102,7 +108,7 @@ def consultar(param: InfoTransaccion, id_entidad, conn_mysql) -> list:
                         vd.id_entidad,
                         t.nombre,
                         vd.serie,
-                        tpv.descripcion,
+                        pf.descripcion,
                         vd.fecha,
                         vd.cierre_tpv_id,
                         vd.cierre_tpv_desc,
@@ -142,12 +148,14 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 if not sublista:
                     continue
                 
+                param.debug = "Bucle for 1"
                 # 1. Convertimos la sublista (lista de dicts) a DataFrame
                 df = pd.DataFrame(sublista)
 
+                param.debug = "Bucle for 2"
                 # 2. Eliminamos las columnas que NO queremos exportar
-                columnas_a_eliminar = ["id_entidad", "id_tpv", "cierre_tpv_id", "id_medios_pago"]
-                df.drop(columns=columnas_a_eliminar, axis=1, inplace=True)
+                columnas_a_eliminar = ["id_entidad", "id_tpv", "id_medios_pago"]
+                df.drop(columns=columnas_a_eliminar, axis=1, errors='ignore', inplace=True)
 
                 param.debug = "convertimos fecha"
                 # 3. Convertimos 'fecha' a formato dd/mm/aaaa
@@ -163,6 +171,7 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                                         # si quisieras 2 decimales: f"{x:.2f}".replace('.', ',')
                 )
 
+                param.debug = "Bucle for Nombre"
                 # 5. Nombramos la hoja según la columna "Tienda" (limitamos a 31 caracteres para Excel)
                 nombre_tienda = df["Tienda"].iloc[0]
                 nombre_hoja = nombre_tienda[:31]
@@ -174,7 +183,7 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
     
     except Exception as e:
         param.error_sistema(e=e, debug="proceso.Exception")
-        raise 
+        raise  e
 
 #----------------------------------------------------------------------------------------
 # Creamos el escritor de Excel con la librería PANDA
@@ -191,7 +200,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
 
         param.debug = "2. Elimiar Columnas"
         # 2. Columnas que NO queremos mostrar
-        columnas_excluir = {"id_entidad", "id_tpv", "cierre_tpv_id", "id_medios_pago"}
+        columnas_excluir = {"id_entidad", "id_tpv", "id_medios_pago"}
 
         for sublista in todos_los_conjuntos:
             # Si la sublista está vacía, la saltamos
@@ -204,7 +213,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
             #    - Convertimos "total_ventas" y "total_operaciones" a float
             #    - Quitamos las columnas que no queremos
             datos_procesados = []
-            imprime([sublista], "*")
+            # imprime([sublista], "*")
             for fila in sublista:
                 # Creamos una copia limpia
                 nueva_fila = {}

@@ -16,15 +16,18 @@ from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 from app.utils.mis_excepciones import MiException
 
+RUTA = f"{settings.RUTA_DATOS}cierre_caja/"
+
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> list:
     param.debug="Inicio"
-    resultado = ["",""]
+    resultado = []
     datos = []
     config = obtener_cfg_general(param)
     # fecha = param.parametros[0] # el primer  atributo de InfArqueoCajaRequest
-    tienda = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
+    imprime([param], "* Parametros", 3)
+    entidad = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
 
     param.debug = "get_db_connection_mysql"
     try:
@@ -32,12 +35,12 @@ def proceso(param: InfoTransaccion) -> list:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         param.debug = "Select"
-        if tienda == 0:
+        if entidad == 0:
             query = "SELECT * FROM mll_cfg_entidades WHERE activo='S'"
             cursor_mysql.execute(query)
         else:
             query = "SELECT * FROM mll_cfg_entidades WHERE id = %s AND activo='S'"
-            cursor_mysql.execute(query, (tienda,))
+            cursor_mysql.execute(query, (entidad,))
 
         lista_entidades = cursor_mysql.fetchall()
 
@@ -46,9 +49,10 @@ def proceso(param: InfoTransaccion) -> list:
             datos.append(consultar(param, entidad["ID"], conn_mysql))
 
         if datos:
-            resultado[0] = a_excel_con_pd(param, datos)
+            resultado.append(a_excel_con_pd(param, datos))
+
             if param.ret_code == 0:
-                resultado[1] = a_excel_con_openpyxl(param, datos)
+                resultado.append(a_excel_con_openpyxl(param, datos))
 
             return resultado
         else:
@@ -138,7 +142,8 @@ def consultar(param: InfoTransaccion, id_entidad, conn_mysql) -> list:
 #----------------------------------------------------------------------------------------
 def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
     param.debug = "Inicio"
-    fichero = f"{settings.RUTA_DATOS}cierre_caja/resultado_panda.xlsx"
+    nombre_fich = "resultado_panda.xlsx"
+    fichero = f"{RUTA}{nombre_fich}"
 
     try:
         with pd.ExcelWriter(fichero) as writer:
@@ -179,7 +184,7 @@ def a_excel_con_pd(param: InfoTransaccion, todos_los_conjuntos):
                 # 6. Exportamos este DataFrame a una hoja en el Excel
                 df.to_excel(writer, sheet_name=nombre_hoja, index=False)
 
-        return f"Se ha generado el fichero {fichero} correctamente."
+        return {"fichero": f'{nombre_fich}', "texto": f"'{nombre_fich}' generado correctamente"}
     
     except Exception as e:
         param.error_sistema(e=e, debug="proceso.Exception")
@@ -195,7 +200,8 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         wb = Workbook()
         ws_default = wb.active
         wb.remove(ws_default)
-        fichero = f"{settings.RUTA_DATOS}cierre_caja/resultado_openpyxl.xlsx"
+        nombre_fich = "resultado_openpyxl.xlsx"
+        fichero = f"{RUTA}{nombre_fich}"
         
 
         param.debug = "2. Elimiar Columnas"
@@ -294,7 +300,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
         # 9. Guardamos el archivo
         wb.save(fichero)
 
-        return f"Se ha generado el fichero {fichero} correctamente"
+        return {"fichero": f'{nombre_fich}', "texto": f"'{nombre_fich}' generado correctamente"}
 
     except Exception as e:
         param.error_sistema(e=e, debug="proceso.Exception")

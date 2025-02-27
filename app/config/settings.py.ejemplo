@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     RUTA_ALERGENOS: str = "app/ficheros/datos/alergenos/"
     RUTA_ALERGENOS_HTML:str =  "app/ficheros/datos/alergenos/reports/"
     RUTA_TPV: str = "app/ficheros/datos/tarifas_a_TPV/"
+    RUTA_CIERRE_CAJA: str = "app/ficheros/datos/cierre_caja/"
     
     # ----------------------------------------------------------------------------------------
     # CONEXIONES

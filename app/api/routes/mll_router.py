@@ -7,12 +7,14 @@ import os
 
 # Importaciones propias del proyecto
 from app.services.mallorquina import (
-    sincroniza, consulta_caja, arqueo_caja, arqueo_caja_info, tarifas_ERP_a_TPV, fichas_tecnicas, carga_productos_erp
+    sincroniza, consulta_cierre, arqueo_caja, arqueo_caja_info, tarifas_ERP_a_TPV, fichas_tecnicas, carga_productos_erp
 )
 from app.services.auxiliares import descarga
+
 from app.config.settings import settings
 from app.utils.functions import control_usuario
 from app.utils.utilidades import imprime
+
 from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion, ParamRequest
 
@@ -96,18 +98,6 @@ async def mll_sincroniza(request: Request, body_params: SincronizaRequest = Body
 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
-class ConsultaCierreRequest(ParamRequest):
-    fecha: str = datetime.now().strftime('%Y-%m-%d')
-    tienda: Optional[int] = 0  # Por defecto, todas las tiendas
-
-@router.post("/mll_consultas_cierre", response_model=InfoTransaccion)
-async def mll_consultas_cierre(request: Request, body_params: ConsultaCierreRequest = Body(...)):
-    """ Retorna el cierre de un día determinado (por defecto, hoy). """
-    return await procesar_request(request, body_params, consulta_caja, "mll_consultas_cierre")
-
-
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
 class ArqueoCajaRequest(ParamRequest):
     # fecha: str  #= datetime.now().strftime('%Y-%m-%d')
     dias: int # = 1
@@ -137,7 +127,7 @@ async def mll_arqueo_caja(request: Request, body_params: ArqueoCajaRequest = Bod
 #------------------------------------------------------------------------------------------------------
 class InfArqueoCajaRequest(ParamRequest):
     fecha: str = datetime.now().strftime('%Y-%m-%d')
-    tienda: Optional[int] = 0  # Todas las tiendas
+    entidad: Optional[int] = 0  # Todas las entidades
 
 @router.post("/mll_inf_arqueo_caja", response_model=InfoTransaccion,
              summary="🔄 Busca los datos para una tienda determinada en las tablas mll_rec_ventas_diarias y mll_rec_ventas_medio_pago",
@@ -155,6 +145,18 @@ class InfArqueoCajaRequest(ParamRequest):
 async def mll_inf_arqueo_caja(request: Request, body_params: InfArqueoCajaRequest = Body(...)):
     """ Genera archivos con resultados del arqueo de caja. """
     return await procesar_request(request, body_params, arqueo_caja_info, "mll_inf_arqueo_caja")
+
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+class ConsultaCierreRequest(ParamRequest):
+    fecha: str = datetime.now().strftime('%Y-%m-%d')
+    entidad: Optional[int] = 0  # Por defecto, todas las entidades
+
+@router.post("/mll_consultas_cierre", response_model=InfoTransaccion)
+async def mll_consultas_cierre(request: Request, body_params: ConsultaCierreRequest = Body(...)):
+    """ Retorna el cierre de un día determinado (por defecto, hoy). """
+    return await procesar_request(request, body_params, consulta_cierre, "mll_consultas_cierre")
 
 
 #------------------------------------------------------------------------------------------------------
@@ -202,6 +204,24 @@ async def mll_carga_prod_erp(
     finally:
         imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+class FichasTecnicasRequest(ParamRequest):
+    output_path: str = "fichas_tecnicas.html"
+
+@router.post("/mll_fichas_tecnicas", response_model=InfoTransaccion)
+async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
+    """ Genera fichas técnicas y listado de alérgenos. """
+    return await procesar_request(request, body_params, fichas_tecnicas, "mll_fichas_tecnicas")
+
+
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+@router.post("/mll_convierte_tarifas", response_model=InfoTransaccion)
+async def mll_convierte_tarifas(request: Request, body_params: ParamRequest = Body(...)):
+    """ Genera tarifas para los TPVs de Infosoft. """
+    return await procesar_request(request, body_params, tarifas_ERP_a_TPV, "mll_convierte_tarifas")
 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
@@ -254,20 +274,3 @@ async def mll_descarga(request: Request,
     finally:
         imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
-class FichasTecnicasRequest(ParamRequest):
-    output_path: str = "fichas_tecnicas.html"
-
-@router.post("/mll_fichas_tecnicas", response_model=InfoTransaccion)
-async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
-    """ Genera fichas técnicas y listado de alérgenos. """
-    return await procesar_request(request, body_params, fichas_tecnicas, "mll_fichas_tecnicas")
-
-
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
-@router.post("/mll_convierte_tarifas", response_model=InfoTransaccion)
-async def mll_convierte_tarifas(request: Request, body_params: ParamRequest = Body(...)):
-    """ Genera tarifas para los TPVs de Infosoft. """
-    return await procesar_request(request, body_params, tarifas_ERP_a_TPV, "mll_convierte_tarifas")

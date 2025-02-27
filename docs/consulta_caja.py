@@ -21,7 +21,7 @@ def proceso(param: InfoTransaccion) -> list:
     conn_mysql = None # para que no de error en el finally
     cursor_mysql = None # para que no de error en el finally
     fecha = param.parametros[0]
-    tienda = param.parametros[1]
+    entidad = param.parametros[1]
 
     try:
         config = obtener_cfg_general(param)
@@ -47,7 +47,7 @@ def proceso(param: InfoTransaccion) -> list:
                                  inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
                                  where a.activo= 'S'
                                    and a.id = if( %s = 0 , a.id , %s)""", 
-                             (tienda,tienda)
+                             (entidad, entidad)
                             )
         lista_bbdd = cursor_mysql.fetchall()
 

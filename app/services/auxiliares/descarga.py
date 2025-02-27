@@ -26,11 +26,18 @@ def proceso(param: InfoTransaccion):
 
     try:
         if tipo == "TPV":
-            return descarga_precios_tpv(param, nombres)
+            # return descarga_precios_tpv(param, nombres)
+            return descarga_fichero(param, settings.RUTA_TPV, nombres)
         elif tipo == "Alérgenos":
             return descarga_alergenos(param)
+        elif tipo == "Arqueo":
+            return descarga_fichero(param, settings.RUTA_CIERRE_CAJA, nombres)
+    
     
 
+    except MiException as e:
+        param.error_sistema(e=e, debug="MiExcepción descarga.proceso")
+        raise
     except Exception as e:
         param.error_sistema(e=e, debug="Excepción descarga.proceso")
         raise
@@ -38,10 +45,10 @@ def proceso(param: InfoTransaccion):
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def descarga_precios_tpv(param: InfoTransaccion, nombres: list):
+def descarga_fichero(param: InfoTransaccion, path: str, nombres: list):
     try:
-    
-        DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, settings.RUTA_TPV)
+
+        DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, path)
 
         if len(nombres) != 1:
             raise MiException(param,f"No viene un nombre de fichero, vienen:  {len(nombres)}-{nombres}", -1)
@@ -59,9 +66,45 @@ def descarga_precios_tpv(param: InfoTransaccion, nombres: list):
         resultado = FileResponse(file_path, filename=nombre)
         return resultado
 
-    except Exception as e:
-        param.error_sistema(e=e, debug="Excepción descarga.descarga_precios_tpv")
+    except MiException as e:
+        param.error_sistema(e=e, debug="MiExcepción descarga.descarga_fichero")
         raise
+    except Exception as e:
+        param.error_sistema(e=e, debug="Excepción descarga.descarga_fichero")
+        raise
+
+
+
+
+# #----------------------------------------------------------------------------------------
+# #----------------------------------------------------------------------------------------
+# def descarga_precios_tpv(param: InfoTransaccion, nombres: list):
+#     try:
+    
+#         DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, settings.RUTA_TPV)
+
+#         if len(nombres) != 1:
+#             raise MiException(param,f"No viene un nombre de fichero, vienen:  {len(nombres)}-{nombres}", -1)
+#         else:
+#             nombre = nombres[0]
+
+#         # Construir la ruta completa del archivo
+#         file_path = os.path.join(DOWNLOAD_PATH, nombre)
+        
+#         # Verificar si el archivo existe
+#         if not os.path.exists(file_path):
+#             raise MiException(param,f"Archivo '{file_path}' no encontrado", -1)
+        
+#         # Crear una respuesta mixta con el archivo y el JSON con la descripción
+#         resultado = FileResponse(file_path, filename=nombre)
+#         return resultado
+
+#     except MiException as e:
+#         param.error_sistema(e=e, debug="MiExcepción descarga.descarga_precios_tpv")
+#         raise
+#     except Exception as e:
+#         param.error_sistema(e=e, debug="Excepción descarga.descarga_precios_tpv")
+#         raise
 
 
 #----------------------------------------------------------------------------------------
@@ -108,7 +151,11 @@ def descarga_alergenos(param: InfoTransaccion):
 
         return FileResponse(zip_filename, filename=nombre)
 
+    except MiException as e:
+        param.error_sistema(e=e, debug="MiExcepción descarga.descarga_alergenos")
+        raise
     except Exception as e:
         param.error_sistema(e=e, debug="Excepción descarga.descarga_alergenos")
         raise
+
 

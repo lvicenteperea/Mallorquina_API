@@ -28,6 +28,8 @@ def proceso(param: InfoTransaccion) -> list:
     fecha = param.parametros[0] # el primer  atributo de InfArqueoCajaRequest
     entidad = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
 
+
+    print(fecha, entidad)
     param.debug = "get_db_connection_mysql"
     try:
         conn_mysql = get_db_connection_mysql()
@@ -39,15 +41,17 @@ def proceso(param: InfoTransaccion) -> list:
 
         lista_entidades = cursor_mysql.fetchall()  # Solo debería haber una
 
+        # imprime([lista_entidades, type(lista_entidades), len(lista_entidades), fecha, entidad], "*  LISTA_ENTIDADES", 2)
+
         for entidad in lista_entidades:
             imprime([f"Procesando TIENDA: {entidad['ID']}-{entidad['Nombre']}. De la BBDD: {entidad['id_bbdd']}"], "-")
             datos.extend(consultar(param, entidad["ID"], conn_mysql, fecha))
 
         if datos:
-            imprime ([datos, type(datos), len(datos)], "*  DATOS", 2)
+            # imprime ([datos, type(datos), len(datos)], "*  DATOS", 2)
             return datos
         else:
-            return ["No se ha generado fichero porque no hay datos"]
+            return ["No se ha generado información  porque no hay datos"]
 
 
 
@@ -64,7 +68,7 @@ def proceso(param: InfoTransaccion) -> list:
 
         enviar_email(config["Lista_emails"],
                      "Proceso finalizado",
-                     ["El proceso de informes de arqueo de caja ha terminado."]
+                     ["El proceso de informes de Consulta cierres ha terminado."]
         )
 
 
@@ -89,6 +93,7 @@ def consultar(param: InfoTransaccion, id_entidad, conn_mysql, fecha) -> list:
                         vd.cierre_tpv_desc,
                         vmp.id_medios_pago,
                         mp.nombre Nombre_MdP,
+                        sum(vd.imp_arqueo_ciego) AS total_arqueo_ciego,
                         SUM(vmp.ventas) AS total_ventas,
                         SUM(vmp.operaciones) AS total_operaciones
                     FROM mll_rec_ventas_diarias vd

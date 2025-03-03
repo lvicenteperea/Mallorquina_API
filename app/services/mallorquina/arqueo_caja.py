@@ -166,7 +166,7 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_en
             # imprime([select_query, len(datos), (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'])], "* select_query", 2)
 
             param.debug = "Llamada a Grabar"
-            resultado.extend(grabar(param, conn_mysql, id_entidad, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"])))
+            resultado.extend(grabar(param, conn_mysql, id_entidad, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"],cierre['fecha_hora'])))
 
         return resultado
 
@@ -187,7 +187,6 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
     medios_pago_registros = 0
 
     try: 
-        cierre_descs = ["Mañana", "Tarde"]
         cursor_mysql = conn_mysql.cursor()
         # Agrupar resultados por tienda, puesto y apertura
         ventas_diarias = {}
@@ -228,7 +227,7 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
             insert_diarias = """INSERT INTO mll_rec_ventas_diarias (id_entidad, Serie, id_mae_tpv, fecha, imp_arqueo_ciego, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
                                                             VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s, %s)"""
             # imprime([insert_diarias, 
-            #          (data["id_entidad"],data["id_tpv"],id_mae_tpv,data["fecha"],cierre[4],data["ventas"],data["operaciones"],ID_Apertura,cierre_descs[orden],)
+            #          (data["id_entidad"],data["id_tpv"],id_mae_tpv,data["fecha"],cierre[4],data["ventas"],data["operaciones"],ID_Apertura,cierre[4],)
             #         ], 
             #         "* DATOS ", 2)
             cursor_mysql.execute( insert_diarias,
@@ -240,7 +239,7 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
                                    data["ventas"],
                                    data["operaciones"],
                                    ID_Apertura,
-                                   cierre_descs[orden],
+                                   cierre[5],
                                   )
                                 )
             id_ventas_diarias = cursor_mysql.lastrowid  # Obtener el ID insertado

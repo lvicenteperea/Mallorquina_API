@@ -7,7 +7,7 @@ import os
 
 # Importaciones propias del proyecto
 from app.services.mallorquina import (
-    sincroniza, consulta_cierre, arqueo_caja, arqueo_caja_info, tarifas_ERP_a_TPV, fichas_tecnicas, carga_productos_erp
+    sincroniza, consulta_cierre, arqueo_caja, arqueo_caja_info, tarifas_ERP_a_TPV, fichas_tecnicas, alergenos, carga_productos_erp
 )
 from app.services.auxiliares import descarga
 
@@ -54,6 +54,7 @@ async def procesar_request(
         # Construcción de respuesta
         param.debug = f"Retornando: {type(resultado)}"
         param.resultados = resultado or []
+
         return param
 
 
@@ -206,14 +207,22 @@ async def mll_carga_prod_erp(
 
 
 #------------------------------------------------------------------------------------------------------
+# ALERGENMOS, FICHAS TÉCNICAS
 #------------------------------------------------------------------------------------------------------
 class FichasTecnicasRequest(ParamRequest):
-    output_path: str = "fichas_tecnicas.html"
+    output_path: str = "alergenos.html"
+    punto_venta: Optional[int] = 0  # Por defecto, todos los punto_venta
 
 @router.post("/mll_fichas_tecnicas", response_model=InfoTransaccion)
 async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
     """ Genera fichas técnicas y listado de alérgenos. """
     return await procesar_request(request, body_params, fichas_tecnicas, "mll_fichas_tecnicas")
+
+@router.post("/mll_alergenos", response_model=InfoTransaccion)
+async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
+    """ Retorna un html con los agergenos del punto de venta. """
+    return await procesar_request(request, body_params, alergenos, "mll_alergenos")
+
 
 
 #------------------------------------------------------------------------------------------------------

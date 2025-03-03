@@ -1,9 +1,9 @@
 import os
-import pandas as pd
+import shutil
 from datetime import datetime
 
 from app.utils.utilidades import graba_log, imprime
-from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql, get_db_connection_sqlserver, close_connection_sqlserver
+from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
@@ -26,16 +26,22 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         param.debug = "rutas"
         if not param.parametros[0]:
-            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")
+            # salida = os.path.join(settings.RUTA_ALERGENOS_HTML, f"fichas_tecnicas-{datetime.now().strftime('%Y-%m-%d')}.html")
+            salida = os.path.join(settings.RUTA_ALERGENOS_HTML, "alergenos.html")
         else:
             salida = os.path.join(settings.RUTA_ALERGENOS_HTML, param.parametros[0]) # Nombre del archivo HTML viene en el segundo parámetro
+        
+        if not param.parametros[1]:
+            punto_venta = 0
+        else:
+            punto_venta = param.parametros[1]
 
         param.debug = f"{salida}"
         # Conectar a la base de datos
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
-        # Consultar los datos principales
+        # Consultar los datos principales  CUANDO CARGEMOS LOS PRECIOS BIEN, HAY QUE CAMBIAR el WHERE para solo coger productos que se vendan en "punto_venta"
         cursor_mysql.execute("SELECT * FROM erp_productos WHERE alta_tpv = 'Sí' ORDER BY familia_desc, nombre")
         productos = cursor_mysql.fetchall()
 
@@ -57,13 +63,12 @@ def proceso(param: InfoTransaccion) -> list:
         close_connection_mysql(conn_mysql, cursor_mysql)
 
         # Generación del HTML
-        html = generar_html(param, productos, precios_dict)
+        html = generar_html(param, productos, precios_dict, punto_venta)
 
         # Guardar el archivo HTML
-        with open(salida, 'w', encoding='utf-8') as f:
-            f.write(html)
+        graba_archivo(param, salida, html)
 
-        resultado = [f"Ficheros generados correctamente"]
+        resultado = [f"Ficheros generados correctamente", html]
         return resultado
     
 
@@ -79,7 +84,7 @@ def proceso(param: InfoTransaccion) -> list:
 #----------------------------------------------------------------------------------------
 # Generar el HTML completo
 #----------------------------------------------------------------------------------------
-def generar_html(param: InfoTransaccion, productos: list, precios: dict) -> str: 
+def generar_html(param: InfoTransaccion, productos: list, precios: dict, punto_venta: int) -> str: 
     param.debug = "generar_html"
     html_final = ""
 
@@ -97,8 +102,9 @@ def generar_html(param: InfoTransaccion, productos: list, precios: dict) -> str:
             # 'fichas': fichas_content
         })
 
-        # fichas_content = 
-        fichas(param, productos, precios)
+        # Solo hacemos fichas cuando se generen todos los productos
+        if punto_venta == 0:
+            fichas(param, productos, precios)
 
         return html_final
     
@@ -129,6 +135,7 @@ def reemplazar_fijos(param, plantilla):
     try:
         ruta = os.path.join(RUTA_ICONOS, "")
         html = html.replace("{LOGO}", LOGO)
+        html = html.replace("{titulo_principal}", "Alérgenos alimentarios")
         html = html.replace("{Huevo}", f"{ruta}Huevo.ico")
         html = html.replace("{Leche}", f"{ruta}Leche.ico")
         html = html.replace("{Crustaceos}", f"{ruta}Crustaceos.ico")
@@ -329,5 +336,30 @@ def imprimible(param: InfoTransaccion, fila):
    
     except Exception as e:
         param.error_sistema(e=e, debug="cargar_plantilla.Exception")
+        raise 
+
+
+#----------------------------------------------------------------------------------------
+# Graba un archivo pero previamente hace una copia del mismo si ya existe
+#----------------------------------------------------------------------------------------
+def graba_archivo(param: InfoTransaccion, archivo: str, contenido: str):
+    try: 
+        # Verificar si el archivo ya existe
+        if os.path.exists(archivo):
+            # Crear el nombre del archivo de copia con fecha y hora
+            timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+            backup_nombre = f"{os.path.splitext(archivo)[0]}_{timestamp}.html"
+
+            # Copiar el archivo con el nuevo nombre
+            shutil.copy(archivo, backup_nombre)
+
+        # Guardar el nuevo archivo
+        with open(archivo, 'w', encoding='utf-8') as f:
+            f.write(contenido)
+
+
+
+    except Exception as e:
+        param.error_sistema(e=e, debug="graba_archivo.Exception")
         raise 
 

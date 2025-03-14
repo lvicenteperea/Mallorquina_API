@@ -26,7 +26,6 @@ def proceso(param: InfoTransaccion) -> list:
     datos = []
     config = obtener_cfg_general(param)
     # fecha = param.parametros[0] # el primer  atributo de InfArqueoCajaRequest
-    imprime([param], "* Parametros", 3)
     entidad = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
 
     param.debug = "get_db_connection_mysql"
@@ -99,6 +98,7 @@ def consultar(param: InfoTransaccion, id_entidad, conn_mysql) -> list:
                         vd.cierre_tpv_desc,
                         vmp.id_medios_pago,
                         mp.nombre Nombre_MdP,
+                        sum(vd.imp_arqueo_ciego) AS total_arqueo_ciego,
                         SUM(vmp.ventas) AS total_ventas,
                         SUM(vmp.operaciones) AS total_operaciones
                     FROM mll_rec_ventas_diarias vd
@@ -250,7 +250,7 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
             sheet_name = nombre_tienda[:31]
 
             param.debug = "5. Creamos nueva hoja"
-            imprime([param.debug, sheet_name], "=")
+            # imprime([param.debug, sheet_name], "=")
             # 5. Creamos una hoja nueva con el nombre de la tienda
             ws = wb.create_sheet(title=sheet_name)
             

@@ -173,22 +173,16 @@ def carga (param: InfoTransaccion, excel):
                                 param.debug = "insert/update 3___"
                                 for x in range(0, len(id_bbdd)):
                                     cursor.execute(
-                                        """
-                                        INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
-                                        VALUES (%s, %s, %s, %s)
-                                        ON DUPLICATE KEY UPDATE
-                                            pvp = VALUES(pvp)
-                                        """,
+                                        """INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
+                                                                  VALUES (%s, %s, %s, %s)
+                                               ON DUPLICATE KEY UPDATE pvp = VALUES(pvp)""",
                                         (codigo, id_bbdd[x], tipo, pvp)
                                     )
                             else:
                                 param.debug = "delete___"
                                 for x in range(0, len(id_bbdd)):
-                                    cursor.execute(
-                                        """
-                                        delete from erp_productos_pvp 
-                                          where id_producto = %s and id_BBDD = %s and tipo = %s
-                                        """,
+                                    cursor.execute("""delete from erp_productos_pvp 
+                                                       where id_producto = %s and id_BBDD = %s and tipo = %s""",
                                         (codigo, id_bbdd[x], tipo)
                                     )
                                 eliminados += cursor.rowcount
@@ -212,11 +206,8 @@ def carga (param: InfoTransaccion, excel):
                         param.debug = "insert 2___"
                         if pvp > 0:
                             for x in range(0, len(id_bbdd)):
-                                cursor.execute(
-                                    """
-                                    INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
-                                    VALUES (%s, %s, %s, %s)
-                                    """,
+                                cursor.execute("""INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
+                                                                         VALUES (%s, %s, %s, %s)""",
                                     (codigo, id_bbdd[x], tipo, pvp)
                                 )
 

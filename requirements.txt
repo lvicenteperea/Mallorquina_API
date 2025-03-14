@@ -25,3 +25,5 @@ email-validator
 python-multipart
 passlib[bcrypt]
 sendgrid
+
+requests

@@ -25,6 +25,9 @@ def proceso(param: InfoTransaccion) -> list:
     resultado = []
     datos = []
     config = obtener_cfg_general(param)
+
+    imprime([param], "*  ver parametros", 2)
+
     fecha = param.parametros[0] # el primer  atributo de InfArqueoCajaRequest
     entidad = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
 

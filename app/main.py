@@ -15,7 +15,7 @@ from app.api.routes.mll_router import router as mallorquina_router
 from app.api.routes.auth_router import router as auth_router
 from app.api.routes.email_router import router as email_router
 
-from app.api.routes.aparcamientos import router as aparcamientos_router
+from app.api.routes.apk_router import router as aparcamientos_router
 
 
 

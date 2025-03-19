@@ -21,6 +21,8 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         config = obtener_cfg_general(param)
 
+        imprime([config], "*  config", 2)
+        
         if len(param.parametros) >= 1  and param.parametros[0]:
             excel = os.path.join(f"{settings.RUTA_DATOS}/erp", f"{param.parametros[0]}")
 
@@ -28,8 +30,13 @@ def proceso(param: InfoTransaccion) -> list:
             param.registrar_error(ret_txt= "No ha llegado fichero origen para cargar", debug=f"{funcion}.sin parametro entrada")
             raise MiException(param = param)
 
+        imprime([excel], "*  excel", 2)
+
         # Aquí va la lógica específica para cada bbdd
         resultado = carga(param, excel)
+
+
+        imprime(resultado, "*  FINAL", 2)
 
         return resultado
 
@@ -52,12 +59,10 @@ def carga (param: InfoTransaccion, excel):
     eliminados = 0
     
     try:
-        
         # # Leer el Excel
         # df = pd.read_excel(excel)
         # # Leer el Excel asegurando que todo se lea como texto
         df = pd.read_excel(excel, dtype=str, keep_default_na=False)
-
 
         param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
@@ -126,7 +131,7 @@ def carga (param: InfoTransaccion, excel):
         for x, row in df.iterrows():
             row = row.fillna('')  # Reemplazar valores NaN con cadenas vacías
 
-            # imprime([row], "*")
+            # imprime([row], "*   row")
 
             param.debug = f"Código: {row['Código']}"
             codigo = row['Código']
@@ -191,12 +196,16 @@ def carga (param: InfoTransaccion, excel):
                 # Insertar nuevo registro
                 param.debug = f"insert___ {x}" #{row}"
                 columnas = ', '.join(mapping.values())
+                param.debug = "Marcadores__"
                 marcadores = ', '.join(['%s'] * len(mapping))
+                param.debug = "Valores__"
                 valores = tuple(row[k] if k in row else '' for k in mapping.keys())
+                param.debug = "Valores2__"
                 valores = tuple(elemento.replace("Si", "Sí") if isinstance(elemento, str) else elemento for elemento in valores)
-
+                param.debug = "Execute__"
                 cursor.execute(f"INSERT INTO erp_productos ({columnas}) VALUES ({marcadores})", valores)
 
+                param.debug = "Bucle precios__"
                 # Procesar campos "pvp_*" para insertar en erp_productos_pvp
                 for col in row.index:
                     if col.startswith('pvp_') and row[col]:
@@ -218,7 +227,6 @@ def carga (param: InfoTransaccion, excel):
                 f"Registros modificados: {modificados}",
                 f"Registros eliminados: {eliminados}"
                ]
-
 
     except Exception as e:
         param.error_sistema(e=e, debug="carga.Exception")

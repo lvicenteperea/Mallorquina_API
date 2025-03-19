@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Fichas Técnicas La Mallorquina</title>
+      <style>
+        * {
+           margin: 0;
+           padding: 0;
+           /* box-sizing: border-box; */
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            /* box-sizing: border-box; */
+        }
+        .header {
+            text-align: center;
+            /* padding: 20px; */
+            background-color: #fff;
+            /* border-top: 2px solid #f89aba; */
+        }
+        .header-2 {
+            text-align: center;
+            font-weight: bold;
+            padding: 20px;
+            background-color: #fff;
+            border-bottom: 2px solid #f89aba;
+        }
+        .header img { /* xxx */
+            max-width: 400px;
+            margin-bottom: 10px;
+        }
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+        }         
+        .container {             
+            /*width: 90%;*/
+            max-width: 21cm;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .main {
+           flex: 1;
+           padding: 20px;
+           overflow-y: auto;
+        }
+        .main-title { /* xxx */
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle { /* xxx */
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .legend { /* xxx */
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .legend span { /* xxx */
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        .footer {
+           background-color: #333;
+           color: white;
+           padding: 10px 20px;
+           text-align: center;
+           position: sticky;
+           bottom: 0;
+        }
+
+
+        .allergen-icons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px auto;
+        }
+
+        .allergen {
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .allergen img {
+            display: block;
+            margin: 0 auto 5px;
+            width: 50px;
+            height: 50px;
+        }
+        /* Para el indice o listado de alergenos*/
+        .index-section {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 1200px;
+            /* border: 1px solid #000; */
+            border-collapse: collapse;
+            page-break-after: always;
+        }
+        .index-section th:first-child, td:first-child {
+            width: 30%; /* Primera columna 30% */
+            padding: 1px;
+            text-align: left;
+            font-weight: bold;
+            /* background-color: #fff1f6; */
+            /* border: 1px solid #000; */
+        }
+        .index-section th:nth-child(n+2), td:nth-child(n+2) {
+            width: 5%; /* Últimas 14 columnas 5% cada una */
+            padding: 1px;
+            text-align: left;
+            font-weight: bold;
+            background-color: #fff1f6;
+            border: 1px solid #000;
+        }
+        .index-section th {
+            background-color: #ffffff;
+            color: #000000;
+            /* border: 1px solid #000; */
+        }
+
+        .body-index {
+            font-size: 8px;
+            text-align: center;
+        }
+        .lista-producto {
+            text-align: left;
+            font-weight: bold;
+            color:#000000;
+            background-color: #ffffff;
+            font-family: Poppins, sans-serif;
+        }
+        .lista-producto a {
+            text-decoration: none; /* Elimina el subrayado */
+            color: inherit; /* Hereda el color definido en .lista-producto */
+            font-family: inherit; /* Hereda la fuente definida en .lista-producto */
+        }
+        .lista-familia {
+            font-size: 10px;
+            text-align: left;
+            font-weight: bold;
+            color:#ffffff;
+            background-color: #f98fb3;
+            font-family: Poppins, sans-serif;
+        }
+        .lista-X {
+            text-align: center;
+            font-weight: bold;
+            background-color: #ffffff;
+        }
+        .lista-T {
+            text-align: center;
+            font-weight: bold;
+            color: #ff0000;
+            background-color: #ffffff;
+        }
+        /* FIN Para el indice o listado de alergenos*/
+
+        .ficha {
+            margin-bottom: 30px; /* Espaciado entre fichas */
+            border: 2px solid #000000;
+            font-size: 12px;
+        }
+        .ficha h1 {
+            background-color: #f4f4f4;
+            padding: 10px;
+            /* margin: 0 -5px 5px -5px; */
+            border: 1px solid #000;
+        }
+       
+        .separador-fichas{
+            page-break-after: always;
+        }
+
+        .separador-fichas:not(:last-child) {
+           page-break-after: always; /* Salto de página después de cada ficha, excepto la última */
+        }
+           
+        .seccion-fichas {
+            margin-top: 20px;
+            border: 1px solid #000;
+            padding: 15px;
+        }
+
+        .seccion-fichas h2 {
+            background-color: #f4f4f4;
+            padding: 5px;
+            margin: 0 -5px 5px -5px;
+        }
+
+
+        table.tabla-fichas-alerg {
+            width: 100%; /* La tabla ocupa el 100% del ancho disponible */
+            border-collapse: collapse;
+        }
+
+        table.tabla-fichas-alerg th, table.tabla-fichas-alerg td {
+            border: 1px solid #ccc; /* Bordes para la tabla */
+            padding: 8px; /* Espaciado interno */
+            text-align: left; /* Por defecto, texto alineado a la izquierda */
+        }
+        table.tabla-fichas-alerg th {
+            width: auto; /* Ajusta automáticamente al contenido sobrante */
+            text-align: center; /* Centra el texto horizontalmente */
+            background-color: #f89aba
+        }
+        /* Columnas 1 y 3 ocupan el máximo espacio */
+        table.tabla-fichas-alerg td:nth-child(1),
+        table.tabla-fichas-alerg td:nth-child(3) {
+            width: auto; /* Ajusta automáticamente al contenido sobrante */
+            font-weight: normal !important; /* Asegura que el texto no sea negrita */
+        }
+        /* Columnas 2 y 4 ocupan el mínimo espacio y están centradas */
+        table.tabla-fichas-alerg td:nth-child(2),
+        table.tabla-fichas-alerg td:nth-child(4) {
+            width: 1%; /* Ocupa el mínimo espacio necesario */
+            white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+            text-align: center; /* Centra el texto horizontalmente */
+        }
+        .tabla-fichas {
+            width: 80%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #000;
+            margin: 0 auto; /* Centramos la tabla horizontalmente */
+        }
+        .tabla-fichas th{
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #000;
+            background-color: #f89aba
+        }
+        .tabla-fichas td {
+            /* padding: 10px; */
+            text-align: left;
+            border: 1px solid #000;
+        }
+        .tabla-fichas th.tabla-fichas, table td.tabla-fichas {
+            width: calc(50% - 50px);
+        }
+        th.tabla-fichas, table td.tabla-fichas {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #000;
+        }
+
+        .tabla-fichas-uso {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #000;
+            margin: 0 auto; /* Centramos la tabla horizontalmente */
+        }
+        .tabla-fichas-uso td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            vertical-align: top; /* Alinear contenido arriba */
+            font-weight: normal !important; /* Asegura que el texto no sea negrita */
+            background-color: #ffffff
+        }
+
+        .tabla-fichas-uso td:first-child {
+            width: 30%; /* Primera columna con ancho fijo del 30% */
+        }
+
+        .tabla-fichas-uso td:last-child {
+            width: 70%; /* Segunda columna toma el resto (flexible) */
+        }
+
+
+
+        ul {
+            margin-left: 20px;
+        }
+        li {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+  <div id="inicio" class='container'>
+    <header class="header">
+        <img src="C:/GitHub/Mallorquina_API/app/ficheros/imagen/Logotipo con tagline - negro.svg" alt="La Mallorquina">
+        <h1 class="main-title">202022 - MINIPALMERA MANTEQUILLA FRAMBUESA</h1>
+    </header>
+
+    <main>
+        <section id='fichas'>
+            <div class="ficha">
+                <div class="header">
+                </div>
+            
+                <div class="header-2">
+                    <h2>Ficha Técnica La Mallorquina</h2>
+                </div>
+                <div class="sub-header">
+                    <span>Realizado por: <strong>Dpto. de Calidad</strong></span>
+                    <span>Código del Documento: <strong>5018</strong></span>
+                    <span>Rev. 0 | Fecha: <strong>19/03/2025</strong></span>
+                </div>
+                <div class="sub-header">
+                    <span>Categoría: <strong> </strong></span>
+                    <span>Temporada: <strong> </strong></span>
+                </div>
+            
+                <div class="seccion-fichas">
+                    <h2>Composición del producto</h2>
+                    <p>MANTEQUILLA (NATA y fermentos lácticos), harina floja (harina de TRIGO, enzimas, cisteína), harina fuerte (harina de TRIGO, ácido ascórbico (E-300)), agua, azúcar blanco, vinagre (vinagre de vino, antioxidante E-223 SULFITOS), sal (sal marina, antiaglomerante E-536); cobertura frambuesa (azúcar, manteca de cacao frambuesa en polvo 11,5%, emulgente: lecitina de girasol)
+
+Puede contener trazas de: SOJA, FRUTOS DE CASCARA y MOSTAZA</p>
+                </div>
+            
+                <div class="seccion-fichas">
+                    <h2>Información sobre alérgenos</h2>
+                    <p>En base al Reglamento (UE) nº 1169/2011, del Parlamento Europeo y del Consejo, sobre la información alimentaria facilitada al consumidor:</p>
+                    <br>
+                    <table class="tabla-fichas-alerg">
+                        <thead>
+                            <tr>
+                                <th>Alérgeno</th>
+                                <th>Contiene</th>
+                                <th>Alérgeno</th>
+                                <th>Contiene</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cereales que contengan gluten y productos derivados</td>
+                                <td class="td_alergeno">X</td>
+                                <td>Frutos de cáscara y productos derivados</td>
+                                <td class="td_alergeno"> </td>
+                            </tr>
+                            <tr>
+                                <td>Crustáceos y productos a base de crustáceos</td>
+                                <td class="td_alergeno"> </td>
+                                <td>Apio y productos derivados</td>
+                                <td class="td_alergeno"> </td>
+                            </tr>
+                            <tr>
+                                <td>Huevos y productos a base de huevo</td>
+                                <td class="td_alergeno"> </td>
+                                <td>Mostaza y productos derivados</td>
+                                <td class="td_alergeno"> </td>
+                            </tr>
+                            <tr>
+                                <td>Pescado y productos a base de pescado</td>
+                                <td class="td_alergeno"> </td>
+                                <td>Granos de sésamo y productos a base de granos de sésamo</td>
+                                <td class="td_alergeno"> </td>
+                            </tr>
+                            <tr>
+                                <td>Cacahuetes y productos a base de cacahuetes</td>
+                                <td class="td_alergeno"> </td>
+                                <td>Dióxido de azufre y sulfitos en concentración > 10 mg/kg (SO2)</td>
+                                <td class="td_alergeno">X</td>
+                            </tr>
+                            <tr>
+                                <td>Soja y productos a base de soja</td>
+                                <td class="td_alergeno"> </td>
+                                <td>Altramuces y productos a base de altramuces</td>
+                                <td class="td_alergeno"> </td>
+                            </tr>
+                            <tr>
+                                <td>Leche y sus derivados (incluida la lactosa)</td>
+                                <td class="td_alergeno">X</td>
+                                <td>Moluscos y productos a base de moluscos</td>
+                                <td class="td_alergeno"> </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>X=Contiene  T=Trazas en producto (puede contener)</p>
+                </div>
+            
+                <div class="seccion-fichas">
+                    <h2>Información Nutricional</h2>
+                    <p>En base al Reglamento (UE) nº 1169/2011 del Parlamento Europeo y del Consejo, sobre la información alimentaria facilitada al consumidor y sus posteriores modificaciones:</p>
+                    <br>
+                    <table class="tabla-fichas">
+                        <thead>
+                            <tr>
+                                <th>Nutrientes/100g</th>
+                                <th>Aporte por 100g</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Valor energético (kcal/kJ)</td>
+                                <td><center>525/2224</center></td>
+                            </tr>
+                            <tr>
+                                <td>Grasas (g)</td>
+                                <td><center>31</center></td>
+                            </tr>
+                            <tr>
+                                <td>de las cuales SATURADAS (g)</td>
+                                <td><center>21</center></td>
+                            </tr>
+                            <tr>
+                                <td>Hidratos de carbono (g)</td>
+                                <td><center>57</center></td>
+                            </tr>
+                            <tr>
+                                <td>de los cuales AZÚCARES (g)</td>
+                                <td><center>24</center></td>
+                            </tr>
+                            <tr>
+                                <td>Proteínas (g)</td>
+                                <td><center>6</center></td>
+                            </tr>
+                            <tr>
+                                <td>Sal (g)</td>
+                                <td><center>0,8</center></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>Fuente da datos: BEDCA</p>
+                </div>
+            
+                <div class="seccion-fichas">
+                    <h2>Criterios Microbiológicos</h2>
+                    <p>En base al Reglamento (CE) nº 1441/2007 de la Comisión, que modifica el Reglamento (CE) nº 2073/2005 relativo a los criterios microbiológicos aplicables a los productos alimenticios:</p>
+                    <br>
+                    <table class="tabla-fichas">
+                        <thead>
+                            <tr>
+                                <th>Microorganismo</th>
+                                <th>Valor admisible (ufc/g)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Rec. Aerobios totales</td>
+                                <td><center> </center></td>
+                            </tr>
+                            <tr>
+                                <td>Rec. Enterobacterias</td>
+                                <td><center> </center></td>
+                            </tr>
+                            <tr>
+                                <td>Rec. Escherichia Coli</td>
+                                <td><center> </center></td>
+                            </tr>
+            
+                            <tr>
+                                <td>Rec. Staphylococcus Aureus</td>
+                                <td><center> </center></td>
+                            </tr>
+                            <tr>
+                                <td>Det. Salmonella spp</td>
+                                <td><center> </center></td>
+                            </tr>
+                            <tr>
+                                <td>Rec. Listeria Monocytogenes</td>
+                                <td><center> </center></td>
+                            </tr>
+                            <tr>
+                                <td>Rec. Mohos y levaduras</td>
+                                <td><center> </center></td>
+                            </tr>
+            
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="seccion-fichas">
+                    <table class="tabla-fichas-uso">
+                            <tr>
+                                <td>Presentación y Población Diana</td>
+                                <td><strong>Población general excepto alérgicos e intolerantes a alguno de sus ingredientes</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Descripción del uso esperado del producto</td>
+                                <td><strong>Producto listo para consumo</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Condiciones de almacenamiento y conservación</td>
+                                <td><strong> </strong></td>
+                            </tr>
+                    </table>
+                </div>
+            
+                <div class="seccion-fichas">
+                    <h2>Vida Útil</h2>
+                    <p>Caducidad (horas/días desde la fecha de fabricación):</p>
+                    <ul>
+                        <li>En lugar fresco y seco: <strong> </strong></li>
+                        <li>En refrigeración: <strong> </strong></li>
+                        <li>En congelación: <strong> </strong></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <section id="precios">
+                <h3>Precios para MINIPALMERA MANTEQUILLA FRAMBUESA</h3><ul><li>Tienda Quevedo - No conecta - Comedor: 1.00</li><li>Tienda Quevedo - No conecta - Terraza: 1.10</li><li>Tienda SOL -- NOOOOO - Comedor: 1.00</li><li>Tienda SOL-Bombonería - Comedor: 1.20</li><li>CATERING - Catering: 1.00</li></ul>
+                <div class="separador-fichas">
+                    <br>
+                </div>
+            </section>
+            
+            <div class="separador-fichas">
+                <br>
+            </div>        </section>
+    </main>
+    <!-- <footer>
+        <span>Generado el: 19/03/2025</span>
+        <a href='#inicio'>Volver a inicio</a>
+    </footer> -->
+  </div>
+</body>
+</html>
+
+
+
+<!--  
+  -----------------------------------------------------------------------------
+  COMO FICHA INCLUIDA EN UNA PAGINA
+  -----------------------------------------------------------------------------
+  
+<div class="ficha">
+    <div class="header">
+            <h1>Ficha Técnica La Mallorquina</h1>
+    </div>
+
+    <div class="cab_producto" id=202022>
+        <h1>202022 - MINIPALMERA MANTEQUILLA FRAMBUESA</h1>
+        <p> </p>
+        <p> </p>
+    </div>
+
+    <div class="sub-header">
+        <span>Realizado por: <strong>Dpto. de Calidad</strong></span>
+        <span>Código del Documento: <strong>5018</strong></span>
+        <span>Rev. 0 | Fecha: <strong>19/03/2025</strong></span>
+    </div>
+
+    <div class="seccion-fichas">
+        <h2>Composición del producto</h2>
+        <p>MANTEQUILLA (NATA y fermentos lácticos), harina floja (harina de TRIGO, enzimas, cisteína), harina fuerte (harina de TRIGO, ácido ascórbico (E-300)), agua, azúcar blanco, vinagre (vinagre de vino, antioxidante E-223 SULFITOS), sal (sal marina, antiaglomerante E-536); cobertura frambuesa (azúcar, manteca de cacao frambuesa en polvo 11,5%, emulgente: lecitina de girasol)
+
+Puede contener trazas de: SOJA, FRUTOS DE CASCARA y MOSTAZA</p>
+    </div>
+
+    <div class="seccion-fichas">
+        <h2>Información sobre alérgenos</h2>
+        <p>En base al Reglamento (UE) nº 1169/2011, del Parlamento Europeo y del Consejo, sobre la información alimentaria facilitada al consumidor:</p>
+        <br>
+        <table class="tabla-fichas-alerg">
+            <thead>
+                <tr>
+                    <th>Alérgeno</th>
+                    <th>Contiene</th>
+                    <th>Alérgeno</th>
+                    <th>Contiene</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Cereales que contengan gluten y productos derivados</td>
+                    <td class="td_alergeno">X</td>
+                    <td>Frutos de cáscara y productos derivados</td>
+                    <td class="td_alergeno"> </td>
+                </tr>
+                <tr>
+                    <td>Crustáceos y productos a base de crustáceos</td>
+                    <td class="td_alergeno"> </td>
+                    <td>Apio y productos derivados</td>
+                    <td class="td_alergeno"> </td>
+                </tr>
+                <tr>
+                    <td>Huevos y productos a base de huevo</td>
+                    <td class="td_alergeno"> </td>
+                    <td>Mostaza y productos derivados</td>
+                    <td class="td_alergeno"> </td>
+                </tr>
+                <tr>
+                    <td>Pescado y productos a base de pescado</td>
+                    <td class="td_alergeno"> </td>
+                    <td>Granos de sésamo y productos a base de granos de sésamo</td>
+                    <td class="td_alergeno"> </td>
+                </tr>
+                <tr>
+                    <td>Cacahuetes y productos a base de cacahuetes</td>
+                    <td class="td_alergeno"> </td>
+                    <td>Dióxido de azufre y sulfitos en concentración > 10 mg/kg (SO2)</td>
+                    <td class="td_alergeno">X</td>
+                </tr>
+                <tr>
+                    <td>Soja y productos a base de soja</td>
+                    <td class="td_alergeno"> </td>
+                    <td>Altramuces y productos a base de altramuces</td>
+                    <td class="td_alergeno"> </td>
+                </tr>
+                <tr>
+                    <td>Leche y sus derivados (incluida la lactosa)</td>
+                    <td class="td_alergeno">X</td>
+                    <td>Moluscos y productos a base de moluscos</td>
+                    <td class="td_alergeno"> </td>
+                </tr>
+            </tbody>
+        </table>
+        <p>X=Contiene  T=Trazas en producto (puede contener)</p>
+    </div>
+
+    <div class="seccion-fichas">
+        <h2>Información Nutricional</h2>
+        <p>En base al Reglamento (UE) nº 1169/2011 del Parlamento Europeo y del Consejo, sobre la información alimentaria facilitada al consumidor y sus posteriores modificaciones:</p>
+        <br>
+        <table class="tabla-fichas">
+            <thead>
+                <tr>
+                    <th>Nutrientes/100g</th>
+                    <th>Aporte por 100g</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Valor energético (kcal/kJ)</td>
+                    <td><center>525/2224</center></td>
+                </tr>
+                <tr>
+                    <td>Grasas (g)</td>
+                    <td><center>31</center></td>
+                </tr>
+                <tr>
+                    <td>de las cuales SATURADAS (g)</td>
+                    <td><center>21</center></td>
+                </tr>
+                <tr>
+                    <td>Hidratos de carbono (g)</td>
+                    <td><center>57</center></td>
+                </tr>
+                <tr>
+                    <td>de los cuales AZÚCARES (g)</td>
+                    <td><center>24</center></td>
+                </tr>
+                <tr>
+                    <td>Proteínas (g)</td>
+                    <td><center>6</center></td>
+                </tr>
+                <tr>
+                    <td>Sal (g)</td>
+                    <td><center>0,8</center></td>
+                </tr>
+            </tbody>
+        </table>
+        <p>Fuente da datos: BEDCA</p>
+    </div>
+
+    <div class="seccion-fichas">
+        <h2>Criterios Microbiológicos</h2>
+        <p>En base al Reglamento (CE) nº 1441/2007 de la Comisión, que modifica el Reglamento (CE) nº 2073/2005 relativo a los criterios microbiológicos aplicables a los productos alimenticios:</p>
+        <br>
+        <table class="tabla-fichas">
+            <thead>
+                <tr>
+                    <th>Microorganismo</th>
+                    <th>Valor admisible (ufc/g)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Rec. Aerobios totales</td>
+                    <td><center> </center></td>
+                </tr>
+                <tr>
+                    <td>Rec. Enterobacterias</td>
+                    <td><center> </center></td>
+                </tr>
+                <tr>
+                    <td>Rec. Escherichia Coli</td>
+                    <td><center> </center></td>
+                </tr>
+
+                <tr>
+                    <td>Rec. Staphylococcus Aureus</td>
+                    <td><center> </center></td>
+                </tr>
+                <tr>
+                    <td>Det. Salmonella spp</td>
+                    <td><center> </center></td>
+                </tr>
+                <tr>
+                    <td>Rec. Listeria Monocytogenes</td>
+                    <td><center> </center></td>
+                </tr>
+                <tr>
+                    <td>Rec. Mohos y levaduras</td>
+                    <td><center> </center></td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="seccion-fichas">
+        <table class="tabla-fichas-uso">
+                <tr>
+                    <td>Presentación y Población Diana</td>
+                    <td><strong>Población general excepto alérgicos e intolerantes a alguno de sus ingredientes</strong></td>
+                </tr>
+                <tr>
+                    <td>Descripción del uso esperado del producto</td>
+                    <td><strong>Producto listo para consumo</strong></td>
+                </tr>
+                <tr>
+                    <td>Condiciones de almacenamiento y conservación</td>
+                    <td><strong> </strong></td>
+                </tr>
+        </table>
+    </div>
+
+    <div class="seccion-fichas">
+        <h2>Vida Útil</h2>
+        <p>Caducidad (horas/días desde la fecha de fabricación):</p>
+        <ul>
+            <li>En lugar fresco y seco: <strong> </strong></li>
+            <li>En refrigeración: <strong> </strong></li>
+            <li>En congelación: <strong> </strong></li>
+        </ul>
+    </div>
+</div>
+
+<section id="precios">
+    <h3>Precios para MINIPALMERA MANTEQUILLA FRAMBUESA</h3><ul><li>Tienda Quevedo - No conecta - Comedor: 1.00</li><li>Tienda Quevedo - No conecta - Terraza: 1.10</li><li>Tienda SOL -- NOOOOO - Comedor: 1.00</li><li>Tienda SOL-Bombonería - Comedor: 1.20</li><li>CATERING - Catering: 1.00</li></ul>
+    <div class="separador-fichas">
+        <br>
+    </div>
+</section>
+
+<div class="separador-fichas">
+    <br>
+</div>
+
+-->

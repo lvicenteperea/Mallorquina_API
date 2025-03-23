@@ -7,12 +7,10 @@ from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
 # Rutas de los archivos
-LOGO =        os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
-RUTA_ICONOS = os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "alergenos/")
+LOGO =        os.path.join(settings.WEB_RUTA_LOCAL, settings.WEB_RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
+RUTA_ICONOS = os.path.join(settings.WEB_RUTA_LOCAL, settings.WEB_RUTA_IMAGEN, "alergenos/")
 
 PLANTILLA       = os.path.join(settings.RUTA_ALERGENOS, "plantilla.html")
-# PLANTILLA_FICHA = os.path.join(settings.RUTA_ALERGENOS, "plantilla_producto.html")
-
 FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_ALERGENOS_HTML, "no_imprimibles.csv")
 
 #----------------------------------------------------------------------------------------
@@ -85,6 +83,8 @@ def generar_html(param: InfoTransaccion, productos: list, punto_venta: int) -> s
             'indice_alergenos': indice_alergenos,
             # 'fichas': fichas_content
         })
+
+        # imprime([html_final[7900:20000]], "*")
 
         return html_final
     

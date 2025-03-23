@@ -5,9 +5,13 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "MALLORQUIA API"
 
+    # Rutas, estas deben ser del servidor donde se encuentre la web
+    WEB_RUTA_LOCAL: str = "http://localhost:3000/" # "C:/GitHub/Mallorquina_API/"
+    WEB_RUTA_IMAGEN: str = "img/" # "app/ficheros/imagen/"
+
     RUTA_LOCAL: str = "C:/GitHub/Mallorquina_API/"
-    RUTA_BASE: str = "app/ficheros/"
     RUTA_IMAGEN: str = "app/ficheros/imagen/"
+    RUTA_BASE: str = "app/ficheros/"
     RUTA_DATOS: str = "app/ficheros/datos/"
     RUTA_TPV: str = "app/ficheros/datos/tarifas_a_TPV/"
     RUTA_WEB: str = "app/ficheros/web/"

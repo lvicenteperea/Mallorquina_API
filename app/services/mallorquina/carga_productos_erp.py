@@ -21,8 +21,6 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         config = obtener_cfg_general(param)
 
-        imprime([config], "*  config", 2)
-        
         if len(param.parametros) >= 1  and param.parametros[0]:
             excel = os.path.join(f"{settings.RUTA_DATOS}/erp", f"{param.parametros[0]}")
 
@@ -30,13 +28,8 @@ def proceso(param: InfoTransaccion) -> list:
             param.registrar_error(ret_txt= "No ha llegado fichero origen para cargar", debug=f"{funcion}.sin parametro entrada")
             raise MiException(param = param)
 
-        imprime([excel], "*  excel", 2)
-
         # Aquí va la lógica específica para cada bbdd
         resultado = carga(param, excel)
-
-
-        imprime(resultado, "*  FINAL", 2)
 
         return resultado
 
@@ -138,18 +131,17 @@ def carga (param: InfoTransaccion, excel):
             if row["Codigo_alergenos"] == '':  # Verificar si el valor está vacío
                 row["Codigo_alergenos"] = "0"  # Asignar "0" si está vacío
 
-            # imprime([row], "*   row")
-
             param.debug = f"Código: {row['Código']}"
             codigo = row['Código']
+            fec_modificacion = row.get('fec_modificacion', None)
 
             param.debug = f"fec_modificacion: {row.get('fec_modificacion', None)}"
-            if row['fec_modificacion']:
-                param.debug = f"fec_modificacion1: {row.get('fec_modificacion', None)}"
+            if fec_modificacion:
+                param.debug = f"fec_modificacion1: {fec_modificacion}"
                 fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%Y-%m-%d %H:%M:%S")
             else:
-                param.debug = f"fec_modificacion2: {row.get('fec_modificacion', None)}"
                 fec_modificacion = datetime.strptime('2020-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
+                param.debug = f"fec_modificacion2: {fec_modificacion}"
 
             # ------------------------------------------------------------------------------
             # ------------------------------------------------------------------------------
@@ -180,7 +172,7 @@ def carga (param: InfoTransaccion, excel):
                     param.debug = "update___"
                     campos = ', '.join(f"{v} = %s" for k, v in mapping.items() if k in row)
                     valores = tuple(row[k] for k in mapping.keys() if k in row) + (codigo,)
-                    imprime([campos, valores], "*  Campos y valores", 2)
+                    # imprime([campos, valores], "*  Campos y valores", 2)
                     cursor.execute(f"UPDATE erp_productos SET {campos} WHERE ID = %s", valores)
 
                     # Procesar campos "pvp_*" para modificar en erp_productos_pvp

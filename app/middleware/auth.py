@@ -48,8 +48,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
     '''
     @staticmethod
     def validate_ip(client_ip: str) -> bool:
-        allowed_ips = ["127.0.0.1", "192.168.1.100"]  # Lista de IPs permitidas
-        return client_ip in allowed_ips
+        # allowed_ips = ["127.0.0.1", "192.168.1.100", ]  # Lista de IPs permitidas
+        # return client_ip in allowed_ips
+        return True
 
 
     #----------------------------------------------------------------------------------

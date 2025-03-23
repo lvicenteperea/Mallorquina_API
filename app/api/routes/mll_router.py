@@ -217,7 +217,7 @@ async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasReque
     return await procesar_request(request, body_params, fichas_tecnicas, "mll_fichas_tecnicas")
 
 @router.post("/mll_alergenos", response_model=InfoTransaccion)
-async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
+async def mll_alergenos(request: Request, body_params: FichasTecnicasRequest = Body(...)):
     """ Retorna un html con los agergenos del punto de venta. """
     return await procesar_request(request, body_params, alergenos, "mll_alergenos")
 

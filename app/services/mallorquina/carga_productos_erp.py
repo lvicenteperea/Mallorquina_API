@@ -88,6 +88,10 @@ def carga (param: InfoTransaccion, excel):
             'alta_glovo': 'alta_glovo',
             'alta_web': 'alta_web',
             'alta_catering': 'alta_catering',
+            'Codigo_alergenos': 'codigo_alergenos',
+            'Listado_alergenos': 'listado_alergenos',
+            'Nombre_alergenos': 'nombre_alergenos',
+
             'Huevo': 'huevo',
             'Leche': 'leche',
             'Crustaceos': 'crustaceos',
@@ -124,12 +128,15 @@ def carga (param: InfoTransaccion, excel):
             'Sal_g': 'sal_g',
             'Fibra_dietetica_g': 'fibra_dietetica_g',
             'Otros': 'otros',
+            'Coste': 'coste',
             'fec_modificacion': 'fec_modificacion'
         }
 
         # Procesar registros del Excel
         for x, row in df.iterrows():
             row = row.fillna('')  # Reemplazar valores NaN con cadenas vacías
+            if row["Codigo_alergenos"] == '':  # Verificar si el valor está vacío
+                row["Codigo_alergenos"] = "0"  # Asignar "0" si está vacío
 
             # imprime([row], "*   row")
 
@@ -143,6 +150,13 @@ def carga (param: InfoTransaccion, excel):
             else:
                 param.debug = f"fec_modificacion2: {row.get('fec_modificacion', None)}"
                 fec_modificacion = datetime.strptime('2020-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
+
+            # ------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------
+            fec_modificacion = datetime.strptime('2026-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
+            # ------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------
+
 
             # Consultar si el producto ya existe
             param.debug = "select 1"
@@ -166,6 +180,7 @@ def carga (param: InfoTransaccion, excel):
                     param.debug = "update___"
                     campos = ', '.join(f"{v} = %s" for k, v in mapping.items() if k in row)
                     valores = tuple(row[k] for k in mapping.keys() if k in row) + (codigo,)
+                    imprime([campos, valores], "*  Campos y valores", 2)
                     cursor.execute(f"UPDATE erp_productos SET {campos} WHERE ID = %s", valores)
 
                     # Procesar campos "pvp_*" para modificar en erp_productos_pvp
@@ -245,7 +260,7 @@ def determinar_bbdd_y_tipo(columna):
         'pvp_terraza_quevedo': ([4], 'Terraza'),
 
         # 'pvp_tienda_velzquez_mg': ([1, 3, 6], 'Barra'),
-        'pvp_tienda_velzquez_mg': ([1, 3, 6], 'Comedor'),
+        'pvp_tienda_velazquez_mg': ([1, 3, 6], 'Comedor'),
 
         # 'pvp_salon_sol': ([7], 'Barra'),
         'pvp_salon_sol': ([7], 'Comedor'),

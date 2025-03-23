@@ -1,7 +1,7 @@
 *.log
 .env
-
-app/ficheros/web/alergenos/fichas/*.*
+app/config/settings.py
+app/ficheros/datos/alergenos/reports/*.*
 app/ficheros/datos/alergenos/versiones
 app/ficheros/datos/tarifas_a_TPV/tarifas_20*.*
 .codegpt

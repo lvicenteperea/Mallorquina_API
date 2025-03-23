@@ -42,7 +42,15 @@ def proceso(param: InfoTransaccion) -> list:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         # Consultar los datos principales  CUANDO CARGEMOS LOS PRECIOS BIEN, HAY QUE CAMBIAR el WHERE para solo coger productos que se vendan en "punto_venta"
-        cursor_mysql.execute("SELECT * FROM erp_productos WHERE alta_tpv = 'Sí' ORDER BY familia_desc, nombre")
+        cursor_mysql.execute("""SELECT * FROM erp_productos "
+        "                        WHERE (alta_tpv = 'Sí' 
+                                    or alta_glovo = 'Sí' 
+                                    or alta_web = 'Sí' 
+                                    or alta_catering = 'Sí')
+                             --    and listado_alergeno = 'Sí'
+                             --    and cod_referencia = codigo
+                                 ORDER BY familia_desc, nombre
+                             """)
         productos = cursor_mysql.fetchall()
 
         # Consultar los precios

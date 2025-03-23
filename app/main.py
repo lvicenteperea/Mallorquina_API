@@ -15,10 +15,6 @@ from app.api.routes.mll_router import router as mallorquina_router
 from app.api.routes.auth_router import router as auth_router
 from app.api.routes.email_router import router as email_router
 
-from app.api.routes.apk_router import router as aparcamientos_router
-
-
-
 from app.middleware.auth import AuthMiddleware
 import json 
 
@@ -51,8 +47,6 @@ app.middleware("http")(log_tiempos_respuesta)
 app.include_router(mallorquina_router, prefix="/mallorquina", tags=["Mallorquina"])
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(email_router, prefix="/email", tags=["Email"])
-
-app.include_router(aparcamientos_router, prefix="/aparcamientos", tags=["Clubo"])
 
 # -----------------------------------------------------------------------------------------------
 # AUTENTICACIÓN

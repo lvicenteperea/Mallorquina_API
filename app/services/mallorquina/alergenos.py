@@ -1,5 +1,4 @@
 import os
-import shutil
 from datetime import datetime
 
 from app.utils.utilidades import graba_log, imprime
@@ -12,7 +11,7 @@ LOGO =        os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "Logotipo 
 RUTA_ICONOS = os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "alergenos/")
 
 PLANTILLA       = os.path.join(settings.RUTA_ALERGENOS, "plantilla.html")
-PLANTILLA_FICHA = os.path.join(settings.RUTA_ALERGENOS, "plantilla_producto.html")
+# PLANTILLA_FICHA = os.path.join(settings.RUTA_ALERGENOS, "plantilla_producto.html")
 
 FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_ALERGENOS_HTML, "no_imprimibles.csv")
 
@@ -30,10 +29,19 @@ def proceso(param: InfoTransaccion) -> list:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         param.debug = f"Punto de venta: {punto_venta}"
+        # imprime([punto_venta], "*  punto_venta")
+
         # Consultar los datos principales  CUANDO CARGEMOS LOS PRECIOS BIEN, HAY QUE CAMBIAR el WHERE para solo coger productos que se vendan en "punto_venta"
-        cursor_mysql.execute("""SELECT distinct a.* FROM erp_productos a
+        cursor_mysql.execute("""SELECT distinct a.* 
+                                  FROM erp_productos a
                                  inner join erp_productos_pvp b on a.id = b.id_producto
                                  where id_bbdd = %s
+                                   and (alta_tpv = 'Sí' 
+                                    or alta_glovo = 'Sí' 
+                                    or alta_web = 'Sí' 
+                                    or alta_catering = 'Sí')
+                                   and listado_alergenos = 'Sí'
+                                   and codigo_alergenos = a.id
                                  ORDER BY familia_desc, nombre""", 
                                  (punto_venta,))
         productos = cursor_mysql.fetchall()
@@ -70,7 +78,7 @@ def generar_html(param: InfoTransaccion, productos: list, punto_venta: int) -> s
         plantilla_html = reemplazar_fijos(param, plantilla, punto_venta)
 
         # Secciones dinámicas
-        indice_alergenos = indice(param, productos)
+        indice_alergenos = indice(param, productos, punto_venta)
 
         # Reemplazar las secciones dinámicas en la plantilla
         html_final = reemplazar_campos(plantilla_html, {
@@ -107,18 +115,13 @@ def reemplazar_fijos(param, plantilla, punto_venta):
 
     try:
         punto_venta_desc = "La Mallorquina"
-        if punto_venta == 2:
-            punto_venta_desc = "(Velázquez)"
-        elif punto_venta == 3:
-            punto_venta_desc = "(MG Norte (Kiosko))"
-        elif punto_venta == 4:
-            punto_venta_desc = "(Quevedo)"
-        elif punto_venta == 5:
-            punto_venta_desc = "(Sol - Tienda)"
-        elif punto_venta == 6:
-            punto_venta_desc = "(MG Tienda)"
-        elif punto_venta == 7:  
-            punto_venta_desc = "(Sol - Bombonería)"
+        if punto_venta == 4:
+            punto_venta_desc = "Tiendas" # "(Sol - Quevedo)"
+        elif punto_venta == 1:
+            punto_venta_desc = "Tiendas" # "(Velázquez - MG)"
+        elif punto_venta == 7:
+            punto_venta_desc = "Tiendas" # "(Salón SOL)"
+
         elif punto_venta == 90:  
             punto_venta_desc = "(Catering)"
         elif punto_venta == 91:  
@@ -130,7 +133,6 @@ def reemplazar_fijos(param, plantilla, punto_venta):
         html = html.replace("{LOGO}", LOGO)
 
         html = html.replace("{titulo_principal}", f"Alérgenos alimentarios {punto_venta_desc}")
-
 
         html = html.replace("{Huevo}", f"{ruta}Huevo.ico")
         html = html.replace("{Leche}", f"{ruta}Leche.ico")
@@ -163,14 +165,13 @@ def reemplazar_fijos(param, plantilla, punto_venta):
 #----------------------------------------------------------------------------------------
 # Reemplazar INDICE
 #----------------------------------------------------------------------------------------
-def indice(param, productos):
+def indice(param, productos, punto_venta):
     indice_alergenos = ""
     try:
         # Generar las filas de la tabla principal
         familia_actual = None
         for producto in productos:
-            composicion = imprimible(param, producto)
-            if composicion: 
+            if listable(param, producto, punto_venta): 
                 if producto['familia_desc'] != familia_actual:
                     indice_alergenos += f"<tr id='familia'><td colspan='15'><p class='lista-familia'>{producto['familia_desc']}</p></td></tr>\n"
                     familia_actual = producto['familia_desc']
@@ -212,23 +213,21 @@ def reemplazar_campos(plantilla, campos):
 # Comprueba que tenemos descripción de la composición del productos, porque si no tiene, 
 # no se puede imprimir
 #----------------------------------------------------------------------------------------
-def imprimible(param: InfoTransaccion, fila):
+def listable(param: InfoTransaccion, fila, punto_venta):
     try:
-        composicion = fila.get("composicion_completa", "").strip() or ""
-        if not composicion: 
-            composicion = fila.get("composicion_etiqueta", "").strip() or ""
-            
-        if not composicion:
-            if param.ret_code == 0:
-                modo_apertura = "w"
-            else:
-                modo_apertura = "a"
-            param.ret_code += 1
-            with open(FICH_NO_IMPRIMIBLES, modo_apertura) as f:
-                f.write(f"{fila.get('codigo')};{fila.get('nombre')}" + "\n")  # Escribir el registro con salto de línea
 
-        return composicion
+        if punto_venta == 90 and fila.get('alta_catering') == 'Sí':  
+            return True
+        elif punto_venta == 91 and fila.get('alta_web') == 'Sí':  
+            return True
+        elif punto_venta == 92 and fila.get('alta_glovo') == 'Sí':  
+            punto_venta_desc = "(Glovo)"
+        elif punto_venta in (1,2,3,4,5,6,7) and fila.get('alta_tpv') == 'Sí':
+            return True
+
+        return False
+    
    
     except Exception as e:
-        param.error_sistema(e=e, debug="imprimible.Exception")
+        param.error_sistema(e=e, debug="listable.Exception")
         raise 

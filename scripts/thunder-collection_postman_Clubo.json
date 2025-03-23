@@ -1,0 +1,250 @@
+{
+    "info": {
+        "_postman_id": "f90ad828-9405-4fc1-89d0-ef4887221ce2",
+        "name": "La Mallorquina",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "eqn_consultas",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/apk-equinsa/apk_consultas",
+                    "path": [
+                        "apk-equinsa",
+                        "apk_consultas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\",\n  \"query\": \"select top 10 * from cob\"\n}"
+                }
+            }
+        },
+        {
+            "name": "eqn_crea_tablas",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/apk-equinsa/apk_crea_tablas",
+                    "path": [
+                        "apk-equinsa",
+                        "apk_crea_tablas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\"\n}"
+                }
+            }
+        },
+        {
+            "name": "eqn_carga_tablas",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/apk-equinsa/apk_carga_tablas",
+                    "path": [
+                        "apk-equinsa",
+                        "apk_carga_tablas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\"\n}"
+                }
+            }
+        },
+        {
+            "name": "skd_consultas",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/apk-skidata/apk_consultas",
+                    "path": [
+                        "apk-skidata",
+                        "apk_consultas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\",\n  \"query\": \"SELECT * from CCOfContractParkersDueToExpire\"\n}"
+                }
+            }
+        },
+        {
+            "name": "skd_crea_tablas",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/apk-skidata/apk_crea_tablas",
+                    "path": [
+                        "apk-skidata",
+                        "apk_crea_tablas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\"\n}"
+                }
+            }
+        },
+        {
+            "name": "skd_carga_tablas",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://127.0.0.1:8000/apk-skidata/apk_carga_tablas",
+                    "path": [
+                        "apk-skidata",
+                        "apk_carga_tablas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "127",
+                        "0",
+                        "0",
+                        "1"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"OK\"\n}"
+                }
+            }
+        }
+    ]
+}

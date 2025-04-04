@@ -32,17 +32,16 @@ def proceso(param: InfoTransaccion) -> list:
         # Consultar los datos principales  CUANDO CARGEMOS LOS PRECIOS BIEN, HAY QUE CAMBIAR el WHERE para solo coger productos que se vendan en "punto_venta"
         cursor_mysql.execute("""SELECT distinct a.* 
                                   FROM erp_productos a
-                                 inner join erp_productos_pvp b on a.id = b.id_producto
-                                 where id_bbdd = %s
-                                   and (alta_tpv = 'Sí'
+                                 where (alta_tpv = 'Sí'
                                     or alta_glovo = 'Sí'
                                     or alta_web = 'Sí' 
                                     or alta_catering = 'Sí')
                                    and listado_alergenos = 'Sí'
                                    and codigo_alergenos = a.id
-                                 ORDER BY familia_desc, nombre""", 
-                                 (punto_venta,))
+                                 ORDER BY familia_desc, nombre""")
         productos = cursor_mysql.fetchall()
+
+        imprime([productos, len(productos)], "*", 2)
 
         close_connection_mysql(conn_mysql, cursor_mysql)
 
@@ -115,19 +114,6 @@ def reemplazar_fijos(param, plantilla, punto_venta):
 
     try:
         punto_venta_desc = "La Mallorquina"
-        if punto_venta == 4:
-            punto_venta_desc = "Tiendas" # "(Sol - Quevedo)"
-        elif punto_venta == 1:
-            punto_venta_desc = "Tiendas." # "(Velázquez - MG)"
-        elif punto_venta == 7:
-            punto_venta_desc = "Tienda" # "(Salón SOL)"
-
-        elif punto_venta == 90:  
-            punto_venta_desc = "(Catering)"
-        elif punto_venta == 91:  
-            punto_venta_desc = "(Web)"
-        elif punto_venta == 92:  
-            punto_venta_desc = "(Glovo)"
 
         ruta = os.path.join(RUTA_ICONOS, "")
         html = html.replace("{LOGO}", LOGO)
@@ -216,16 +202,8 @@ def reemplazar_campos(plantilla, campos):
 def listable(param: InfoTransaccion, fila, punto_venta):
     try:
 
-        if punto_venta == 90 and fila.get('alta_catering') == 'Sí':  
-            return True
-        elif punto_venta == 91 and fila.get('alta_web') == 'Sí':  
-            return True
-        elif punto_venta == 92 and fila.get('alta_glovo') == 'Sí':  
-            return True
-        elif punto_venta in (1,2,3,4,5,6,7) and fila.get('alta_tpv') == 'Sí':
-            return True
 
-        return False
+        return True
     
    
     except Exception as e:

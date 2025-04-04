@@ -131,6 +131,26 @@ def carga (param: InfoTransaccion, excel):
             if row["Codigo_alergenos"] == '':  # Verificar si el valor está vacío
                 row["Codigo_alergenos"] = "0"  # Asignar "0" si está vacío
 
+            row["alta_tpv"] = "Sí" if row["alta_tpv"].strip().lower() in ["sí", "si"] else "No"
+            row["alta_glovo"] = "Sí" if row["alta_glovo"].strip().lower() in ["sí", "si"] else "No"
+            row["alta_web"] = "Sí" if row["alta_web"].strip().lower() in ["sí", "si"] else "No"
+            row["alta_catering"] = "Sí" if row["alta_catering"].strip().lower() in ["sí", "si"] else "No"
+
+            row["Huevo"] = "Trazas" if row["Huevo"].strip().lower() == "trazas" else ("Sí" if row["Huevo"].strip().lower() in ["sí", "si"] else "No")
+            row["Leche"] = "Trazas" if row["Leche"].strip().lower() == "trazas" else ("Sí" if row["Leche"].strip().lower() in ["sí", "si"] else "No")
+            row["Crustaceos"] = "Trazas" if row["Crustaceos"].strip().lower() == "trazas" else ("Sí" if row["Crustaceos"].strip().lower() in ["sí", "si"] else "No")
+            row["Cáscara"] = "Trazas" if row["Cáscara"].strip().lower() == "trazas" else ("Sí" if row["Cáscara"].strip().lower() in ["sí", "si"] else "No")
+            row["Gluten"] = "Trazas" if row["Gluten"].strip().lower() == "trazas" else ("Sí" if row["Gluten"].strip().lower() in ["sí", "si"] else "No")
+            row["Pescado"] = "Trazas" if row["Pescado"].strip().lower() == "trazas" else ("Sí" if row["Pescado"].strip().lower() in ["sí", "si"] else "No")
+            row["Altramuz"] = "Trazas" if row["Altramuz"].strip().lower() == "trazas" else ("Sí" if row["Altramuz"].strip().lower() in ["sí", "si"] else "No")
+            row["Mostaza"] = "Trazas" if row["Mostaza"].strip().lower() == "trazas" else ("Sí" if row["Mostaza"].strip().lower() in ["sí", "si"] else "No")
+            row["Cacahuetes"] = "Trazas" if row["Cacahuetes"].strip().lower() == "trazas" else ("Sí" if row["Cacahuetes"].strip().lower() in ["sí", "si"] else "No")
+            row["Apio"] = "Trazas" if row["Apio"].strip().lower() == "trazas" else ("Sí" if row["Apio"].strip().lower() in ["sí", "si"] else "No")
+            row["Sulfitos"] = "Trazas" if row["Sulfitos"].strip().lower() == "trazas" else ("Sí" if row["Sulfitos"].strip().lower() in ["sí", "si"] else "No")
+            row["Soja"] = "Trazas" if row["Soja"].strip().lower() == "trazas" else ("Sí" if row["Soja"].strip().lower() in ["sí", "si"] else "No")
+            row["Moluscos"] = "Trazas" if row["Moluscos"].strip().lower() == "trazas" else ("Sí" if row["Moluscos"].strip().lower() in ["sí", "si"] else "No")
+            row["Sésamo"] = "Trazas" if row["Sésamo"].strip().lower() == "trazas" else ("Sí" if row["Sésamo"].strip().lower() in ["sí", "si"] else "No")
+    
             param.debug = f"Código: {row['Código']}"
             codigo = row['Código']
             fec_modificacion = row.get('fec_modificacion', None)

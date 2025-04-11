@@ -97,26 +97,30 @@ async def login(request: Request,
 
         imprime([user_bbdd["id"]], "*")
         # Ejecutar la consulta
-        cursor_mysql.execute("SELECT texto, accion FROM mallorquina.hxxi_users_opciones WHERE id_username = %s AND orden != 0 ORDER BY orden", (user_bbdd["id"],))
+        # cursor_mysql.execute("SELECT texto, accion FROM mallorquina.hxxi_users_opciones WHERE id_username = %s AND orden != 0 ORDER BY orden", (user_bbdd["id"],))
+        cursor_mysql.execute("""SELECT a.texto, a.accion 
+                                  FROM hxxi_opciones  a
+                                 INNER join hxxi_users_opciones b on a.id = b.id_opcion
+                                 WHERE b.id_username = %s
+                                   AND a.orden != 0 
+                                 ORDER BY a.orden""",
+                             (user_bbdd["id"],))
         options_bbdd = cursor_mysql.fetchall()
-
-        imprime([options_bbdd], "*")
-
         if options_bbdd:
             # Convertir el resultado a la estructura deseada
             lista_opciones = [{"text": row["texto"], "action": row["accion"]} for row in options_bbdd]
         else:
-            lista_opciones = [ { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },]            
+            lista_opciones = []
 
-                # "options": [{ "text": 'Consulta Cierre', "action": 'openConsultaCierre' },
-                #             { "text": 'Sincroniza BBDD', "action": 'openSincronizaTodo' },
-                #             { "text": 'Carga ERP', "action": 'openCargaProdErp' },
-                #             { "text": 'Arqueo Caja', "action": 'openArqueoCaja' },
-                #             { "text": 'Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
-                #             { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },
-                #             { "text": 'Fichas Técnicas', "action": 'openFichasTecnicas' },
-                #             { "text": 'PRueba de SincTodo', "action": 'openSincronizaTodo2' },
-                #            ]
+            # "options": [{ "text": 'Consulta Cierre', "action": 'openConsultaCierre' },
+            #             { "text": 'Sincroniza BBDD', "action": 'openSincronizaTodo' },
+            #             { "text": 'Carga ERP', "action": 'openCargaProdErp' },
+            #             { "text": 'Arqueo Caja', "action": 'openArqueoCaja' },
+            #             { "text": 'Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
+            #             { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },
+            #             { "text": 'Fichas Técnicas', "action": 'openFichasTecnicas' },
+            #             { "text": 'PRueba de SincTodo', "action": 'openSincronizaTodo2' },
+            #            ]
 
 
         if "password_hash" not in user_bbdd:

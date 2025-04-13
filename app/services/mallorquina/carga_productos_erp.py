@@ -159,12 +159,15 @@ def carga (param: InfoTransaccion, excel):
             if fec_modificacion:
                 param.debug = f"fec_modificacion1: {fec_modificacion}"
                 fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%Y-%m-%d %H:%M:%S")
+                # fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%d/%m/%Y")
             else:
                 fec_modificacion = datetime.strptime('2020-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
+                # fec_modificacion = datetime.strptime('01/01/2020', "%d/%m/%Y")
                 param.debug = f"fec_modificacion2: {fec_modificacion}"
 
             # ------------------------------------------------------------------------------
             # ------------------------------------------------------------------------------
+            # fec_modificacion = datetime.strptime('01/01/2026', "%d/%m/%Y")
             fec_modificacion = datetime.strptime('2026-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
             # ------------------------------------------------------------------------------
             # ------------------------------------------------------------------------------

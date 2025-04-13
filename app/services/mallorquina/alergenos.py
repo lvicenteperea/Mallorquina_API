@@ -248,22 +248,22 @@ def listable(param: InfoTransaccion, cursor_mysql, fila, punto_venta, id_product
         if punto_venta == 0:  
             return True
         if punto_venta == 90:
-            if fila.get('alta_catering') == 'Sí':  
+            if fila.get('alta_catering') in ('Sí', "Si"):  
                 return True
             else:
                 return existe_alguno_en_alta(param, cursor_mysql, id_producto, "alta_catering in ('Si', 'Sí')")
         elif punto_venta == 91:
-            if fila.get('alta_web') == 'Sí':  
+            if fila.get('alta_web') in ('Sí', "Si"):  
                 return True
             else:
                 return existe_alguno_en_alta(param, cursor_mysql, id_producto, "alta_web in ('Si', 'Sí')")
         elif punto_venta == 92:
-            if fila.get('alta_glovo') == 'Sí':  
+            if fila.get('alta_glovo') in ('Sí', "Si"):   
                 return True
             else:
                 return existe_alguno_en_alta(param, cursor_mysql, id_producto, "alta_glovo in ('Si', 'Sí')")
         elif punto_venta in (1,2,3,4,5,6,7):
-            if fila.get('alta_tpv') == 'Sí':
+            if fila.get('alta_tpv') in ('Sí', "Si"):  
                 return True
             else:
                 return existe_alguno_en_alta(param, cursor_mysql, id_producto, "alta_tpv in ('Si', 'Sí')")

@@ -74,12 +74,6 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: str = "info"
 
-    # para el API de Equinsa
-    API_EQUINSA_USER: str ="clubo"
-    API_EQUINSA_PWR: str = "AG8t3B2q"
-
-
-
     class Config:
         env_file = ".env"
 

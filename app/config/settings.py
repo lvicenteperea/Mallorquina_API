@@ -7,6 +7,7 @@ class Settings(BaseSettings):
 
     # Rutas, estas deben ser del servidor donde se encuentre la web
     WEB_RUTA_LOCAL: str = "http://localhost:3000/" # "C:/GitHub/Mallorquina_API/"
+    # WEB_RUTA_LOCAL: str = "http://intranet.pastelerialamallorquina.es/" # "C:/GitHub/Mallorquina_API/"
     WEB_RUTA_IMAGEN: str = "img/" # "app/ficheros/imagen/"
 
     RUTA_LOCAL: str = "C:/GitHub/Mallorquina_API/"

@@ -6,9 +6,12 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "MALLORQUIA API"
 
     # Rutas, estas deben ser del servidor donde se encuentre la web
-    RUTA_LOCAL: str = "http://localhost:3000/" # "C:/GitHub/Mallorquina_API/"
-    RUTA_IMAGEN: str = "img/" # "app/ficheros/imagen/"
+    WEB_RUTA_LOCAL: str = "http://localhost:3000/" # "C:/GitHub/Mallorquina_API/"
+    # WEB_RUTA_LOCAL: str = "http://intranet.pastelerialamallorquina.es/" # "C:/GitHub/Mallorquina_API/"
+    WEB_RUTA_IMAGEN: str = "img/" # "app/ficheros/imagen/"
 
+    RUTA_LOCAL: str = "C:/GitHub/Mallorquina_API/"
+    RUTA_IMAGEN: str = "app/ficheros/imagen/"
     RUTA_BASE: str = "app/ficheros/"
     RUTA_DATOS: str = "app/ficheros/datos/"
     RUTA_TPV: str = "app/ficheros/datos/tarifas_a_TPV/"
@@ -71,12 +74,6 @@ class Settings(BaseSettings):
     AUTH_ENABLED: bool = False  # Cambiar a False para desactivar la autenticación
 
     LOG_LEVEL: str = "info"
-
-    # para el API de Equinsa
-    API_EQUINSA_USER: str ="clubo"
-    API_EQUINSA_PWR: str = "AG8t3B2q"
-
-
 
     class Config:
         env_file = ".env"

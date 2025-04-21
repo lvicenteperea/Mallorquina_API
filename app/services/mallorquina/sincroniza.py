@@ -8,6 +8,7 @@ from app.utils.utilidades import graba_log, imprime
 from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
+from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
 from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 
 import app.services.mallorquina.sincroniza_tablas.proceso_general as proceso_general
@@ -118,43 +119,51 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
     param.debug = "recorre_entidades"
     resultado = []
     cursor_mysql = None # para que no de error en el finally
+    conn_sqlserver = None # para que no de error en el finally
 
     try:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
+        bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, tienda_bbdd["ID"])   # Buscamos la conexión que necesitamos para esta bbdd origen
 
-        param.debug = "Select entidades"
-        cursor_mysql.execute("SELECT * FROM mll_cfg_entidades WHERE id_bbdd = %s AND activo= 'S'", (tienda_bbdd['ID'],))
+        # conextamos con esta bbdd origen
+        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+        if conn_sqlserver:
+            param.debug = f"{funcion}.Select entidades"
+            cursor_mysql.execute("SELECT * FROM mll_cfg_entidades WHERE id_bbdd = %s AND activo= 'S'", (tienda_bbdd['ID'],))
 
-        lista_entidades = cursor_mysql.fetchall()
+            lista_entidades = cursor_mysql.fetchall()
 
-        for entidad in lista_entidades:
-            imprime([f"📒 Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", entidad], "-")
-            
-            # -------------------------------------------------------------------------
-            param.debug = "por tablas"
-            resultado.extend(recorre_tablas(param, tienda_bbdd["Nombre"], entidad, conn_mysql))
-            # -------------------------------------------------------------------------
+            for entidad in lista_entidades:
+                imprime([f"📒 Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", entidad], "-")
+                
+                # -------------------------------------------------------------------------
+                param.debug = "por tablas"
+                resultado.extend(recorre_tablas(param, tienda_bbdd["Nombre"], entidad, conn_sqlserver, conn_mysql))
+                # -------------------------------------------------------------------------
 
-            param.debug = "execute act. fec_Carga"
-            cursor_mysql.execute(
-                "UPDATE mll_cfg_entidades SET Ultima_fecha_Carga = %s WHERE ID = %s",
-                (datetime.now(), entidad["ID"])
-            )
-            
-        conn_mysql.commit()
+                param.debug = "execute act. fec_Carga"
+                cursor_mysql.execute(
+                    "UPDATE mll_cfg_entidades SET Ultima_fecha_Carga = %s WHERE ID = %s",
+                    (datetime.now(), entidad["ID"])
+                )
+                
+            conn_mysql.commit()
 
         param.debug = "Fin"
         return resultado
 
                   
     except Exception as e:
-        param.error_sistema(e=e, debug="Sincroniza.recorre_entidades.excepcion")
+        param.error_sistema(e=e, debug=f"{funcion}.excepcion")
         raise
 
     finally:
+        param.debug = f"{funcion}.cierra MySQL"
         if cursor_mysql is not None:
             cursor_mysql.close()
 
+        param.debug = f"cierra conexión sqlserver"
+        close_connection_sqlserver(conn_sqlserver, None)
 
 #----------------------------------------------------------------------------------------
 # ejecutar_proceso: Sincroniza todas las tablas de una tienda. Recibe un json con los datos del registro de mll_cfg_bbdd:
@@ -163,7 +172,7 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
 #   - Conexion str: es la conexión de la tienda en formato -->{"host": "ip", "port": "1433", "user": "usuario", "database": "nombre_database", "p a s  s w o  r d": "la_contraseña"}
 #   - Ultima_Fecha_Carga str: fecha en la que se sincronizó la última vez
 #----------------------------------------------------------------------------------------
-def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> list:
+def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_sqlserver, conn_mysql) -> list:
     resultado = []
 
     try:
@@ -193,7 +202,6 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
             intervalo = tabla["Cada_Cuanto_Ejecutar"]
             procesar = (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))
 
-            # imprime([f"{'NO ' if not procesar else ''}Procesando TABLA:", tabla, datetime.now(),  ultima_actualizacion, timedelta(days=intervalo), (intervalo == 0 or (datetime.now() > ultima_actualizacion + timedelta(days=intervalo)))], "-")
             if procesar: 
                 # -----------------------------------------------------------------------------------------
                 param.debug = "Select cfg_tablas"     # Obtener nombre de la tabla y si se debe borrar
@@ -206,7 +214,7 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
                 param.debug = f"Procesando tabla: {tabla}"
 
                 # -----------------------------------------------------------------------------------------
-                resultados = procesar_tabla(param, conn_mysql, entidad, tabla, tabla_config)
+                resultados = procesar_tabla(param, conn_sqlserver, conn_mysql, entidad, tabla, tabla_config)
                 resultado.append( {"nombre_bbdd": nombre_bbdd, 
                                    "entidad": entidad['Nombre'],
                                    "tabla_origen": tabla_config["Tabla_Origen"],
@@ -231,7 +239,7 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_mysql) -> 
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_config) -> list:   # retorna  [valor_max, insertados, Actualizados]
+def procesar_tabla(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, tabla_config) -> list:   # retorna  [valor_max, insertados, Actualizados]
     param.debug="Inicio"
 
     try:
@@ -257,7 +265,7 @@ def procesar_tabla(param: InfoTransaccion, conn_mysql, entidad, tabla, tabla_con
             if tabla_config["proceso_carga"]:
                 resultados = proceso_especifico.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
             else:
-                resultados = proceso_general.proceso(param, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
+                resultados = proceso_general.proceso(param, conn_sqlserver, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config)
             # ----------------------------------------------------------------------------------------
         else:
             resultados = [0, 0, 0, "Sin conexión a la BBDD"]

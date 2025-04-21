@@ -253,10 +253,11 @@ def carga (param: InfoTransaccion, excel):
         # Confirmar transacciones y cerrar conexión
         conn_mysql.commit()
 
-        return [f"Registros insertados: {insertados}",
-                f"Registros modificados: {modificados}",
-                f"Registros eliminados: {eliminados}"
-               ]
+        # return [f"<ul><li>Registros insertados: {insertados}</li>",
+        #         f"<li>Registros modificados: {modificados}</li>",
+        #         f"<li>Registros eliminados: {eliminados}[</li></ul>"
+        #        ]
+        return [f"<ul><li>Registros insertados: {insertados}</li><li>Registros modificados: {modificados}</li><li>Registros eliminados: {eliminados}[</li></ul>"]
 
     except Exception as e:
         param.error_sistema(e=e, debug="carga.Exception")

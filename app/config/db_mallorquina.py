@@ -108,8 +108,8 @@ def get_db_connection_sqlserver(conexion_json):
 #----------------------------------------------------------------------------------------
 def close_connection_sqlserver(conn, cursor):
     try:
-        if conn is not None:
-            if cursor is not None:
+        if conn:
+            if cursor:
                 cursor.close()
             conn.close()
     

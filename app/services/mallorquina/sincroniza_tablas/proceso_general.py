@@ -3,7 +3,7 @@ import re
 
 from app.utils.utilidades import graba_log, imprime
 
-from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
+# from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
 
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
@@ -12,7 +12,7 @@ from app.utils.mis_excepciones import MiException
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config) -> list:  # retorna el [valor_max, insertados, Actualizados]
+def proceso(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config) -> list:  # retorna el [valor_max, insertados, Actualizados]
     param.debug="proceso_general"
     cursor_mysql = None # para que no de error en el finally
     valor_max = None
@@ -33,7 +33,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         # z=1/0
 
         while True:
-            registros,lista_pk,lista_max_valor,txt_conexion = Obtener_datos_origen(param, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor) # , salto)
+            registros,lista_pk,lista_max_valor,txt_conexion = Obtener_datos_origen(param, conn_sqlserver, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor) # , salto)
             if len(registros) == 0:
                 break
 
@@ -144,27 +144,26 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
 #     )
 
 
-def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor) -> list: 
+def Obtener_datos_origen(param: InfoTransaccion, conn_sqlserver, entidad, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor) -> list: 
     param.debug="Inicio"
-    conn_sqlserver = None # para que no de error en el finally
     cursor_sqlserver = None # para que no de error en el finally
     registros = []
     lista_pk = []
 
     try:
         param.debug = "conn origen"
-        try:
-            # conextamos con esta bbdd origen
-            conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-        except Exception as e:
-            return [ [], [], [], "No se ha podido conectar con la BBDD origen"]
+        # conextamos con esta bbdd origen
+        # conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+        # if (not conn_sqlserver):
+        #     return [ [], [], [], "No se ha podido conectar con la BBDD origen"]
+
+        if not ult_valor:
+            param.debug = f"No hay ult_valor para la tabla {nombre_tabla}, con los campos {campos_PK}"
+            raise ValueError("No se ha proporcionado un valor para ult_valor.")
 
         # Leer datos desde SQL Server
         param.debug = "crear cursor"
         cursor_sqlserver = conn_sqlserver.cursor()
-        if not ult_valor:
-            param.debug = f"No hay ult_valor para la tabla {nombre_tabla}, con los campos {campos_PK}"
-            raise ValueError("No se ha proporcionado un valor para ult_valor.")
 
         # Contruimos la SELECT que va a recoger los datos de ORIGEN
         param.debug = "Construir Select"
@@ -186,9 +185,9 @@ def Obtener_datos_origen(param: InfoTransaccion, entidad, bbdd_config, nombre_ta
         param.error_sistema(e=e, debug="Obtener_datos_origen.Exception")
         raise 
 
-    finally:
-        param.debug = f"cierra conexión sqlserver: {param.debug}"
-        close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
+    # finally:
+    #     param.debug = f"cierra conexión sqlserver: {param.debug}"
+    #     close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------

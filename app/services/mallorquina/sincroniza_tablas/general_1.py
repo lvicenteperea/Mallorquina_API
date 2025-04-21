@@ -16,7 +16,6 @@ SALTO: int = 500
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config) -> list:
     param.debug="General_1"
-    conn_sqlserver = None
 
     try:
         campos_origen = [campo['Nombre'] for campo in campos]
@@ -45,14 +44,10 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         hasta = desde + timedelta(days=1)
         # ------------------------------------------------------------------------------------------------------------------------
 
-        param.debug = "conn origen"
-        # conextamos con esta bbdd origen
-        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-
         # Hacer un bucle por fechas pedidas
         empieza = datetime.now()
         # ------------------------------------------------------------------------------------------------------------------------
-        registros = obtener_y_grabar(param, conn_sqlserver, conn_mysql, entidad, tabla, desde, hasta, dias, campos_origen, campos_destino, tabla_config)
+        registros = obtener_y_grabar(param, bbdd_config, conn_mysql, entidad, tabla, desde, hasta, dias, campos_origen, campos_destino, tabla_config)
         # ------------------------------------------------------------------------------------------------------------------------
         imprime([f"Segundos: {(datetime.now()-empieza).total_seconds()}",
                  f"Registros: {len(registros)} - desde {empieza} a {datetime.now()}"], 
@@ -64,85 +59,85 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         param.error_sistema(e=e, debug="General_1.proceso")
         raise e
 
-    finally:
-        # param.debug = f"cierra conexión sqlserver: {param.debug}"
-        close_connection_sqlserver(conn_sqlserver, None)
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, desde, hasta, dias, campos_origen, campos_destino, tabla_config) -> list:
+def obtener_y_grabar(param: InfoTransaccion, bbdd_config, conn_mysql, entidad, tabla, desde, hasta, dias, campos_origen, campos_destino, tabla_config) -> list:
     param.debug="Obtener_datos_origen"
+    conn_sqlserver = None
     stIdEnt = entidad["stIdEnt"]
     valor_max = None
     insertados = 0
     actualizados = 0
     registros = [valor_max, insertados, actualizados]
 
-    
-
     try:
-        # Leer datos desde SQL Server
-        param.debug = "crear cursor"
-        cursor_sqlserver = conn_sqlserver.cursor()
-       
-        # --------------------------------------------------------------------------------
-        param.debug = "Inicio 1733" 
-        vez = 1
-        while vez <= dias:
-            pos = 0
-            while True:
-                param.debug = f"Ejecución select {vez}"
-                cadena_select = ', '.join(campos_origen)
-                match = re.search(r"t\..*?\]", tabla_config['where'])
-                if match:
-                    orden = match.group()  # Captura toda la coincidencia
-                else:
-                    raise ValueError("No tenemos ORDEN")
+        param.debug = "conn origen"
+        # conextamos con esta bbdd origen
+        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
 
-                select_query = f"""SELECT {cadena_select.replace("{0}", f"{entidad['ID']}  as id_entidad" )} 
-                                     FROM {tabla_config['Tabla_Origen']} t
-                                    WHERE t.stIdEnt = ? 
-                                      AND {tabla_config['where']} --  where debe llevar un formato con dos parametros tipo: "t.[Fecha] >= ?  AND t.[Fecha] < ?"  o "? = ?"
-                                    ORDER BY {orden} -- t.[Fecha_Hora]
-                                    OFFSET ? ROWS            -- Salta x filas
-                                    FETCH NEXT {SALTO} ROWS ONLY; -- Toma las siguientes SALTO lineas
-                                """
-                if pos == 0:
-                    imprime([select_query, stIdEnt, desde, hasta, pos], "* -- QUERY -- ", 2)
-
-                cursor_sqlserver.execute(select_query, (stIdEnt, desde, hasta, pos)) 
-                datos = cursor_sqlserver.fetchall()
-                if len(datos) == 0:   # hemos terminado
-                    break
-
-                # -----------------------------------------------------------------------------------
-                param.debug = "Llamada a Grabar"
-                valor_max, insertados, actualizados = grabar_datos(param, conn_mysql, entidad['id_bbdd'], datos, hasta, campos_destino, tabla_config)
-                # -----------------------------------------------------------------------------------
-
-                registros[0]  = valor_max
-                registros[1] += insertados
-                registros[2] += actualizados
-                pos          += SALTO
-
-            # FIN DIA
-            # actualizamos control y COMMIT
-            cursor_mysql = conn_mysql.cursor()
-            param.debug = "Execute fec_ult_act"
-            cursor_mysql.execute("""UPDATE mll_cfg_tablas_entidades
-                                    SET Fecha_Ultima_Actualizacion = %s, 
-                                        ult_valor = COALESCE(%s, ult_valor)
-                                    WHERE ID = %s""",
-                                (datetime.now(), f'{hasta.strftime("%Y-%m-%d")}, 1', tabla["ID"]) # lo hacemos con el hasta porque hemos cargado < HASTA
-                                )
-            conn_mysql.commit()
+        if conn_sqlserver:
+            # Leer datos desde SQL Server
+            param.debug = "crear cursor"
+            cursor_sqlserver = conn_sqlserver.cursor()
         
-            desde = hasta
-            hasta = desde + timedelta(days=1)
-            vez += 1
+            # --------------------------------------------------------------------------------
+            param.debug = "Inicio 1733" 
+            vez = 1
+            while vez <= dias:
+                pos = 0
+                while True:
+                    param.debug = f"Ejecución select {vez}"
+                    cadena_select = ', '.join(campos_origen)
+                    match = re.search(r"t\..*?\]", tabla_config['where'])
+                    if match:
+                        orden = match.group()  # Captura toda la coincidencia
+                    else:
+                        raise ValueError("No tenemos ORDEN")
 
-        cursor_sqlserver.close()
-        # ---------------------------------------------------------------
+                    select_query = f"""SELECT {cadena_select.replace("{0}", f"{entidad['ID']}  as id_entidad" )} 
+                                        FROM {tabla_config['Tabla_Origen']} t
+                                        WHERE t.stIdEnt = ? 
+                                        AND {tabla_config['where']} --  where debe llevar un formato con dos parametros tipo: "t.[Fecha] >= ?  AND t.[Fecha] < ?"  o "? = ?"
+                                        ORDER BY {orden} -- t.[Fecha_Hora]
+                                        OFFSET ? ROWS            -- Salta x filas
+                                        FETCH NEXT {SALTO} ROWS ONLY; -- Toma las siguientes SALTO lineas
+                                    """
+                    if pos == 0:
+                        imprime([select_query, stIdEnt, desde, hasta, pos], "* -- QUERY -- ", 2)
+
+                    cursor_sqlserver.execute(select_query, (stIdEnt, desde, hasta, pos)) 
+                    datos = cursor_sqlserver.fetchall()
+                    if len(datos) == 0:   # hemos terminado
+                        break
+
+                    # -----------------------------------------------------------------------------------
+                    param.debug = "Llamada a Grabar"
+                    valor_max, insertados, actualizados = grabar_datos(param, conn_mysql, entidad['id_bbdd'], datos, hasta, campos_destino, tabla_config)
+                    # -----------------------------------------------------------------------------------
+
+                    registros[0]  = valor_max
+                    registros[1] += insertados
+                    registros[2] += actualizados
+                    pos          += SALTO
+
+                # FIN DIA
+                # actualizamos control y COMMIT
+                cursor_mysql = conn_mysql.cursor()
+                param.debug = "Execute fec_ult_act"
+                cursor_mysql.execute("""UPDATE mll_cfg_tablas_entidades
+                                        SET Fecha_Ultima_Actualizacion = %s, 
+                                            ult_valor = COALESCE(%s, ult_valor)
+                                        WHERE ID = %s""",
+                                    (datetime.now(), f'{hasta.strftime("%Y-%m-%d")}, 1', tabla["ID"]) # lo hacemos con el hasta porque hemos cargado < HASTA
+                                    )
+                conn_mysql.commit()
+            
+                desde = hasta
+                hasta = desde + timedelta(days=1)
+                vez += 1
+
+            cursor_sqlserver.close()
+            # ---------------------------------------------------------------
 
         return registros
 
@@ -150,6 +145,9 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
         param.error_sistema(e=e, debug="Ganeral_1.Obtener_y_grabar")
         raise 
         
+    finally:
+        # param.debug = f"cierra conexión sqlserver: {param.debug}"
+        close_connection_sqlserver(conn_sqlserver, None)
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------

@@ -95,9 +95,7 @@ async def login(request: Request,
         if not user_bbdd:
             raise HTTPException(status_code=401, detail="El Usuario y la Contraseña no son credenciales válidas")
 
-        imprime([user_bbdd["id"]], "*")
         # Ejecutar la consulta
-        # cursor_mysql.execute("SELECT texto, accion FROM mallorquina.hxxi_users_opciones WHERE id_username = %s AND orden != 0 ORDER BY orden", (user_bbdd["id"],))
         cursor_mysql.execute("""SELECT a.texto, a.accion 
                                   FROM hxxi_opciones  a
                                  INNER join hxxi_users_opciones b on a.id = b.id_opcion

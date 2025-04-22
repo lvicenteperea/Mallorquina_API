@@ -71,7 +71,15 @@ app.add_exception_handler(TypeError, type_error_handler)
 # Configurar CORS para permitir peticiones desde React (localhost:3000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Puedes restringirlo a ["http://localhost:3000"] si solo es React
+    # allow_origins=["*"],  # Puedes restringirlo a ["http://localhost:3000"] si solo es React
+
+    allow_origins=[
+        "*",
+        "http://localhost:3000",                       # ✅ tu frontend local
+        "https://intranet.pastelerialamallorquina.es"  # si también llamas desde producción
+    ],
+
+
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

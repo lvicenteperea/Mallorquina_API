@@ -7,8 +7,11 @@ class Settings(BaseSettings):
 
     # Rutas, estas deben ser del servidor donde se encuentre la web
     WEB_RUTA_LOCAL: str = "http://localhost:3000/" # "C:/GitHub/Mallorquina_API/"
-    # WEB_RUTA_LOCAL: str = "http://intranet.pastelerialamallorquina.es/" # "C:/GitHub/Mallorquina_API/"
+    # WEB_RUTA_LOCAL: str = "https://intranet.pastelerialamallorquina.es/" # "C:/GitHub/Mallorquina_API/"
     WEB_RUTA_IMAGEN: str = "img/" # "app/ficheros/imagen/"
+    CORS_ALLOWED_ORIGINS: list[str] = ["http://localhost:3000",
+                                       "https://intranet.pastelerialamallorquina.es",
+                                      ]
 
     RUTA_LOCAL: str = "C:/GitHub/Mallorquina_API/"
     RUTA_IMAGEN: str = "app/ficheros/imagen/"
@@ -34,7 +37,7 @@ class Settings(BaseSettings):
     MYSQL_DB_HOST_MLL: str = "127.0.0.1"
     MYSQL_DB_PORT_MLL: int = 3306
     MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD_MLL: str = 'Admin'  # Añadimos anotación de tipo
+    MYSQL_DB_PWD_MLL: str = 'admin'  # Añadimos anotación de tipo
     MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
     MYSQL_DB_DATABASE_MLL: str = 'mallorquina'  # Añadimos anotación de tipo
     MYSQL_DB_CHARSET: str = "utf8mb4"

@@ -8,12 +8,13 @@
 
 from fastapi import FastAPI, HTTPException #, Request  #, Depends
 from fastapi.middleware.cors import CORSMiddleware
-# from fastapi.responses import JSONResponse
 
 # from app.api.routes import router as api_router
 from app.api.routes.mll_router import router as mallorquina_router
 from app.api.routes.auth_router import router as auth_router
 from app.api.routes.email_router import router as email_router
+from app.config.settings import settings
+
 
 from app.middleware.auth import AuthMiddleware
 import json 
@@ -71,7 +72,12 @@ app.add_exception_handler(TypeError, type_error_handler)
 # Configurar CORS para permitir peticiones desde React (localhost:3000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Puedes restringirlo a ["http://localhost:3000"] si solo es React
+    #  allow_origins=["*"],  # Puedes restringirlo a ["http://localhost:3000"] si solo es React
+    allow_origins= settings.CORS_ALLOWED_ORIGINS,
+# [
+#     "http://localhost:3000",
+#     "https://intranet.pastelerialamallorquina.es",
+# ]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

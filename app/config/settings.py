@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     MYSQL_DB_HOST_MLL: str = "127.0.0.1"
     MYSQL_DB_PORT_MLL: int = 3306
     MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD_MLL: str = 'admin'  # Añadimos anotación de tipo
+    MYSQL_DB_PWD_MLL: str = 'Admin'  # Añadimos anotación de tipo
     MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
     MYSQL_DB_DATABASE_MLL: str = 'mallorquina'  # Añadimos anotación de tipo
     MYSQL_DB_CHARSET: str = "utf8mb4"

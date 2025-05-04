@@ -1,0 +1,90 @@
+{
+    "info": {
+        "_postman_id": "a146927d-7f55-4706-bc86-7ae2c06eb6ec",
+        "name": "email",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "Grabar Email",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:8000/email/eml_grabar_email",
+                    "path": [
+                        "email",
+                        "eml_grabar_email"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"id_App\": 1,\n  \"user\": \"usuario_dev\",\n  \"ret_code\": 0,\n  \"ret_txt\": \"Ok\",\n  \"id_servidor\": 1,\n  \"id_participante\": null,\n  \"para\": [\"lvicenteperea@gmail.com\"],\n  \"para_nombre\": \"Luis\",\n  \"de\": \"lvicente@hangarxxi.com\",\n  \"de_nombre\": \"LV\",\n  \"cc\": null,\n  \"bcc\": null,\n  \"prioridad\": 1,\n  \"reply_to\": \"lvicente@hangarxxi.com\",\n  \"clave_externa\": \"Prueba\",\n  \"asunto\": \"Asunto de mi correo\",\n  \"cuerpo\": \"Cuerpo de mi correo\",\n  \"lenguaje\": \"es\",\n  \"parametros\": {\"Var2\": \"Valor Var2\"},\n  \"fecha_envio\": \"2025-01-01 00:00:00\",\n  \"identificador_externo\": \"Identificador\",\n  \"ficheros\": [{\"dd\":\"dd\"}]\n}"
+                }
+            }
+        },
+        {
+            "name": "Envia Email",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8000/email/eml_envia_emails?id_App=1&user=usuario_dev&ret_code=0&ret_txt=\"OK\"&servidor=14",
+                    "query": [
+                        {
+                            "key": "id_App",
+                            "value": "1"
+                        },
+                        {
+                            "key": "user",
+                            "value": "usuario_dev"
+                        },
+                        {
+                            "key": "ret_code",
+                            "value": "0"
+                        },
+                        {
+                            "key": "ret_txt",
+                            "value": "\"OK\""
+                        },
+                        {
+                            "key": "servidor",
+                            "value": "14"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "email",
+                        "eml_envia_emails"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8000"
+                },
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiZGVzYXJyb2xsbyIsImlkX0FwcCI6MSwiZXhwIjoxNzM3MDI3NTUxfQ.uQvN9U8RqD5aD25FGNn5daZPCMqHsYPX4XbY0bpOkd4"
+                    }
+                ]
+            }
+        }
+    ]
+}

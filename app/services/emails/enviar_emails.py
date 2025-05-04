@@ -207,7 +207,7 @@ def enviar_email(param: InfoTransaccion, conn_mysql, email, datos_conexion, serv
         # Configurar BCC (Con Copia Oculta)
         param.debug = "bcc"
         lista = robinson(param, conn_mysql, email.get("bcc", []), servidor)
-        bcc_emails = [Cc(dest) for dest in lista] if len(lista)>0 else []
+        bcc_emails = [Bcc(dest) for dest in lista] if len(lista)>0 else []
 
         # Configurar contenido del email
         param.debug = "asunto"
@@ -217,6 +217,32 @@ def enviar_email(param: InfoTransaccion, conn_mysql, email, datos_conexion, serv
         # Construcción del email
         param.debug = "Mail"
         mail = Mail(from_email, to_emails, subject, content)
+
+        """
+        # Adjuntar archivos si existen
+        param.debug = "adjuntos"
+        if email.get("adjuntos"):
+            for adjunto in email["adjuntos"]:  # cada adjunto debe tener: nombre_archivo, tipo_mime, contenido (base64)
+                try:
+                    attachment = Attachment()
+                    attachment.file_content = FileContent(adjunto["contenido"])
+                    attachment.file_type = FileType(adjunto["tipo_mime"])
+                    attachment.file_name = FileName(adjunto["nombre_archivo"])
+                    attachment.disposition = Disposition("attachment")
+                    mail.add_attachment(attachment)
+                except Exception as e:
+                    imprime(adjunto, "*Error adjunto")
+                    raise MiException(param, detail=f"Error en adjunto: {e}", status_code=-1)
+
+        # Formato del campo email["adjuntos"] esperado:
+        # {
+        #     "nombre_archivo": "informe.pdf",
+        #     "tipo_mime": "application/pdf",
+        #     "contenido": base64.b64encode(open("ruta/al/archivo.pdf", "rb").read()).decode()
+        # }
+        """
+
+
 
         # Agregar CC y BCC si existen
         param.debug = "cc y bcc"
@@ -238,6 +264,7 @@ def enviar_email(param: InfoTransaccion, conn_mysql, email, datos_conexion, serv
         if response.status_code in [200, 202]:
             return [0, "Ok"]
         else:
+            imprime([response, datos_conexion, "Fin"], "* Error SendGrid", 2)
             return [-1, f"Error: {response}"]
 
 

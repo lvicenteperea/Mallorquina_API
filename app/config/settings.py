@@ -5,6 +5,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "MALLORQUIA API"
 
+    DEV_PROD: str = "DEV" # Cambia a "PROD" para producción
+
     # Rutas, estas deben ser del servidor donde se encuentre la web
     WEB_RUTA_LOCAL: str = "http://localhost:3000/" # "C:/GitHub/Mallorquina_API/"
     # WEB_RUTA_LOCAL: str = "https://intranet.pastelerialamallorquina.es/" # "C:/GitHub/Mallorquina_API/"

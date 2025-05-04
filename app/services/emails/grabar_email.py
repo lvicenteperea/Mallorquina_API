@@ -44,6 +44,7 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         # parametros= param.parametros[14]
         # fecha_envio= param.parametros[15]
         # identificador_externo= param.parametros[16]
+        # ficheros = param.parametros[17] --> [{"nombre_archivo": "informe.pdf", "tipo_mime": "application/pdf", "contenido": base64.b64encode(open("ruta/al/archivo.pdf", "rb").read()).decode()}, ..]
 
         # añadimos a parametros un cero, ya que es el del registro creado en caso de OK que retornamos en PARAM
         param.parametros.append(0) 
@@ -51,10 +52,10 @@ def proceso(param: InfoTransaccion) -> InfoTransaccion:
         param = call_proc_bbdd(param=param, procedimiento="w_mail_graba_mail")
 
         # Verificar si el procedimiento devolvió un error
-        # if param.ret_code < 0:
-        #     param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_mail")
-        #     # raise MiException(param=param)
-        #     graba_log(param, f"Excepción en {funcion}", None)
+        if param.ret_code < 0:
+            param.registrar_error(ret_code = param.ret_code, ret_txt=param.ret_txt, debug="llamada a procedimiento: w_mail_graba_mail")
+            graba_log(param, f"Excepción en {funcion}", None)
+            raise MiException(param=param)
 
         return param
 

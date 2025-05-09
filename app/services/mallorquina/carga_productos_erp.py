@@ -71,6 +71,7 @@ def carga (param: InfoTransaccion, excel):
             'Composición_para_etiqueta': 'composicion_etiqueta',
             'Composición_completa': 'composicion_completa',
             'temporada': 'temporada',
+            'Descatalogado': 'descatalogado',
             #'familia_cod': 'familia_cod',
             'Descripción': 'familia_desc',
             'grupo_de_carta': 'grupo_de_carta',
@@ -128,8 +129,12 @@ def carga (param: InfoTransaccion, excel):
         # Procesar registros del Excel
         for x, row in df.iterrows():
             row = row.fillna('')  # Reemplazar valores NaN con cadenas vacías
-            if row["Codigo_alergenos"] == '':  # Verificar si el valor está vacío
-                row["Codigo_alergenos"] = "0"  # Asignar "0" si está vacío
+            if not row["Descripción"].startswith(("4-", "2-")):
+                row["Listado_alergenos"]  = 'No'   # Me da igual lo que diga el listado de alergenos, si no es de estos grupos, no sale en el listado
+            if row["Codigo_alergenos"] == '':      # Verificar si el valor está vacío
+                row["Codigo_alergenos"] = "0"      # Asignar "0" si está vacío
+            if row["Listado_alergenos"] == '':
+                row["Listado_alergenos"]  = 'No'
 
             row["alta_tpv"] = "Sí" if row["alta_tpv"].strip().lower() in ["sí", "si"] else "No"
             row["alta_glovo"] = "Sí" if row["alta_glovo"].strip().lower() in ["sí", "si"] else "No"

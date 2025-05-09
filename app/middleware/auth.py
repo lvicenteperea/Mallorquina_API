@@ -73,7 +73,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Obtener token del encabezado Authorization
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
-            imprime([auth_header, request.headers.get("Authorization"), request.url.path], "*")
+            # imprime([auth_header, request.headers.get("Authorization"), request.url.path], "*")
             return JSONResponse({"detail": "Autenticación requerida1"}, status_code=401)
 
         token = auth_header.split(" ")[1]
@@ -84,7 +84,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return JSONResponse({"detail": "Autenticación requerida2"}, status_code=401)
 
         request.state.user = self.get_current_user(token)
-        imprime([request.state.user, token], "* AUTH", 2)
+        # imprime([request.state.user, token], "* AUTH", 2)
 
         return await call_next(request)
 

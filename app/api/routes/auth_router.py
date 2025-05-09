@@ -165,11 +165,9 @@ async def register(register_request: RegisterRequest,
                 ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                ):
     try:
-        imprime([register_request], "* Registro1", 2)
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
-        imprime([param], "* Registro2", 2)
 
         param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()

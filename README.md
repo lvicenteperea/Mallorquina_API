@@ -1,4 +1,11 @@
- 
+# uvicorn app.main:app --reload
+# python -m uvicorn app.main:app --reload
+# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+
+
+
+
 Sobre los servicios:
 Estos siempre han de recibir 4 parametros, los cuatro primeros y por este orden:
     - id_App: Obligatorio, neceistamos saber que aplicación es la que está intentando acceder

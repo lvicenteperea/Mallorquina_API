@@ -84,6 +84,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return JSONResponse({"detail": "Autenticación requerida2"}, status_code=401)
 
         request.state.user = self.get_current_user(token)
+        imprime([request.state.user, token], "* AUTH", 2)
 
         return await call_next(request)
 

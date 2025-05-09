@@ -1,11 +1,3 @@
-# Lo siguiente:
-#     utilizar los middleware
-
-
-# uvicorn app.main:app --reload
-# python -m uvicorn app.main:app --reload
-# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
 from fastapi import FastAPI, HTTPException #, Request  #, Depends
 from fastapi.middleware.cors import CORSMiddleware
 

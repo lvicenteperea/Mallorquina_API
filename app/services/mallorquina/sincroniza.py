@@ -134,7 +134,7 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
             lista_entidades = cursor_mysql.fetchall()
 
             for entidad in lista_entidades:
-                imprime([f"📒 Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", entidad], "-")
+                imprime([f"📒 Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", tienda_bbdd["Nombre"]], "-")
                 
                 # -------------------------------------------------------------------------
                 param.debug = "por tablas"
@@ -215,13 +215,15 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_sqlserver,
 
                 # -----------------------------------------------------------------------------------------
                 resultados = procesar_tabla(param, conn_sqlserver, conn_mysql, entidad, tabla, tabla_config)
+                # por si hay algún tipo de error:
+                r = resultados if isinstance(resultados, list) and len(resultados) >= 4 else [-1, -1, -1, -1]
                 resultado.append( {"nombre_bbdd": nombre_bbdd, 
                                    "entidad": entidad['Nombre'],
                                    "tabla_origen": tabla_config["Tabla_Origen"],
-                                    "valor_max": resultados[0],
-                                    "insertados": resultados[1],
-                                    "actualizados": resultados[2],
-                                    "error": resultados[3]
+                                    "valor_max": r[0],
+                                    "insertados": r[1],
+                                    "actualizados": r[2],
+                                    "error": r[3]
                                 } )
                 # -----------------------------------------------------------------------------------------
        

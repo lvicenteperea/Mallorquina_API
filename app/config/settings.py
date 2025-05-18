@@ -15,7 +15,7 @@ class Settings(BaseSettings):
                                        "https://intranet.pastelerialamallorquina.es",
                                       ]
 
-    RUTA_LOCAL: str = "C:/GitHub/Mallorquina_API/" # /opt/MALLORQUINBA_API/
+    RUTA_LOCAL: str = "E:/Nube/Github/Mallorquina_API" # "C:/GitHub/Mallorquina_API/" # /opt/MALLORQUINBA_API/
     RUTA_IMAGEN: str = "app/ficheros/imagen/"
     RUTA_BASE: str = "app/ficheros/"
     RUTA_DATOS: str = "app/ficheros/datos/"
@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     MYSQL_DB_HOST_MLL: str = "127.0.0.1"
     MYSQL_DB_PORT_MLL: int = 3306
     MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD_MLL: str = 'Admin'  # Añadimos anotación de tipo
+    MYSQL_DB_PWD_MLL: str = 'admin'  # Añadimos anotación de tipo
     MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
     MYSQL_DB_DATABASE_MLL: str = 'mallorquina'  # Añadimos anotación de tipo
     MYSQL_DB_CHARSET: str = "utf8mb4"

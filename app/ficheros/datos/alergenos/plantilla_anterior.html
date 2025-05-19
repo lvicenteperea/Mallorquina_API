@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Alergenos La Mallorquina</title>
+      <style>
+        * {
+           margin: 0;
+           padding: 0;
+           /* box-sizing: border-box; */
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            /* box-sizing: border-box; */
+        }
+        .header {
+            text-align: center;
+            /* padding: 20px; */
+            background-color: #fff;
+            /* border-top: 2px solid #f89aba; */
+        }
+        .header img { /* xxx */
+            max-width: 400px;
+            margin-bottom: 10px;
+        }
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+        }         
+        .container {             
+            /*width: 90%;*/
+            max-width: 21cm;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .main {
+           flex: 1;
+           padding: 20px;
+           overflow-y: auto;
+        }
+        .main-title { /* xxx */
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle { /* xxx */
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .legend { /* xxx */
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .legend span { /* xxx */
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+
+        .footer {
+           background-color: #333;
+           color: white;
+           padding: 10px 20px;
+           text-align: center;
+           position: sticky;
+           bottom: 0;
+        }
+
+
+        .allergen-icons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px auto;
+        }
+
+        .allergen {
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .allergen img {
+            display: block;
+            margin: 0 auto 5px;
+            width: 50px;
+            height: 50px;
+        }
+        /* Para el indice o listado de alergenos*/
+        .index-section {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 1200px;
+            /* border: 1px solid #000; */
+            border-collapse: collapse;
+            page-break-after: always;
+        }
+        .index-section th:first-child, td:first-child {
+            width: 30%; /* Primera columna 30% */
+            padding: 1px;
+            text-align: left;
+            font-weight: bold;
+            /* background-color: #fff1f6; */
+            /* border: 1px solid #000; */
+        }
+        .index-section th:nth-child(n+2), td:nth-child(n+2) {
+            width: 5%; /* Últimas 14 columnas 5% cada una */
+            padding: 1px;
+            text-align: left;
+            font-weight: bold;
+            background-color: #fff1f6;
+            border: 1px solid #000;
+        }
+        .index-section th {
+            background-color: #ffffff;
+            color: #000000;
+            /* border: 1px solid #000; */
+        }
+
+        .body-index {
+            font-size: 8px;
+            text-align: center;
+        }
+        .lista-producto {
+            text-align: left;
+            font-weight: bold;
+            color:#000000;
+            background-color: #ffffff;
+            font-family: Poppins, sans-serif;
+        }
+        .lista-producto a {
+            text-decoration: none; /* Elimina el subrayado */
+            color: inherit; /* Hereda el color definido en .lista-producto */
+            font-family: inherit; /* Hereda la fuente definida en .lista-producto */
+        }
+        .lista-familia {
+            font-size: 10px;
+            text-align: left;
+            font-weight: bold;
+            color:#ffffff;
+            background-color: #f98fb3;
+            font-family: Poppins, sans-serif;
+        }
+        .lista-X {
+            text-align: center;
+            font-weight: bold;
+            background-color: #ffffff;
+        }
+        .lista-T {
+            text-align: center;
+            font-weight: bold;
+            color: #ff0000;
+            background-color: #ffffff;
+        }
+        /* FIN Para el indice o listado de alergenos*/
+
+        .ficha {
+            margin-bottom: 30px; /* Espaciado entre fichas */
+            border: 2px solid #000000;
+            font-size: 12px;
+        }
+        .ficha h1 {
+            background-color: #f4f4f4;
+            padding: 10px;
+            /* margin: 0 -5px 5px -5px; */
+            border: 1px solid #000;
+        }
+       
+        .separador-fichas{
+            page-break-after: always;
+        }
+
+        .separador-fichas:not(:last-child) {
+           page-break-after: always; /* Salto de página después de cada ficha, excepto la última */
+        }
+           
+        .seccion-fichas {
+            margin-top: 20px;
+            border: 1px solid #000;
+            padding: 15px;
+        }
+
+        .seccion-fichas h2 {
+            background-color: #f4f4f4;
+            padding: 5px;
+            margin: 0 -5px 5px -5px;
+        }
+
+
+        table.tabla-fichas-alerg {
+            width: 100%; /* La tabla ocupa el 100% del ancho disponible */
+            border-collapse: collapse;
+        }
+
+        table.tabla-fichas-alerg th, table.tabla-fichas-alerg td {
+            border: 1px solid #ccc; /* Bordes para la tabla */
+            padding: 8px; /* Espaciado interno */
+            text-align: left; /* Por defecto, texto alineado a la izquierda */
+        }
+        table.tabla-fichas-alerg th {
+            width: auto; /* Ajusta automáticamente al contenido sobrante */
+            text-align: center; /* Centra el texto horizontalmente */
+            background-color: #f89aba
+        }
+        /* Columnas 1 y 3 ocupan el máximo espacio */
+        table.tabla-fichas-alerg td:nth-child(1),
+        table.tabla-fichas-alerg td:nth-child(3) {
+            width: auto; /* Ajusta automáticamente al contenido sobrante */
+            font-weight: normal !important; /* Asegura que el texto no sea negrita */
+        }
+        /* Columnas 2 y 4 ocupan el mínimo espacio y están centradas */
+        table.tabla-fichas-alerg td:nth-child(2),
+        table.tabla-fichas-alerg td:nth-child(4) {
+            width: 1%; /* Ocupa el mínimo espacio necesario */
+            white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+            text-align: center; /* Centra el texto horizontalmente */
+        }
+        .tabla-fichas {
+            width: 80%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #000;
+            margin: 0 auto; /* Centramos la tabla horizontalmente */
+        }
+        .tabla-fichas th{
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #000;
+            background-color: #f89aba
+        }
+        .tabla-fichas td {
+            /* padding: 10px; */
+            text-align: left;
+            border: 1px solid #000;
+        }
+        .tabla-fichas th.tabla-fichas, table td.tabla-fichas {
+            width: calc(50% - 50px);
+        }
+        th.tabla-fichas, table td.tabla-fichas {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #000;
+        }
+
+        .tabla-fichas-uso {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #000;
+            margin: 0 auto; /* Centramos la tabla horizontalmente */
+        }
+        .tabla-fichas-uso td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            vertical-align: top; /* Alinear contenido arriba */
+            font-weight: normal !important; /* Asegura que el texto no sea negrita */
+            background-color: #ffffff
+        }
+
+        .tabla-fichas-uso td:first-child {
+            width: 30%; /* Primera columna con ancho fijo del 30% */
+        }
+
+        .tabla-fichas-uso td:last-child {
+            width: 70%; /* Segunda columna toma el resto (flexible) */
+        }
+
+
+
+        ul {
+            margin-left: 20px;
+        }
+        li {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+  <div id="inicio" class='container'>
+    <header class="header">
+        <img src="{LOGO}" alt="La Mallorquina">
+        <h1 class="main-title">{titulo_principal}</h1>
+        <p class="subtitle">En cumplimiento de la Ley de Información Alimentaria en materia de alérgenos y del Reglamento Europeo 1169/2011.</p>
+        <div class="legend">
+            <span>X = Contiene como ingrediente</span>
+            <span>T (Trazas) = Puede contener</span>
+        </div>
+    </header>
+
+    <section class="allergen-icons">
+        <div class="allergen">
+            <img src="{Gluten}" alt="Gluten">
+            <p>Contiene gluten</p>
+        </div>
+        <div class="allergen">
+            <img src="{Huevo}" alt="Huevos">
+            <p>Huevos</p>
+        </div>
+        <div class="allergen">
+            <img src="{Altramuz}" alt="Altramuces">
+            <p>Altramuz</p>
+        </div>
+        <div class="allergen">
+            <img src="{Apio}" alt="Apio">
+            <p>Apio</p>
+        </div>
+        <div class="allergen">
+            <img src="{Cacahuetes}" alt="Cacahuetes">
+            <p>Cacahuetes</p>
+        </div>
+        <div class="allergen">
+            <img src="{Cascara}" alt="Cáscara">
+            <p>Cáscara</p>
+        </div>
+        <div class="allergen">
+            <img src="{Leche}" alt="Lacteos">
+            <p>Lacteos</p>
+        </div>
+    </section>
+
+    <section class="allergen-icons">
+        <div class="allergen">
+            <img src="{Moluscos}" alt="Moluscos">
+            <p>Moluscos</p>
+        </div>
+        <div class="allergen">
+            <img src="{Mostaza}" alt="Mostaza">
+            <p>Mostaza</p>
+        </div>
+        <div class="allergen">
+            <img src="{Pescado}" alt="Pescado">
+            <p>Pescado</p>
+        </div>
+        <div class="allergen">
+            <img src="{Sesamo}" alt="Sésamo">
+            <p>Sésamo</p>
+        </div>
+        <div class="allergen">
+            <img src="{Soja}" alt="Soja">
+            <p>Soja</p>
+        </div>
+        <div class="allergen">
+            <img src="{Sulfitos}" alt="Sulfitos">
+            <p>Sulfitos</p>
+        </div>
+        <div class="allergen">
+            <img src="{Crustaceos}" alt="Crustáceos">
+            <p>Crustáceos</p>
+        </div>
+    </section>
+
+    <main>
+        <section>
+            <table class="index-section">
+                <thead>
+                    <tr>
+                        <th>Categoría y denominación de productos</th>
+                        <th><img src="{Huevo}" alt="Huevos" width="30"></th>
+                        <th><img src="{Leche}" alt="Lacteos" width="30"></th>
+                        <th><img src="{Crustaceos}" alt="Crustáceos" width="30"></th>
+                        <th><img src="{Cascara}" alt="Cáscara" width="30"></th>
+                        <th><img src="{Gluten}" alt="Gluten" width="30"></th>
+                        <th><img src="{Pescado}" alt="Pescado" width="30"></th>
+                        <th><img src="{Altramuz}" alt="Altramuces" width="30"></th>
+                        <th><img src="{Mostaza}" alt="Mostaza" width="30"></th>
+                        <th><img src="{Cacahuetes}" alt="Cacahuetes" width="30"></th>
+                        <th><img src="{Apio}" alt="Apio" width="30"></th>
+                        <th><img src="{Sulfitos}" alt="Sulfitos" width="30"></th>
+                        <th><img src="{Soja}" alt="Soja" width="30"></th>
+                        <th><img src="{Moluscos}" alt="Moluscos" width="30"></th>
+                        <th><img src="{Sesamo}" alt="Sésamo" width="30"></th>
+                    </tr>
+                </thead>
+                <tbody class="body-index">
+                    <!-- ----------------------------------------------------------------------------
+                    --------------------------------------------------------------------------------
+                    INICIO ZONA DE INDICE
+                    --------------------------------------------------------------------------------
+                    ---------------------------------------------------------------------------- -->
+                    {indice_alergenos}
+                    <!-- ----------------------------------------------------------------------------
+                    --------------------------------------------------------------------------------
+                    INICIO ZONA DE INDICE
+                    --------------------------------------------------------------------------------
+                    ---------------------------------------------------------------------------- -->
+                </tbody>
+            </table>
+        </section>
+        <!-- ----------------------------------------------------------------------------
+         --------------------------------------------------------------------------------
+         INICIO ZONA DE FICHAS
+         --------------------------------------------------------------------------------
+         ---------------------------------------------------------------------------- -->
+        <section id='fichas'>
+            {fichas}
+        </section>
+        <!-- ----------------------------------------------------------------------------
+         --------------------------------------------------------------------------------
+         FIN ZONA DE FICHAS
+         --------------------------------------------------------------------------------
+         ---------------------------------------------------------------------------- -->
+    </main>
+    <footer>
+        <span>Fecha de actualización: {fecha}</span>
+    </footer>
+  </div>
+</body>
+</html>

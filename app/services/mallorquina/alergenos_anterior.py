@@ -32,7 +32,7 @@ def proceso(param: InfoTransaccion) -> list:
         # Consultar los datos principales  CUANDO CARGEMOS LOS PRECIOS BIEN, HAY QUE CAMBIAR el WHERE para solo coger productos que se vendan en "punto_venta"
         # if punto_venta == 0:
         cursor_mysql.execute("""SELECT distinct ID
-                                      ,IF(TRIM(nombre_alergenos) = '' OR nombre_alergenos IS NULL, nombre, nombre_alergenos) AS nombre, familia_desc
+                                      ,IF(TRIM(nombre_alergenos) = '' OR nombre_alergenos IS NULL, nombre, nombre_alergenos) AS nombre
                                       ,huevo, leche, crustaceos, cascara, gluten, pescado, altramuz, mostaza, cacahuetes, apio, sulfitos, soja, moluscos, sesamo
                                   FROM erp_productos
                                  where listado_alergenos in ('Sí', "Si")
@@ -122,11 +122,11 @@ def reemplazar_fijos(param, plantilla, punto_venta):
 
     try:
         if punto_venta == 4:
-            punto_venta_desc = None # "Tiendas" # "(Sol - Quevedo)"
+            punto_venta_desc = "Tiendas" # "(Sol - Quevedo)"
         elif punto_venta == 1:
-            punto_venta_desc = None # "Tiendas." # "(Velázquez - MG)"
+            punto_venta_desc = "Tiendas." # "(Velázquez - MG)"
         elif punto_venta == 7:
-            punto_venta_desc = None # "Tienda" # "(Salón SOL)"
+            punto_venta_desc = "Tienda" # "(Salón SOL)"
         elif punto_venta == 90:  
             punto_venta_desc = "(Catering)"
         elif punto_venta == 91:  
@@ -134,18 +134,13 @@ def reemplazar_fijos(param, plantilla, punto_venta):
         elif punto_venta == 92:  
             punto_venta_desc = "(Glovo)"
         else:
-            punto_venta_desc = None # "La Mallorquina"
+            punto_venta_desc = "La Mallorquina"
 
         ruta = os.path.join(RUTA_ICONOS, "")
         html = html.replace("{LOGO}", LOGO)
 
-        if punto_venta_desc:
-            html = html.replace("{sub_titulo_opcional}", f"<p class='glovo-subtitle'>{punto_venta_desc}</p>")
-        else:
-            html = html.replace("{sub_titulo_opcional}", "")
+        html = html.replace("{titulo_principal}", f"Alérgenos Alimentarios {punto_venta_desc}")
 
-        html = html.replace("{titulo_principal}", f"Alérgenos Alimentarios La Mallorquina")
-        # html = html.replace("<p class='glovo-subtitle'>{punto_venta_desc}</p>")
         html = html.replace("{Huevo}", f"{ruta}Huevo.ico")
         html = html.replace("{Leche}", f"{ruta}Leche.ico")
         html = html.replace("{Crustaceos}", f"{ruta}Crustaceos.ico")
@@ -188,28 +183,24 @@ def indice(param, cursor_mysql, productos, punto_venta):
             if listable(param, cursor_mysql, producto, punto_venta, producto['ID']): 
                 registros += 1
                 # if producto['familia_desc'] != familia_actual:
-                #     # indice_alergenos += f"<tr id='familia'><td colspan='15'><p class='lista-familia'>{producto['familia_desc']}</p></td></tr>\n"
-                #     indice_alergenos += f"<tr class='category-row-styling-hook'><td class='lista-familia' colspan='15'>{producto['familia_desc']}</td></tr>"
+                #     indice_alergenos += f"<tr id='familia'><td colspan='15'><p class='lista-familia'>{producto['familia_desc']}</p></td></tr>\n"
                 #     familia_actual = producto['familia_desc']
-                
 
-                indice_alergenos += f"<tr>"
-                # indice_alergenos += f"<td><p class='lista-producto'>{producto['nombre']}</p></td>"
-                indice_alergenos += f"<td class='lista-producto'>{producto['nombre']}</td>"
-
+                indice_alergenos += f"<tr id='producto'>"
+                # indice_alergenos += f"<td><p class='lista-producto'><a href='fichas/{producto['ID']}.html' target='_blank' rel='noopener noreferrer'>{producto['nombre']}</a></p></td>"
+                indice_alergenos += f"<td><p class='lista-producto'>{producto['nombre']}</p></td>"
 
                 for alergeno in ['huevo', 'leche', 'crustaceos', 'cascara', 'gluten', 'pescado', 'altramuz', 'mostaza', 'cacahuetes', 'apio', 'sulfitos', 'soja', 'moluscos', 'sesamo']:
                     valor = producto.get(alergeno, "")
                     if valor == "Sí":
-                        indice_alergenos += f"<td class='lista-X'>x</td>"
+                        indice_alergenos += f"<td><p class='lista-X'>X</p></td>"
                     elif valor == "Trazas":
-                        indice_alergenos += f"<td class='lista-T'>T</td>"
-                                            
+                        indice_alergenos += f"<td><p class='lista-T'>T</p></td>"
                     else:
-                        indice_alergenos += f"<td></td>"
+                        indice_alergenos += f"<td><p class='lista-X'>&nbsp;</p></td>"
                 indice_alergenos += "</tr>\n"
 
-        # indice_alergenos =  f"<tr> <td><p></p></td> <td><p>{registros}</p> </td><td><p></p></td> </tr> {indice_alergenos}"
+        indice_alergenos =  f"<tr> <td><p></p></td> <td><p>{registros}</p> </td><td><p></p></td> </tr> {indice_alergenos}"
 
         return indice_alergenos
     

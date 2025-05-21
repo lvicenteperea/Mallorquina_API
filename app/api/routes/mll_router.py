@@ -1,7 +1,11 @@
-from fastapi import APIRouter, HTTPException, Body, Request, Depends, File, UploadFile, Form
+from fastapi import APIRouter, HTTPException, Body, Request, Depends, File, UploadFile, Form, Query
 from typing import List, Optional
 from datetime import datetime
 import os
+from fastapi.responses import JSONResponse
+
+router = APIRouter()
+
 
 # Importaciones propias del proyecto
 from app.services.mallorquina import (
@@ -282,4 +286,41 @@ async def mll_descarga(request: Request,
         imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
 
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+# Ruta a los logs (ajusta según tu entorno con una variable de entorno o config)
+LOGS_DIR = os.getenv('LOGS_DIR', './logs')
 
+@router.get("/leer_log")
+def leer_log(
+    archivo: str = Query(..., description="Nombre del archivo de log"),
+    desde: int = Query(1, ge=1, description="Línea inicial (opcional, por defecto 1)"),
+    hasta: int = Query(None, description="Línea final (opcional, por defecto hasta el final)"),
+):
+    # Seguridad: Solo permitimos ciertos logs
+    archivos_permitidos = {"app.log", "time.log"}
+    if archivo not in archivos_permitidos:
+        raise HTTPException(status_code=400, detail="Archivo de log no permitido")
+
+    log_path = os.path.join(LOGS_DIR, archivo)
+    if not os.path.isfile(log_path):
+        raise HTTPException(status_code=404, detail="Archivo de log no encontrado")
+
+    with open(log_path, encoding="utf-8") as f:
+        lineas = f.readlines()
+
+    total_lineas = len(lineas)
+    desde = max(1, desde)
+    hasta = hasta or total_lineas
+
+    if desde > hasta or desde > total_lineas:
+        return JSONResponse(content={"lineas": [], "total": total_lineas})
+
+    # Cortamos y mostramos en orden descendente
+    lineas_seleccionadas = lineas[desde-1:hasta][::-1]
+    return {
+        "lineas": [l.rstrip('\n\r') for l in lineas_seleccionadas],
+        "total": total_lineas,
+        "desde": desde,
+        "hasta": hasta
+    }

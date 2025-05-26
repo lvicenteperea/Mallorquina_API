@@ -57,6 +57,13 @@ def proceso(param: InfoTransaccion) -> list:
 
         close_connection_mysql(conn_mysql, cursor_mysql)
 
+        # # Grabar el HTML en un archivo
+        # ruta_html = os.path.join(settings.RUTA_ALERGENOS_HTML, f"alergenos_{punto_venta}_{fec_max_mod.strftime('%Y%m%d_%H%M%S')}.html")
+        # with open(ruta_html, 'w', encoding='utf-8') as f:
+        #     f.write(html)
+
+        # imprime([f"HTML generado en: {ruta_html}"], "*")
+        
         resultado = [f"Listado generado correctamente", html]
         return resultado
     

@@ -29,40 +29,23 @@ class Settings(BaseSettings):
     # CONEXIONES
     # ----------------------------------------------------------------------------------------
     # Coenxión SSH ---------------------------------------------------------------------------
-    SSH_HOST: str = 'xxx.xxx.xxx.xxx'  # Cambia por la IP del servidor
-    SSH_PORT: int = 22  # Cambia por el puerto SSH del servidor
-    SSH_USER: str = 'user'  # Cambia por el usuario SSH del servidor
-    SSH_PWD: str = 'password'  # Cambia por la contraseña SSH del servidor
+    SSH_HOST: str = '194.164.166.153'  # Cambia por la IP del servidor
+    SSH_PORT: int = 15122  # Cambia por el puerto SSH del servidor
+    SSH_USER: str = 'lvicente'  # Cambia por el usuario SSH del servidor
+    SSH_PWD: str = 'xxxxxxx'  # Cambia por la contraseña SSH del servidor
     # SSH_key_path: str = 'mifichero.ppk' # Cambia por ssh_password si usas contraseña
     # ssh_pkey_password="si la tuviera" # Cambia por ssh_password si usas contraseña
-    # LOCAL MYSQL ----------------------------------------------------------------------------
-    SSH_CONEX: bool = False
+    # Conexión BBDD ----------------------------------------------------------------------------
+    SSH_CONEX: bool = False  # Cambia a False si no usas conexión SSH
     MYSQL_DB_HOST_MLL: str = "127.0.0.1"
-    MYSQL_DB_PORT_MLL: int = 3306
+    MYSQL_DB_PORT_MLL: int = 3306  # es el puerto de MySQL o IONOS
+    # MYSQL_DB_PORT_MLL: int = 13306   # es el puerto de MariaDB
     MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD_MLL: str = 'No.Admin'  # Añadimos anotación de tipo
-    MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
+    MYSQL_DB_PWD_MLL: str = 'admin'  # Añadimos anotación de tipo
     MYSQL_DB_DATABASE_MLL: str = 'mallorquina'  # Añadimos anotación de tipo
     MYSQL_DB_CHARSET: str = "utf8mb4"
 
-    # LOCAL MARIA DB  ------------------------------------------------------------------------
-    # SSH_CONEX: bool = False
-    # MYSQL_DB_HOST_MLL: str = "127.0.0.1"
-    # MYSQL_DB_PORT_MLL: int = 13306
-    # MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    # MYSQL_DB_PWD_MLL: str = 'root'  # Añadimos anotación de tipo
-    # MYSQL_DB_HOST_MLL: str = 'localhost'  # Añadimos anotación de tipo
-    # MYSQL_DB_DATABASE_MLL: str = 'xxxx'  # Añadimos anotación de tipo
-    # MYSQL_DB_CHARSET: str = "utf8mb4"
-    # CONEXION DEV ----------------------------------------------------------------------------
-    # SSH_CONEX: bool = True
-    # MYSQL_DB_HOST_MLL: str = "localhost"
-    # MYSQL_DB_PORT_MLL: int = 15122
-    # MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    # MYSQL_DB_PWD_MLL: str = '*****'  # Añadimos anotación de tipo
-    # MYSQL_DB_DATABASE_MLL: str = 'xxxxxxx'  # Añadimos anotación de tipo
-    # ----------------------------------------------------------------------------------------
-    
+    # ----------------------------------------------------------------------------------------    
     MONGODB_URL: str = ""
 
     ENCRYPTION_KEY: str = "ZOoYUEQNjONU2fwUv-afUuUA--Z4RZlvRL4evOY_ZJk="

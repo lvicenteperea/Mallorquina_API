@@ -37,7 +37,7 @@ def get_db_connection_mysql():
                 # Configuración de la conexión con mysql.connector
                 connection = mysql.connector.connect(
                     host='127.0.0.1',  # Siempre localhost al usar el túnel
-                    port= 3306, #tunnel.local_bind_port,
+                    port= tunnel.local_bind_port,
                     user=settings.MYSQL_DB_USER_MLL,
                     password=settings.MYSQL_DB_PWD_MLL,
                     database=settings.MYSQL_DB_DATABASE_MLL,

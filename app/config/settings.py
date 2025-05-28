@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     MYSQL_DB_PORT_MLL: int = 3306  # es el puerto de MySQL o IONOS
     # MYSQL_DB_PORT_MLL: int = 13306   # es el puerto de MariaDB
     MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD_MLL: str = 'admin'  # Añadimos anotación de tipo
+    MYSQL_DB_PWD_MLL: str = 'No.Admin'  # Añadimos anotación de tipo
     MYSQL_DB_DATABASE_MLL: str = 'mallorquina'  # Añadimos anotación de tipo
     MYSQL_DB_CHARSET: str = "utf8mb4"
 

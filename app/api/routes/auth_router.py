@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
 
 from passlib.context import CryptContext
+import pymysql
+# from mysql.connector.cursor import MySQLCursorDict
 
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.utils.utilidades import graba_log, imprime
@@ -78,15 +80,18 @@ async def login(request: Request,
                 ret_code: int = Query(..., description="Código de retorno inicial"),
                 ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                ):
+    cursor_mysql = None
+    conn_mysql = None
+    
     try:
         resultado = []
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
 
-
         param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
+        # cursor_mysql = conn_mysql.cursor(dictionary=True)
+        cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
         # Buscar usuario en la base de datos
         cursor_mysql.execute("SELECT * FROM hxxi_users WHERE username = %s", (login_request.username,))
@@ -149,7 +154,11 @@ async def login(request: Request,
                          "img": user_bbdd["img"]},
                 "options": lista_opciones
                }
-             
+
+    except Exception as e:
+        print(f"Error general en login: {e}")
+        raise
+
     finally:
         close_connection_mysql(conn_mysql, cursor_mysql)
 

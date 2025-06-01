@@ -1,11 +1,11 @@
-import re
+import pymysql
 
 from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 
 #----------------------------------------------------------------------------------------     
 #----------------------------------------------------------------------------------------
-def obtener_campos_tabla(conn, id_entidad, id_tabla):
+def obtener_campos_tabla(conn_mysql, id_entidad, id_tabla):
 
     # cursor = conn.cursor(dictionary=True)
     # cursor.execute("SELECT * FROM mll_cfg_campos WHERE ID_Tabla = %s", (id_tabla,))
@@ -20,12 +20,13 @@ def obtener_campos_tabla(conn, id_entidad, id_tabla):
 				#			WHEN a.PK = 0 THEN 99 
 				#			ELSE a.PK 
 				#		   END"""
-    # imprime([id_bbdd, id_tabla, query], '$')
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(query, (id_entidad, id_tabla))
-    campos = cursor.fetchall()
+    # imprime([id_entidad, id_tabla, query], '$')
+    # cursor_mysql = conn_mysql.cursor(dictionary=True)
+    cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
+    cursor_mysql.execute(query, (id_entidad, id_tabla))
+    campos = cursor_mysql.fetchall()
     # imprime([campos], '%')
-    cursor.close()
+    cursor_mysql.close()
 
     return campos
 

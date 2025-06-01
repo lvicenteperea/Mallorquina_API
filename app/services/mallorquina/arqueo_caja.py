@@ -60,7 +60,7 @@ def proceso(param: InfoTransaccion) -> list:
         param.debug = "Buscamos la conexión que necesitamos para esta bbdd origen"
         bbdd_config = obtener_conexion_bbdd_origen(conn_mysql, ID_NUBE)
         param.debug = "conectamos con esta bbdd origen"
-        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+        conn_sqlserver = get_db_connection_sqlserver(param, bbdd_config)
         # ----------------------------------------------------------------------------------------------------------------------------------
 
         # for fecha in fechas:

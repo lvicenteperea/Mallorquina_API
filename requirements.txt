@@ -15,6 +15,7 @@ cryptography>=41.0.0
 python-jose
 mariadb
 pyodbc
+PyMySQL
 
 starlette
 mysql-connector-python

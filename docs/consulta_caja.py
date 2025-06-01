@@ -99,7 +99,7 @@ def procesar_consulta(param: InfoTransaccion, Nombre_BBDD, id_BBDD, fecha, stIdE
 
         param.debug = "Con. BBDD SqlServe"
         # conextamos con esta bbdd origen
-        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+        conn_sqlserver = get_db_connection_sqlserver(param, bbdd_config)
 
         if conn_sqlserver:
             # Leer datos desde SQL Server

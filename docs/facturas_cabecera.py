@@ -58,7 +58,7 @@ def facturas_cabecera(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_c
 
         param.debug = "conn origen"
         # conextamos con esta bbdd origen
-        conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
+        conn_sqlserver = get_db_connection_sqlserver(param, bbdd_config)
 
         # Hacer un bucle por fechas pedidas
         empieza = datetime.now()
@@ -76,7 +76,7 @@ def facturas_cabecera(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_c
 
     finally:
         param.debug = f"cierra conexión sqlserver: {param.debug}"
-        close_connection_sqlserver(conn_sqlserver, None)
+        close_connection_sqlserver(param, conn_sqlserver, None)
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------

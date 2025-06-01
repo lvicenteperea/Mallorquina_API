@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import pymysql
 
 from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
@@ -24,7 +25,8 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         # Conectar a la base de datos
         conn_mysql = get_db_connection_mysql()
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
+      # cursor_mysql = conn_mysql.cursor(dictionary=True)
+        cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
         param.debug = f"Punto de venta: {punto_venta}"
         # imprime([punto_venta], "*  punto_venta")

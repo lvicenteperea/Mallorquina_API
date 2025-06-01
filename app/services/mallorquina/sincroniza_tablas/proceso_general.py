@@ -1,10 +1,8 @@
 from datetime import datetime
 import re
+import pymysql
 
 from app.utils.utilidades import graba_log, imprime
-
-# from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
-
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
 
@@ -58,7 +56,8 @@ def proceso(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, 
 
             param.debug = "Bucle registros"
             # Preparar los cursores para MySQL
-            cursor_mysql = conn_mysql.cursor()
+            # cursor_mysql = conn_mysql.cursor(dictionary=True)
+            cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
             for registro in registros:
                 # Obtener el valor del campo PK desde el registro
                 pk_index = [campo["Nombre"] for campo in campos].index(pk_campos[0]["Nombre"])
@@ -152,10 +151,6 @@ def Obtener_datos_origen(param: InfoTransaccion, conn_sqlserver, entidad, bbdd_c
 
     try:
         param.debug = "conn origen"
-        # conextamos con esta bbdd origen
-        # conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-        # if (not conn_sqlserver):
-        #     return [ [], [], [], "No se ha podido conectar con la BBDD origen"]
 
         if not ult_valor:
             param.debug = f"No hay ult_valor para la tabla {nombre_tabla}, con los campos {campos_PK}"
@@ -185,11 +180,7 @@ def Obtener_datos_origen(param: InfoTransaccion, conn_sqlserver, entidad, bbdd_c
         param.error_sistema(e=e, debug="Obtener_datos_origen.Exception")
         raise 
 
-    # finally:
-    #     param.debug = f"cierra conexión sqlserver: {param.debug}"
-    #     close_connection_sqlserver(conn_sqlserver, cursor_sqlserver)
-
-#----------------------------------------------------------------------------------------
+ #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, campos_PK, ult_valor) -> list: 
     try:

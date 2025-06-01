@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 import re
+import pymysql
 
 from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
@@ -9,17 +10,17 @@ from app.utils.InfoTransaccion import InfoTransaccion
 #from app.utils.mis_excepciones import MiException
 
 TAMAÑO_LOTE: int = 500
-SALTO: int = 500
-
+SALTO: int = 10000
+FUNCION = "especifico_fechas"
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, campos, tabla_config) -> list:
-    param.debug="General_1"
-    registros: list = [0, 0, 0, 0]
-
+    param.debug=f"{FUNCION}.proceso"
+    registros: list = [None, 0, 0, '']  # [valor_max, insertados, actualizados, error]
+    conn_sqlserver = None  # para que no de error en el finally
+    
     try:
-        empieza = datetime.now()
         campos_origen = [campo['Nombre'] for campo in campos]
         campos_destino = [campo['Nombre_Destino'] for campo in campos]
         # imprime([f"entidad: {entidad}",  
@@ -37,80 +38,64 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
         # ------------------------------------------------------------------------------------------------------------------------
         valores = tabla['ult_valor'].replace(" ", "").split(",")  
         desde = valores[0]  # fecha en formato yyyy-mm-dd
-        # cada "BUCLES" es un día, para poder indicarle los dias que quiero hacer desde el "DESDE", por defecto y lo normal es que sea 1
-        bucles = int(valores[1]) if len(valores) > 1 else 1  # Si falta, asigna 1
 
         if desde:
             desde = datetime.strptime(f"{desde} 00:00:00", "%Y-%m-%d %H:%M:%S")
         else:
             raise ValueError("No está parametrizado el ult_valor de Facturas Cabeceras")
+        # ------------------------------------------------------------------------------------------------------------------------
+        if desde.date() < datetime.now().date():
+            param.debug = "conn origen especifico_fechas"
+            # conextamos con esta bbdd origen
+            conn_sqlserver = get_db_connection_sqlserver(param, bbdd_config)
 
-        if bucles == 0:     # en BBDD a mano he cambiado el "1" por "0", por ejemplo "2025-05-15, 1" por "2025-05-15, 0" para hacer desde "desde" hasta hoy
-            hasta = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        else:               # lo normal es usar el que haya puesto en "ult_valores" que suele ser uno (1)
-            hasta = desde + timedelta(days=bucles)
-
-        if hasta > datetime.now().replace(hour=0, minute=0, second=0, microsecond=0):
-            hasta = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-
-        if desde < datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) and desde < hasta:
-            # ya hemos calculado el HASTA real, pues ahora nos queda saber los dias que realmente vamos a hacer
-            dias = (hasta.date() - desde.date()).days
-            imprime([desde, datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) , hasta, dias], "*   NO Ha entrado ")
             # ------------------------------------------------------------------------------------------------------------------------
-            registros = obtener_y_grabar(param, bbdd_config, conn_mysql, entidad, tabla, desde, dias, campos_origen, campos_destino, tabla_config)
+            registros = obtener_y_grabar(param, conn_sqlserver, conn_mysql, entidad, tabla, desde.date(), campos_origen, campos_destino, tabla_config)
             # ------------------------------------------------------------------------------------------------------------------------
-            imprime([f"Segundos: {(datetime.now()-empieza).total_seconds()}",
-                    f"Registros: {len(registros)} - desde {empieza} a {datetime.now()}",
-                    f"Fechas tratadas: {desde} - {hasta}"],
-                    "*", 2)
-        else:
-            imprime([desde, datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) , hasta], "*   NO Ha entrado ")
+            # imprime([f"Segundos: {(datetime.now()-empieza).total_seconds()}",
+            #         f"Registros: {len(registros)} - desde {empieza} a {datetime.now()}",
+            #         f"Fechas tratadas: {desde} - {hasta}"],
+            #         "*", 2)
         
         return registros
 
     except Exception as e:
-        param.error_sistema(e=e, debug="General_1.proceso")
+        param.error_sistema(e=e, debug=f"{FUNCION}.proceso")
         raise e
-
+    
+    finally:
+        # param.debug = f"cierra conexión sqlserver: {param.debug}"
+        close_connection_sqlserver(param, conn_sqlserver, None)
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def obtener_y_grabar(param: InfoTransaccion, bbdd_config, conn_mysql, entidad, tabla, desde, dias, campos_origen, campos_destino, tabla_config) -> list:
-    param.debug="Obtener_datos_origen"
-    conn_sqlserver = None
+def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, desde: date, campos_origen, campos_destino, tabla_config) -> list:
+    param.debug=f"{FUNCION}.obtener_y_grabar"
     stIdEnt = entidad["stIdEnt"]
+    tratar_desde = desde                      # vamos a tratar un dia a la vez para Fecha >= desde
+    tratar_hasta = tratar_desde + timedelta(days=1)  # vamos a tratar un dia a la vez oara fecha < hasta
     valor_max = None
     insertados = 0
     actualizados = 0
-    registros = [valor_max, insertados, actualizados]
-    hasta_bucle = desde + timedelta(days=1)
+    registros = [valor_max, insertados, actualizados, '']  # [valor_max, insertados, actualizados, error]
 
     try:
-        param.debug = "Inicio 1733" 
-        vez = 1
-        while vez <= dias:
+        # Leer datos desde SQL Server
+        param.debug = f"{FUNCION}.crear cursor"
+        cursor_sqlserver = conn_sqlserver.cursor()
+       
+        # --------------------------------------------------------------------------------
+        param.debug = f"{FUNCION}.Inicio" 
+        # vamos a tratar todos los dias desde que se quedó hasta la fecha de hoy (ayer)
+        while True:
+            if tratar_desde >= date.today(): # replace(hour=0, minute=0, second=0, microsecond=0):
+                break   # Nos salimos el bucle de dias porque no puede ser mayor a hoy la fecha de tratamiento
+
             pos = 0
-            param.debug = "conn origen"
-            # conextamos con esta bbdd origen
-            conn_sqlserver = get_db_connection_sqlserver(bbdd_config)
-            if not conn_sqlserver:
-                imprime([f"Error al conectar con {bbdd_config}"], f"*   Error de conexión con Sql Server")
-                raise ValueError(f"Error al conectar con {bbdd_config}")
-
             while True:
-                param.debug = f"Ejecución select {vez}"
+                param.debug = f"{FUNCION}.Ejecución select {tratar_desde}"
                 cadena_select = ', '.join(campos_origen)
-                match = re.search(r"t\..*?\]", tabla_config['where'])
-                if match:
-                    orden = match.group()  # Captura toda la coincidencia
-                else:
-                    raise ValueError("No tenemos ORDEN")
-
-               # Leer datos desde SQL Server
-                param.debug = "crear cursor"
-                cursor_sqlserver = conn_sqlserver.cursor()
+                orden = extraer_campos_para_order(param, tabla_config['where'])
             
-                # --------------------------------------------------------------------------------
                 select_query = f"""SELECT {cadena_select.replace("{0}", f"{entidad['ID']}  as id_entidad" )} 
                                     FROM {tabla_config['Tabla_Origen']} t
                                     WHERE t.stIdEnt = ? 
@@ -120,55 +105,54 @@ def obtener_y_grabar(param: InfoTransaccion, bbdd_config, conn_mysql, entidad, t
                                     FETCH NEXT {SALTO} ROWS ONLY; -- Toma las siguientes SALTO lineas
                                 """
                 if pos == 0:
-                    imprime([select_query, stIdEnt, desde, hasta_bucle, pos], "* -- QUERY -- ", 2)
+                    imprime([select_query, stIdEnt, tratar_desde, tratar_hasta, pos], "* -- QUERY -- ", 2)
 
-                cursor_sqlserver.execute(select_query, (stIdEnt, desde, hasta_bucle, pos)) 
+                cursor_sqlserver.execute(select_query, (stIdEnt, tratar_desde, tratar_hasta, pos)) 
                 datos = cursor_sqlserver.fetchall()
-
                 if len(datos) == 0:   # hemos terminado
                     break
 
                 # -----------------------------------------------------------------------------------
-                param.debug = "Llamada a Grabar"
-                valor_max, insertados, actualizados = grabar_datos(param, conn_mysql, entidad['id_bbdd'], datos, hasta_bucle, campos_destino, tabla_config)
+                param.debug = f"{FUNCION}.Llamada a Grabar"
+                insertados, actualizados = grabar_datos(param, conn_mysql, entidad['id_bbdd'], datos, campos_destino, tabla_config)
                 # -----------------------------------------------------------------------------------
 
-                registros[0]  = valor_max
+                registros[0]  = tratar_hasta 
                 registros[1] += insertados
                 registros[2] += actualizados
                 pos          += SALTO
+            # FIN WHILE secundario ---------------------------------------------------------------
 
             # FIN DIA cerramos con conexión con MysqlServer
-            close_connection_sqlserver(conn_sqlserver, None)
             # actualizamos control y COMMIT
-            cursor_mysql = conn_mysql.cursor()
+            # cursor_mysql = conn_mysql.cursor(dictionary=True)
+            cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
             param.debug = "Execute fec_ult_act"
             cursor_mysql.execute("""UPDATE mll_cfg_tablas_entidades
                                     SET Fecha_Ultima_Actualizacion = %s, 
                                         ult_valor = COALESCE(%s, ult_valor)
                                     WHERE ID = %s""",
-                                (datetime.now(), f'{hasta_bucle.strftime("%Y-%m-%d")}, 1', tabla["ID"]) # lo hacemos con el hasta_bucle porque hemos cargado < hasta_bucle
+                                (datetime.now(), f'{tratar_hasta.strftime("%Y-%m-%d")}', tabla["ID"]) # lo hacemos con el hasta porque hemos cargado < hasta
                                 )
             conn_mysql.commit()
             
-            desde       = hasta_bucle
-            hasta_bucle = desde + timedelta(days=1)
-            vez += 1
-            # ---------------------------------------------------------------
+            tratar_desde = tratar_hasta                      # vamos a tratar un dia a la vez para Fecha >= desde
+            tratar_hasta = tratar_desde + timedelta(days=1)  # vamos a tratar un dia a la vez oara fecha < hasta
+        # FIN WHILE PRINCIPAL  ---------------------------------------------------------------
 
+        cursor_sqlserver.close()
         return registros
 
     except Exception as e:
-        param.error_sistema(e=e, debug="Ganeral_1.Obtener_y_grabar")
+        param.error_sistema(e=e, debug=f"{FUNCION}.Excepción")
         raise 
         
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
-def grabar_datos(param: InfoTransaccion, conn_mysql, id_BBDD, datos, hasta, campos_destino, tabla_config) -> list:
-    param.debug="facturas_cabecera"
+def grabar_datos(param: InfoTransaccion, conn_mysql, id_BBDD, datos, campos_destino, tabla_config) -> list:
+    param.debug=f"{FUNCION}facturas_cabecera"
     cursor_mysql = None # para que no de error en el finally
-    valor_max = hasta
     insertados = 0
     actualizados = 0
 
@@ -204,10 +188,10 @@ def grabar_datos(param: InfoTransaccion, conn_mysql, id_BBDD, datos, hasta, camp
                 cursor_mysql.executemany(insert_query, lote)  # Insertar el lote
                 insertados += cursor_mysql.rowcount
        
-        return [valor_max, insertados, actualizados]
+        return [insertados, actualizados]
 
     except Exception as e:
-        param.error_sistema(e=e, debug="General_1.Grabar_Datos.Excepcion")
+        param.error_sistema(e=e, debug=f"{FUNCION}.Grabar_Datos.Excepcion")
         raise 
 
 
@@ -223,3 +207,13 @@ def convertir_datos(registro):
         val  # Dejar los demás valores igual
         for val in registro
     )
+
+#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
+def extraer_campos_para_order(param: InfoTransaccion, campo_where):
+    match = re.search(r"t\..*?\]", campo_where)
+
+    if match:
+        return match.group()  # Captura toda la coincidencia
+    else:
+        raise ValueError("No tenemos ORDEN")

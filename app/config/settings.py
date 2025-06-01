@@ -32,21 +32,31 @@ class Settings(BaseSettings):
     SSH_HOST: str = '194.164.166.153'  # Cambia por la IP del servidor
     SSH_PORT: int = 15122  # Cambia por el puerto SSH del servidor
     SSH_USER: str = 'lvicente'  # Cambia por el usuario SSH del servidor
-    SSH_PWD: str = 'xxxxxxx'  # Cambia por la contraseña SSH del servidor
+    SSH_KEY_PATH: str = 'Mllrqn@1984'  # Cambia por la contraseña SSH del servidor
     # SSH_key_path: str = 'mifichero.ppk' # Cambia por ssh_password si usas contraseña
-    # ssh_pkey_password="si la tuviera" # Cambia por ssh_password si usas contraseña
     # Conexión BBDD ----------------------------------------------------------------------------
-    SSH_CONEX: bool = False  # Cambia a False si no usas conexión SSH
-    MYSQL_DB_HOST_MLL: str = "127.0.0.1"
-    MYSQL_DB_PORT_MLL: int = 3306  # es el puerto de MySQL o IONOS
-    # MYSQL_DB_PORT_MLL: int = 13306   # es el puerto de MariaDB
-    MYSQL_DB_USER_MLL: str = 'root'  # Añadimos anotación de tipo
-    MYSQL_DB_PWD_MLL: str = 'No.Admin'  # Añadimos anotación de tipo
-    MYSQL_DB_DATABASE_MLL: str = 'mallorquina'  # Añadimos anotación de tipo
+    # SSH_CONEX: bool = False  # Cambia a False si no usas conexión SSH o a True si la usas
+    # MYSQL_DB_HOST: str = "127.0.0.1"
+    # # MYSQL_DB_PORT: int = 3306  # es el puerto de MySQL o IONOS
+    # MYSQL_DB_PORT: int = 13306   # es el puerto de MariaDB
+    # MYSQL_DB_USER: str = 'root'  # Añadimos anotación de tipo
+    # MYSQL_DB_PWD: str = 'admin'  # Añadimos anotación de tipo
+    # MYSQL_DB_DATABASE: str = 'mallorquina'  # Añadimos anotación de tipo
+    # MYSQL_DB_CHARSET: str = "utf8mb4"
+
+
+    SSH_CONEX: bool = True  # Cambia a False si no usas conexión SSH o a True si la usas
+    MYSQL_DB_HOST: str = "localhost"  # Cambia por la IP del servidor
+    MYSQL_DB_PORT: int = 3306
+    MYSQL_DB_USER: str = 'root'  # Añadimos anotación de tipo
+    MYSQL_DB_PWD: str = 'La.Mallorquina@1984'  # Añadimos anotación de tipo
+    MYSQL_DB_DATABASE: str = 'mallorquina'  # Añadimos anotación de tipo
     MYSQL_DB_CHARSET: str = "utf8mb4"
 
+
+
+
     # ----------------------------------------------------------------------------------------    
-    MONGODB_URL: str = ""
 
     ENCRYPTION_KEY: str = "ZOoYUEQNjONU2fwUv-afUuUA--Z4RZlvRL4evOY_ZJk="
     AUTH_ENABLED: bool = False  # Cambiar a False para desactivar la autenticación

@@ -100,7 +100,7 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
        
         # --------------------------------------------------------------------------------
         param.debug = f"{FUNCION}.Inicio" 
-        imprime([f"Tramos encontrados: {len(tramos)}", f"Tramos: {tramos}"], f"*...Tramos obtenidos...", 2)
+        # imprime([f"Tramos encontrados: {len(tramos)}", f"Tramos: {tramos}"], f"*...Tramos obtenidos...", 2)
 
         # vamos a tratar todos los dias desde que se quedó hasta la fecha de hoy (ayer)
         for min_id, max_id, count in tramos:
@@ -115,7 +115,7 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
                                 -- ORDER BY orden
                                 ;
                             """
-            imprime([select_query, stIdEnt, min_id, max_id], "* -- QUERY -- ", 2)
+            # imprime([select_query, stIdEnt, min_id, max_id], "* -- QUERY -- ", 2)
 
             cursor_sqlserver.execute(select_query, (stIdEnt, min_id, max_id))
 

@@ -41,7 +41,7 @@ def proceso(param: InfoTransaccion) -> list:
                                  ORDER BY familia_desc, nombre""")
         productos = cursor_mysql.fetchall()
 
-        imprime([productos, len(productos)], "*", 2)
+        # imprime([productos, len(productos)], "*", 2)
 
         close_connection_mysql(conn_mysql, cursor_mysql)
 

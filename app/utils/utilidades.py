@@ -39,7 +39,7 @@ def graba_log(mi_mensaje:dict, origen: str, e, logger = app_logger):
         logger.error(f"MI ERROR: {origen}: {mi_mensaje} - ERROR: {err_num} - {str(e)} - LOCALIZACION: {loc})")
 
     except Exception as e:
-        imprime(["Error en graba_log:", e], relleno="*")
+        # imprime(["Error en graba_log:", e], relleno="*")
         return
 
 # ------------------------------------------------------------------------------------------------

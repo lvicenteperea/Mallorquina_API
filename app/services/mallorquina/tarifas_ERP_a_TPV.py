@@ -73,7 +73,7 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
         for id_bbdd, tienda in TIENDAS.items():
             df_tienda = df[df["id_bbdd"] == id_bbdd]
             total_filas = len(df_tienda)
-            imprime([f"Tienda: {tienda} - Filas: {total_filas}"], "*")
+            # imprime([f"Tienda: {tienda} - Filas: {total_filas}"], "*")
 
             # Preparar datos para el archivo de cada tienda
             data = []

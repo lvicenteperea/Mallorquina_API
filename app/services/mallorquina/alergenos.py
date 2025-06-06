@@ -47,7 +47,7 @@ def proceso(param: InfoTransaccion) -> list:
         fec_max_mod_str = cursor_mysql.fetchone()
 
         if fec_max_mod_str["fec_max_modificacion"]:
-            imprime([fec_max_mod_str], "*     VAMOS A VER LA FECHA    ", 2)
+            # imprime([fec_max_mod_str], "*     VAMOS A VER LA FECHA    ", 2)
             fec_max_mod = datetime.strptime(fec_max_mod_str["fec_max_modificacion"], "%Y-%m-%d %H:%M:%S")
         else:
             fec_max_mod = datetime.now().strftime('%d/%m/%Y')

@@ -72,12 +72,12 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
 
     try:
 
-        param.debug = "conn. MySql"
+        param.debug = f"{funcion}.conn. MySql"
         conn_mysql = get_db_connection_mysql()
       # cursor_mysql = conn_mysql.cursor(dictionary=True)
         cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
-        param.debug = "execute cfg_bbdd"
+        param.debug = f"{funcion}.execute cfg_bbdd"
         cursor_mysql.execute("""SELECT a.ID, a.Nombre, a.Conexion, a.Ultima_Fecha_Carga
                                   FROM mll_cfg_bbdd a
                                  inner join mll_cfg_entidades b on a.id = b.id_bbdd and b.activo = 'S'
@@ -88,11 +88,11 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
             imprime([f"📚 Procesando Tienda: {bbdd['ID']}-{bbdd['Nombre']}"], "*")
 
             # ---------------------------------------------------------------------------------------
-            param.debug = "por tablas"
+            param.debug = f"{funcion}.por tablas"
             resultado.extend(recorre_entidades(param, bbdd, conn_mysql))
             # ---------------------------------------------------------------------------------------
             
-            param.debug = "execute act. fec_Carga"
+            param.debug = f"{funcion}.execute act. fec_Carga"
             cursor_mysql.execute(
                 "UPDATE mll_cfg_bbdd SET Ultima_fecha_Carga = %s WHERE ID = %s",
                 (datetime.now(), bbdd["ID"])
@@ -105,7 +105,7 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
 
                   
     except Exception as e:
-        param.error_sistema(e=e, debug="sincroniza.recorretiendas.Excepcion")
+        param.error_sistema(e=e, debug=f"{funcion}.recorretiendas.Excepcion")
         raise
 
     finally:
@@ -137,11 +137,11 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
                 imprime([f"📒 Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", tienda_bbdd["Nombre"]], "-")
                 
                 # -------------------------------------------------------------------------
-                param.debug = "por tablas"
+                param.debug = f"{funcion}.por tablas"
                 resultado.extend(recorre_tablas(param, tienda_bbdd["Nombre"], entidad, conn_sqlserver, conn_mysql))
                 # -------------------------------------------------------------------------
 
-                param.debug = "execute act. fec_Carga"
+                param.debug = f"{funcion}.execute act. fec_Carga"
                 cursor_mysql.execute(
                     "UPDATE mll_cfg_entidades SET Ultima_fecha_Carga = %s WHERE ID = %s",
                     (datetime.now(), entidad["ID"])
@@ -162,7 +162,7 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
         if cursor_mysql is not None:
             cursor_mysql.close()
 
-        param.debug = f"cierra conexión sqlserver"
+        param.debug = f"{funcion}.cierra conexión sqlserver"
         close_connection_sqlserver(param, conn_sqlserver, None)
 
 #----------------------------------------------------------------------------------------

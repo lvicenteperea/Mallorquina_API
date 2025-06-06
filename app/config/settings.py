@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "MALLORQUIA API"
+    VERSION: str = "06062025"
 
     DEV_PROD: str = "DEV" # Cambia a "PROD" para producción
 
@@ -35,16 +36,6 @@ class Settings(BaseSettings):
     SSH_KEY_PATH: str = 'Mllrqn@1984'  # Cambia por la contraseña SSH del servidor
     # SSH_key_path: str = 'mifichero.ppk' # Cambia por ssh_password si usas contraseña
     # Conexión BBDD ----------------------------------------------------------------------------
-    # SSH_CONEX: bool = False  # Cambia a False si no usas conexión SSH o a True si la usas
-    # MYSQL_DB_HOST: str = "127.0.0.1"
-    # # MYSQL_DB_PORT: int = 3306  # es el puerto de MySQL o IONOS
-    # MYSQL_DB_PORT: int = 13306   # es el puerto de MariaDB
-    # MYSQL_DB_USER: str = 'root'  # Añadimos anotación de tipo
-    # MYSQL_DB_PWD: str = 'admin'  # Añadimos anotación de tipo
-    # MYSQL_DB_DATABASE: str = 'mallorquina'  # Añadimos anotación de tipo
-    # MYSQL_DB_CHARSET: str = "utf8mb4"
-
-
     SSH_CONEX: bool = True  # Cambia a False si no usas conexión SSH o a True si la usas
     MYSQL_DB_HOST: str = "localhost"  # Cambia por la IP del servidor
     MYSQL_DB_PORT: int = 3306

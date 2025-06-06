@@ -46,11 +46,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
                 return await call_next(request)
     '''
-    @staticmethod
-    def validate_ip(client_ip: str) -> bool:
-        # allowed_ips = ["127.0.0.1", "192.168.1.100", ]  # Lista de IPs permitidas
-        # return client_ip in allowed_ips
-        return True
+    # @staticmethod
+    # def validate_ip(client_ip: str) -> bool:
+    #     # allowed_ips = ["127.0.0.1", "192.168.1.100", ]  # Lista de IPs permitidas
+    #     # return client_ip in allowed_ips
+    #     return True
 
 
     #----------------------------------------------------------------------------------
@@ -60,11 +60,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # print("")
         # print("")
 
-        # Validar IP
-        client_ip = request.client.host
-        if not self.validate_ip(client_ip):
-            print(f"Acceso denegado para la IP: {client_ip}")
-            return JSONResponse({"detail": "Acceso denegado"}, status_code=403)        
+        # # Validar IP
+        # client_ip = request.client.host
+        # if not self.validate_ip(client_ip):
+        #     print(f"Acceso denegado para la IP: {client_ip}")
+        #     return JSONResponse({"detail": "Acceso denegado"}, status_code=403)        
         
         # Excluir ciertas rutas de autenticación
         if request.url.path in ["/login", "/open-endpoint", "/docs", "/redoc", "/auth/create_token", "/openapi.json", "/auth/login"]:

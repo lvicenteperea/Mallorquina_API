@@ -9,7 +9,8 @@ router = APIRouter()
 
 # Importaciones propias del proyecto
 from app.services.mallorquina import (
-    sincroniza, consulta_cierre, arqueo_caja, arqueo_caja_info, tarifas_ERP_a_TPV, fichas_tecnicas, alergenos, carga_productos_erp
+    sincroniza, consulta_cierre, arqueo_caja, arqueo_caja_info, tarifas_ERP_a_TPV
+   ,genera_fichas_tecnicas, recupera_ficha_tecnica, alergenos, carga_productos_erp
 )
 from app.services.auxiliares import descarga
 
@@ -211,14 +212,23 @@ async def mll_carga_prod_erp(
 #------------------------------------------------------------------------------------------------------
 # ALERGENMOS, FICHAS TÉCNICAS
 #------------------------------------------------------------------------------------------------------
+class FichaTecnicaRequest(ParamRequest):
+    id_producto: int
+
 class FichasTecnicasRequest(ParamRequest):
     output_path: str = "alergenos.html"
     punto_venta: Optional[int] = 0  # Por defecto, todos los punto_venta
+    generar_ficheros: str = "N"
 
-@router.post("/mll_fichas_tecnicas", response_model=InfoTransaccion)
-async def mll_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
+@router.post("/mll_recupera_ficha_tecnica", response_model=InfoTransaccion)
+async def mll_recupera_ficha_tecnica(request: Request, body_params: FichaTecnicaRequest = Body(...)):
+    """ Retorna el HTML de una ficha técnica concreta. """
+    return await procesar_request(request, body_params, recupera_ficha_tecnica, "mll_recupera_ficha_tecnica")
+
+@router.post("/mll_genera_fichas_tecnicas", response_model=InfoTransaccion)
+async def mll_genera_fichas_tecnicas(request: Request, body_params: FichasTecnicasRequest = Body(...)):
     """ Genera fichas técnicas y listado de alérgenos. """
-    return await procesar_request(request, body_params, fichas_tecnicas, "mll_fichas_tecnicas")
+    return await procesar_request(request, body_params, genera_fichas_tecnicas, "mll_genera_fichas_tecnicas")
 
 @router.post("/mll_alergenos", response_model=InfoTransaccion)
 async def mll_alergenos(request: Request, body_params: FichasTecnicasRequest = Body(...)):

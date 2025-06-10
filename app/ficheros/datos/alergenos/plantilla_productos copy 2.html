@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alergenos La Mallorquina</title>
+    <style>
+        * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FAFAFA;
+            color: #000;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            background-color: #FAFAFA;
+        }
+
+        .header {
+            text-align: center;
+            padding: 0;
+            background-color: #FAFAFA;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        h1.main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 50px;
+            font-weight: normal;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .glovo-subtitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: normal;
+            color: #000;
+        }
+        
+        p.subtitle {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            color: #000;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 20px;
+        }
+
+        .allergen-icons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 23px;
+            margin: 0 auto 40px auto;
+            padding: 0 10px;
+            max-width: 740px;
+        }
+
+        .allergen {
+            text-align: center;
+            font-size: 12px;
+            width: 70px;
+        }
+
+        .allergen img {
+            width: 65px;
+            height: auto;
+            display: block;
+            margin: 0 auto 5px auto;
+        }
+        .allergen p {
+            font-size: 13px;
+            color: #000;
+        }
+
+        .legend {
+            font-size: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height:25px;
+            color: #000;
+            display:flex;
+        }
+
+        .legend > span {
+            flex-basis: 50%;
+            border:1px solid #D8D8D8;
+        }
+        .legend span.contiene-legend { color: #000;}
+        .legend span.trazas-legend {color: #F89ABA;}
+
+        main {
+            padding: 0;
+        }
+
+        .index-section {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-bottom: 30px;
+        }
+
+        .index-section th,
+        .index-section td {
+            padding: 4px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .index-section thead { /* Esto es la línea debajo de la cabecera de la tabla */
+            border-bottom:1px solid #D8D8D8;
+        }
+
+        .index-section thead th:first-child {
+            text-align: left;
+            font-weight: bold;
+            color: #000;
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 18px;
+            padding: 8px 6px;
+        }
+
+        .index-section thead th img {
+            width: 28px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .index-section td {
+             min-width: 28px;
+        }
+
+        .index-section tr.category-row-styling-hook td.lista-familia {
+            background-color: #F89ABA;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px 8px;
+            font-size: 14px; 
+            color: #FAFAFA;
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 900;
+            line-height: 16px;
+        }
+
+        .index-section td.lista-producto {
+            text-align: left;
+            color: #000;
+            font-family: 'Poppins', sans-serif;
+            font-size: 11px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 14px;
+        }
+
+        .index-section td.lista-X {
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        .index-section td.lista-T {
+            color: #F89ABA;
+        }
+
+        thead th:not(.lista-producto):not(:first-child) {
+            border-left:1px solid #D8D8D8;
+            border-right:1px solid #D8D8D8;
+            border-top:1px solid #D8D8D8;
+        }
+
+        tbody tr:not(.category-row-styling-hook) {
+            border-bottom:1px solid #D8D8D8;
+        }
+
+        tbody tr td:not(.lista-producto):not(.lista-familia) {
+            border-left:1px solid #D8D8D8;
+            border-right:1px solid #D8D8D8;
+        }
+
+        tbody tr .lista-familia {
+            border-right:1px solid #D8D8D8;
+        }
+
+        tbody tr:has(+ .category-row-styling-hook) {
+            border-bottom:none;
+        }
+
+        @media print {
+            .index-section tr.category-row-styling-hook td.lista-familia {
+            background-color: #F89ABA;
+            color: #FAFAFA;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important; 
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container" id="inicio">
+        <header class="header">
+            <img src="{LOGO}" alt="La Mallorquina"> 
+            <h1 class="main-title">{titulo_principal}</h1>
+        </header>
+
+        <div class="legend">
+            <span><span class="contiene-legend">x</span> = Contiene como ingrediente</span>
+            <span><span class="trazas-legend">T</span> (Trazas) = Puede contener</span>
+        </div>
+
+        <main>
+            <section>
+                <table class="index-section">
+                    <thead>
+                        <tr>
+                            <th>Categoría y denominación de productos</th>
+                            <th><img src="{Huevo}" alt="Huevos" width="30"></th>
+                            <th><img src="{Leche}" alt="Lacteos" width="30"></th>
+                            <th><img src="{Crustaceos}" alt="Crustáceos" width="30"></th>
+                            <th><img src="{Cascara}" alt="Cáscara" width="30"></th>
+                            <th><img src="{Gluten}" alt="Gluten" width="30"></th>
+                            <th><img src="{Pescado}" alt="Pescado" width="30"></th>
+                            <th><img src="{Altramuz}" alt="Altramuces" width="30"></th>
+                            <th><img src="{Mostaza}" alt="Mostaza" width="30"></th>
+                            <th><img src="{Cacahuetes}" alt="Cacahuetes" width="30"></th>
+                            <th><img src="{Apio}" alt="Apio" width="30"></th>
+                            <th><img src="{Sulfitos}" alt="Sulfitos" width="30"></th>
+                            <th><img src="{Soja}" alt="Soja" width="30"></th>
+                            <th><img src="{Moluscos}" alt="Moluscos" width="30"></th>
+                            <th><img src="{Sesamo}" alt="Sésamo" width="30"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="body-index">
+                        <!-- ----------------------------------------------------------------------------
+                        --------------------------------------------------------------------------------
+                        INICIO ZONA DE INDICE
+                        --------------------------------------------------------------------------------
+                        ---------------------------------------------------------------------------- -->
+                        {indice_alergenos}
+                        <!-- ----------------------------------------------------------------------------
+                        --------------------------------------------------------------------------------
+                        INICIO ZONA DE INDICE
+                        --------------------------------------------------------------------------------
+                        ---------------------------------------------------------------------------- -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+        </div>
+</body>
+</html>

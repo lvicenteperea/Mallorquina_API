@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pymysql
 
 import json
 
@@ -15,8 +16,6 @@ from app.utils.InfoTransaccion import InfoTransaccion
 
 # Constantes globales
 ID_NUBE = 1   # ID de BBDD de la nube (infosoft) que es donde están todos los datos de CAJA
-
-
 
 #----------------------------------------------------------------------------------------
 # Este proceso se encarga de recorrer todas las tiendas/BBDD y entidades para hacer el arqueo de caja       
@@ -40,14 +39,14 @@ def proceso(param: InfoTransaccion) -> list:
 
     try:
         config = obtener_cfg_general(param)
-        
+
         if  not config.get("ID", False): 
             param.registrar_error(ret_txt= f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", debug=f"{funcion}.config-ID")
             raise MiException(param = param)
             
-        if config["En_Ejecucion"]:
-            param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
-            raise MiException(param = param)
+        # if config["En_Ejecucion"]:
+        #     param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
+        #     raise MiException(param = param)
 
         # Buscamos la conexión a MySQL porque es donde vamos a grabar y donde vamos a buscar datos auxiliares del arqueo de caja
         param.debug="actualizar_en_ejecucion"
@@ -71,23 +70,26 @@ def proceso(param: InfoTransaccion) -> list:
                                                                                      WHERE bd.cierre_caja = 'S'""")
                    
         for x in range(1, dias+1):
-            cursor_mysql = conn_mysql.cursor(dictionary=True)
+            # cursor_mysql = conn_mysql.cursor(dictionary=True)
+            cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
             for entidad in lista_entidades:
                 fecha = datetime.strptime(entidad["ultimo_cierre"], "%Y-%m-%d") + timedelta(days=x)
                 imprime([f"Procesando TIENDA: {entidad}", fecha, entidad["ultimo_cierre"], x], "-")
+
+                # ---------------------------------------------------------------------------------------------------------------
                 resultado_dict = consultar_y_grabar(param, conn_mysql, conn_sqlserver, entidad["ID"], entidad["stIdEnt"], fecha)
+                # ---------------------------------------------------------------------------------------------------------------
+
                 resultado.extend(resultado_dict)
+
+                # if resultado_dict:  # es muy raro no que se tengan datos, algo ha pasado, nos quedamos que el último cierre 
+                param.debug = "update"
+                cursor_mysql.execute("UPDATE mll_cfg_entidades SET ultimo_cierre = %s WHERE ID = %s",
+                                    (fecha, entidad["ID"],)
+                                    )
                 conn_mysql.commit()
-
-                if resultado_dict:  # es muy raro no que se tengan datos, algo ha pasado, nos quedamos que el último cierre 
-                    param.debug = "update"
-                    cursor_mysql.execute("UPDATE mll_cfg_entidades SET ultimo_cierre = %s WHERE ID = %s",
-                                        (fecha, entidad["ID"],)
-                                        )
         
-            conn_mysql.commit()        
-
         actualizar_en_ejecucion(param, 0)
 
         return resultado if resultado else [f"No se han encontrado datos desde el {datetime.strptime(entidad['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=1)} al {datetime.strptime(entidad['ultimo_cierre'], '%Y-%m-%d') + timedelta(days=dias+1)}"]
@@ -134,7 +136,8 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_en
                     ORDER by ac.stIdEnt, ac.fecha_hora, ac.id_cobro, cc.Id_Cierre, pt.Serie"""  # Vamos a coger todas las tiendas del dia
         
         # recuperamos los IDs de cierre para un día, ya que en caja puede haber movimientos para un cierre de dos fechas diferentes
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
+        # cursor_mysql = conn_mysql.cursor(dictionary=True)
+        cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
         cursor_mysql.execute(query, (fecha, fecha_mas_1, stIdEnt))
         ids_cierre = cursor_mysql.fetchall()
 
@@ -187,7 +190,8 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
     medios_pago_registros = 0
 
     try: 
-        cursor_mysql = conn_mysql.cursor()
+        # cursor_mysql = conn_mysql.cursor()
+        cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
         # Agrupar resultados por tienda, puesto y apertura
         ventas_diarias = {}
 
@@ -225,11 +229,11 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
             id_mae_tpv = 0  # busca_tvp(param, conn_mysql, data["id_entidad"],  data["id_tpv"])
 
             insert_diarias = """INSERT INTO mll_rec_ventas_diarias (id_entidad, Serie, id_mae_tpv, fecha, imp_arqueo_ciego, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
-                                                            VALUES (%s, %s, %s, STR_TO_DATE(%s, '%d/%m/%Y'), %s, %s, %s, %s, %s)"""
+                                                            VALUES (%s, %s, %s, STR_TO_DATE(%s, '%%d/%%m/%%Y'), %s, %s, %s, %s, %s)"""
             # imprime([insert_diarias, 
             #          (data["id_entidad"],data["id_tpv"],id_mae_tpv,data["fecha"],cierre[4],data["ventas"],data["operaciones"],ID_Apertura,cierre[4],)
             #         ], 
-            #         "* DATOS ", 2)
+            #         "*     DATOS mll_rec_ventas_diarias", 2)
             cursor_mysql.execute( insert_diarias,
                                   (data["id_entidad"],
                                    data["id_tpv"],

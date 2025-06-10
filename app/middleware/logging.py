@@ -2,7 +2,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import logging
 import time
 
-logger = logging.getLogger("uvicorn")
+# logger = logging.getLogger("uvicorn")
+logger = logging.getLogger(__name__)
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):

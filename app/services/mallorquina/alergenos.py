@@ -11,7 +11,7 @@ from app.config.settings import settings
 LOGO =        os.path.join(settings.WEB_RUTA_LOCAL, settings.WEB_RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
 RUTA_ICONOS = os.path.join(settings.WEB_RUTA_LOCAL, settings.WEB_RUTA_IMAGEN, "alergenos/")
 
-PLANTILLA       = os.path.join(settings.RUTA_ALERGENOS, "plantilla.html")
+PLANTILLA       = os.path.join(settings.RUTA_ALERGENOS, "plantilla_alergenos.html")
 FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_ALERGENOS_HTML, "no_imprimibles.csv")
 
 #----------------------------------------------------------------------------------------

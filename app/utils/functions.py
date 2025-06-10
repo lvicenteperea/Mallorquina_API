@@ -1,3 +1,5 @@
+import pymysql
+
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
 
@@ -69,7 +71,8 @@ def control_usuario (param,  request):
 # --------------------------------------------------------------------------------
 def select_mysql(param: InfoTransaccion, conn_mysql, query: str, parametros: tuple = None, diccionario: bool = True) -> list:
     try:
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
+        # cursor_mysql = conn_mysql.cursor(dictionary=True)
+        cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
         cursor_mysql.execute(query, parametros) 
         lista_bbdd = cursor_mysql.fetchall()
         cursor_mysql.close()

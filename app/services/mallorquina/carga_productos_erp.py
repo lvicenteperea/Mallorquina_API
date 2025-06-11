@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import pandas as pd
+import pymysql
 
 from app.models.mll_cfg import obtener_cfg_general
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
@@ -60,7 +61,8 @@ def carga (param: InfoTransaccion, excel):
         param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
         param.debug = "cursor_____"
-        cursor = conn_mysql.cursor(dictionary=True)
+        # cursor = conn_mysql.cursor(dictionary=True)
+        cursor = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
         param.debug = "Mapeo"
         # Mapeo de columnas del Excel con los campos de la tabla
@@ -129,131 +131,135 @@ def carga (param: InfoTransaccion, excel):
         # Procesar registros del Excel
         for x, row in df.iterrows():
             row = row.fillna('')  # Reemplazar valores NaN con cadenas vacías
-            if not row["Descripción"].startswith(("4-", "2-")):
-                row["Listado_alergenos"]  = 'No'   # Me da igual lo que diga el listado de alergenos, si no es de estos grupos, no sale en el listado
-            if row["Codigo_alergenos"] == '':      # Verificar si el valor está vacío
-                row["Codigo_alergenos"] = "0"      # Asignar "0" si está vacío
-            if row["Listado_alergenos"] == '':
-                row["Listado_alergenos"]  = 'No'
+            if row["Descripción"].startswith(("4-", "2-")):
+                # if not row["Descripción"].startswith(("4-", "2-")):
+                #     row["Listado_alergenos"]  = 'No'   # Me da igual lo que diga el listado de alergenos, si no es de estos grupos, no sale en el listado
+                if row["Codigo_alergenos"] == '':      # Verificar si el valor está vacío
+                    row["Codigo_alergenos"] = "0"      # Asignar "0" si está vacío
+                if row["Listado_alergenos"] == '':
+                    row["Listado_alergenos"]  = 'No'
 
-            row["alta_tpv"] = "Sí" if row["alta_tpv"].strip().lower() in ["sí", "si"] else "No"
-            row["alta_glovo"] = "Sí" if row["alta_glovo"].strip().lower() in ["sí", "si"] else "No"
-            row["alta_web"] = "Sí" if row["alta_web"].strip().lower() in ["sí", "si"] else "No"
-            row["alta_catering"] = "Sí" if row["alta_catering"].strip().lower() in ["sí", "si"] else "No"
+                row["alta_tpv"] = "Sí" if row["alta_tpv"].strip().lower() in ["sí", "si"] else "No"
+                row["alta_glovo"] = "Sí" if row["alta_glovo"].strip().lower() in ["sí", "si"] else "No"
+                row["alta_web"] = "Sí" if row["alta_web"].strip().lower() in ["sí", "si"] else "No"
+                row["alta_catering"] = "Sí" if row["alta_catering"].strip().lower() in ["sí", "si"] else "No"
 
-            row["Huevo"] = "Trazas" if row["Huevo"].strip().lower() == "trazas" else ("Sí" if row["Huevo"].strip().lower() in ["sí", "si"] else "No")
-            row["Leche"] = "Trazas" if row["Leche"].strip().lower() == "trazas" else ("Sí" if row["Leche"].strip().lower() in ["sí", "si"] else "No")
-            row["Crustaceos"] = "Trazas" if row["Crustaceos"].strip().lower() == "trazas" else ("Sí" if row["Crustaceos"].strip().lower() in ["sí", "si"] else "No")
-            row["Cáscara"] = "Trazas" if row["Cáscara"].strip().lower() == "trazas" else ("Sí" if row["Cáscara"].strip().lower() in ["sí", "si"] else "No")
-            row["Gluten"] = "Trazas" if row["Gluten"].strip().lower() == "trazas" else ("Sí" if row["Gluten"].strip().lower() in ["sí", "si"] else "No")
-            row["Pescado"] = "Trazas" if row["Pescado"].strip().lower() == "trazas" else ("Sí" if row["Pescado"].strip().lower() in ["sí", "si"] else "No")
-            row["Altramuz"] = "Trazas" if row["Altramuz"].strip().lower() == "trazas" else ("Sí" if row["Altramuz"].strip().lower() in ["sí", "si"] else "No")
-            row["Mostaza"] = "Trazas" if row["Mostaza"].strip().lower() == "trazas" else ("Sí" if row["Mostaza"].strip().lower() in ["sí", "si"] else "No")
-            row["Cacahuetes"] = "Trazas" if row["Cacahuetes"].strip().lower() == "trazas" else ("Sí" if row["Cacahuetes"].strip().lower() in ["sí", "si"] else "No")
-            row["Apio"] = "Trazas" if row["Apio"].strip().lower() == "trazas" else ("Sí" if row["Apio"].strip().lower() in ["sí", "si"] else "No")
-            row["Sulfitos"] = "Trazas" if row["Sulfitos"].strip().lower() == "trazas" else ("Sí" if row["Sulfitos"].strip().lower() in ["sí", "si"] else "No")
-            row["Soja"] = "Trazas" if row["Soja"].strip().lower() == "trazas" else ("Sí" if row["Soja"].strip().lower() in ["sí", "si"] else "No")
-            row["Moluscos"] = "Trazas" if row["Moluscos"].strip().lower() == "trazas" else ("Sí" if row["Moluscos"].strip().lower() in ["sí", "si"] else "No")
-            row["Sésamo"] = "Trazas" if row["Sésamo"].strip().lower() == "trazas" else ("Sí" if row["Sésamo"].strip().lower() in ["sí", "si"] else "No")
-    
-            param.debug = f"Código: {row['Código']}"
-            codigo = row['Código']
-            fec_modificacion = row.get('fec_modificacion', None)
+                row["Huevo"] = "Trazas" if row["Huevo"].strip().lower() == "trazas" else ("Sí" if row["Huevo"].strip().lower() in ["sí", "si"] else "No")
+                row["Leche"] = "Trazas" if row["Leche"].strip().lower() == "trazas" else ("Sí" if row["Leche"].strip().lower() in ["sí", "si"] else "No")
+                row["Crustaceos"] = "Trazas" if row["Crustaceos"].strip().lower() == "trazas" else ("Sí" if row["Crustaceos"].strip().lower() in ["sí", "si"] else "No")
+                row["Cáscara"] = "Trazas" if row["Cáscara"].strip().lower() == "trazas" else ("Sí" if row["Cáscara"].strip().lower() in ["sí", "si"] else "No")
+                row["Gluten"] = "Trazas" if row["Gluten"].strip().lower() == "trazas" else ("Sí" if row["Gluten"].strip().lower() in ["sí", "si"] else "No")
+                row["Pescado"] = "Trazas" if row["Pescado"].strip().lower() == "trazas" else ("Sí" if row["Pescado"].strip().lower() in ["sí", "si"] else "No")
+                row["Altramuz"] = "Trazas" if row["Altramuz"].strip().lower() == "trazas" else ("Sí" if row["Altramuz"].strip().lower() in ["sí", "si"] else "No")
+                row["Mostaza"] = "Trazas" if row["Mostaza"].strip().lower() == "trazas" else ("Sí" if row["Mostaza"].strip().lower() in ["sí", "si"] else "No")
+                row["Cacahuetes"] = "Trazas" if row["Cacahuetes"].strip().lower() == "trazas" else ("Sí" if row["Cacahuetes"].strip().lower() in ["sí", "si"] else "No")
+                row["Apio"] = "Trazas" if row["Apio"].strip().lower() == "trazas" else ("Sí" if row["Apio"].strip().lower() in ["sí", "si"] else "No")
+                row["Sulfitos"] = "Trazas" if row["Sulfitos"].strip().lower() == "trazas" else ("Sí" if row["Sulfitos"].strip().lower() in ["sí", "si"] else "No")
+                row["Soja"] = "Trazas" if row["Soja"].strip().lower() == "trazas" else ("Sí" if row["Soja"].strip().lower() in ["sí", "si"] else "No")
+                row["Moluscos"] = "Trazas" if row["Moluscos"].strip().lower() == "trazas" else ("Sí" if row["Moluscos"].strip().lower() in ["sí", "si"] else "No")
+                row["Sésamo"] = "Trazas" if row["Sésamo"].strip().lower() == "trazas" else ("Sí" if row["Sésamo"].strip().lower() in ["sí", "si"] else "No")
+        
+                param.debug = f"Código: {row['Código']}"
+                codigo = row['Código']
+                fec_modificacion = row.get('fec_modificacion', None)
 
-            param.debug = f"fec_modificacion: {row.get('fec_modificacion', None)}"
-            if fec_modificacion:
-                param.debug = f"fec_modificacion1: {fec_modificacion}"
-                fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%Y-%m-%d %H:%M:%S")
-                # fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%d/%m/%Y")
-            else:
-                fec_modificacion = datetime.strptime('2020-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
-                # fec_modificacion = datetime.strptime('01/01/2020', "%d/%m/%Y")
-                param.debug = f"fec_modificacion2: {fec_modificacion}"
+                param.debug = f"fec_modificacion: {row.get('fec_modificacion', None)}"
+                if fec_modificacion:
+                    param.debug = f"fec_modificacion1: {fec_modificacion}"
+                    fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%Y-%m-%d %H:%M:%S")
+                    # fec_modificacion = datetime.strptime(row.get('fec_modificacion', None), "%d/%m/%Y")
+                else:
+                    fec_modificacion = datetime.strptime('2020-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
+                    # fec_modificacion = datetime.strptime('01/01/2020', "%d/%m/%Y")
+                    param.debug = f"fec_modificacion2: {fec_modificacion}"
 
-            # ------------------------------------------------------------------------------
-            # ------------------------------------------------------------------------------
-            # fec_modificacion = datetime.strptime('01/01/2026', "%d/%m/%Y")
-            fec_modificacion = datetime.strptime('2026-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
-            # ------------------------------------------------------------------------------
-            # ------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------
+                # fec_modificacion = datetime.strptime('01/01/2026', "%d/%m/%Y")
+                fec_modificacion = datetime.strptime('2026-01-01 01:01:01', "%Y-%m-%d %H:%M:%S")
+                # ------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------
 
 
-            # Consultar si el producto ya existe
-            param.debug = "select 1"
-            cursor.execute("SELECT IF(fec_modificacion = '' OR fec_modificacion IS NULL, NOW(), STR_TO_DATE(fec_modificacion, %s)) as fec_modificacion_BBDD FROM erp_productos WHERE ID = %s", ('%Y-%m-%d %H:%i:%s', codigo,))
-            resultado_dict = cursor.fetchone()
+                # Consultar si el producto ya existe
+                param.debug = "select 1"
+                cursor.execute("SELECT IF(fec_modificacion = '' OR fec_modificacion IS NULL, NOW(), STR_TO_DATE(fec_modificacion, %s)) as fec_modificacion_BBDD FROM erp_productos WHERE ID = %s", ('%Y-%m-%d %H:%i:%s', codigo,))
+                resultado_dict = cursor.fetchone()
 
-            if resultado_dict:
-                for _, campo in resultado_dict.items():
-                    param.debug = f"campo: {type(campo)}-{campo}"
-                    fec_modificacion_BBDD = campo
-                
-                param.debug = f"fec_modificacion_BBDD: {type(fec_modificacion_BBDD)}-{fec_modificacion_BBDD}"
-                if not fec_modificacion_BBDD:
-                    fec_modificacion_BBDD = fec_modificacion
+                if resultado_dict:
+                    for _, campo in resultado_dict.items():
+                        param.debug = f"campo: {type(campo)}-{campo}"
+                        fec_modificacion_BBDD = campo
+                    
+                    param.debug = f"fec_modificacion_BBDD: {type(fec_modificacion_BBDD)}-{fec_modificacion_BBDD}"
+                    if not fec_modificacion_BBDD:
+                        fec_modificacion_BBDD = fec_modificacion
 
-                param.debug = f"fec_modificacion_BBDD: {type(fec_modificacion_BBDD)}-{fec_modificacion_BBDD} - fec_modificacion: {type(fec_modificacion)}-{fec_modificacion}"
-                # Actualizar si la fecha de modificación en el Excel es posterior
-                if fec_modificacion and fec_modificacion > fec_modificacion_BBDD:
-                    modificados += 1
+                    param.debug = f"fec_modificacion_BBDD: {type(fec_modificacion_BBDD)}-{fec_modificacion_BBDD} - fec_modificacion: {type(fec_modificacion)}-{fec_modificacion}"
+                    # Actualizar si la fecha de modificación en el Excel es posterior
+                    if fec_modificacion and fec_modificacion > fec_modificacion_BBDD:
+                        modificados += 1
 
-                    param.debug = "update___"
-                    campos = ', '.join(f"{v} = %s" for k, v in mapping.items() if k in row)
-                    valores = tuple(row[k] for k in mapping.keys() if k in row) + (codigo,)
-                    # imprime([campos, valores], "*  Campos y valores", 2)
-                    cursor.execute(f"UPDATE erp_productos SET {campos} WHERE ID = %s", valores)
+                        param.debug = "update___"
+                        campos = ', '.join(f"{v} = %s" for k, v in mapping.items() if k in row)
+                        valores = tuple(row[k] for k in mapping.keys() if k in row) + (codigo,)
+                        # imprime([campos, valores], "*  Campos y valores", 2)
+                        cursor.execute(f"UPDATE erp_productos SET {campos} WHERE ID = %s", valores)
 
-                    # Procesar campos "pvp_*" para modificar en erp_productos_pvp
+                        # Procesar campos "pvp_*" para modificar en erp_productos_pvp
+                        for col in row.index:
+                            if col.startswith('pvp_') and row[col]:
+                                id_bbdd, tipo = determinar_bbdd_y_tipo(col)
+                                pvp = convertir_a_decimal(row[col])
+                                # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
+                                if pvp > 0:
+                                    param.debug = "insert/update 3___"
+                                    for x in range(0, len(id_bbdd)):
+                                        cursor.execute(
+                                            """INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
+                                                                    VALUES (%s, %s, %s, %s)
+                                                ON DUPLICATE KEY UPDATE pvp = VALUES(pvp)""",
+                                            (codigo, id_bbdd[x], tipo, pvp)
+                                        )
+                                else:
+                                    param.debug = "delete___"
+                                    for x in range(0, len(id_bbdd)):
+                                        cursor.execute("""delete from erp_productos_pvp 
+                                                        where id_producto = %s and id_BBDD = %s and tipo = %s""",
+                                            (codigo, id_bbdd[x], tipo)
+                                        )
+                                    eliminados += cursor.rowcount
+                else:
+                    insertados += 1
+                    # Insertar nuevo registro
+                    param.debug = f"insert___ {x}" #{row}"
+                    columnas = ', '.join(mapping.values())
+                    param.debug = "Marcadores__"
+                    marcadores = ', '.join(['%s'] * len(mapping))
+                    param.debug = "Valores__"
+                    valores = tuple(row[k] if k in row else '' for k in mapping.keys())
+                    param.debug = "Valores2__"
+                    valores = tuple(elemento.replace("Si", "Sí") if isinstance(elemento, str) else elemento for elemento in valores)
+                    param.debug = "Execute__"
+                    cursor.execute(f"INSERT INTO erp_productos ({columnas}) VALUES ({marcadores})", valores)
+
+                    param.debug = "Bucle precios__"
+                    # Procesar campos "pvp_*" para insertar en erp_productos_pvp
                     for col in row.index:
                         if col.startswith('pvp_') and row[col]:
                             id_bbdd, tipo = determinar_bbdd_y_tipo(col)
                             pvp = convertir_a_decimal(row[col])
                             # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
+                            param.debug = "insert 2___"
                             if pvp > 0:
-                                param.debug = "insert/update 3___"
                                 for x in range(0, len(id_bbdd)):
-                                    cursor.execute(
-                                        """INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
-                                                                  VALUES (%s, %s, %s, %s)
-                                               ON DUPLICATE KEY UPDATE pvp = VALUES(pvp)""",
+                                    cursor.execute("""INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
+                                                                            VALUES (%s, %s, %s, %s)""",
                                         (codigo, id_bbdd[x], tipo, pvp)
                                     )
-                            else:
-                                param.debug = "delete___"
-                                for x in range(0, len(id_bbdd)):
-                                    cursor.execute("""delete from erp_productos_pvp 
-                                                       where id_producto = %s and id_BBDD = %s and tipo = %s""",
-                                        (codigo, id_bbdd[x], tipo)
-                                    )
-                                eliminados += cursor.rowcount
             else:
-                insertados += 1
-                # Insertar nuevo registro
-                param.debug = f"insert___ {x}" #{row}"
-                columnas = ', '.join(mapping.values())
-                param.debug = "Marcadores__"
-                marcadores = ', '.join(['%s'] * len(mapping))
-                param.debug = "Valores__"
-                valores = tuple(row[k] if k in row else '' for k in mapping.keys())
-                param.debug = "Valores2__"
-                valores = tuple(elemento.replace("Si", "Sí") if isinstance(elemento, str) else elemento for elemento in valores)
-                param.debug = "Execute__"
-                cursor.execute(f"INSERT INTO erp_productos ({columnas}) VALUES ({marcadores})", valores)
-
-                param.debug = "Bucle precios__"
-                # Procesar campos "pvp_*" para insertar en erp_productos_pvp
-                for col in row.index:
-                    if col.startswith('pvp_') and row[col]:
-                        id_bbdd, tipo = determinar_bbdd_y_tipo(col)
-                        pvp = convertir_a_decimal(row[col])
-                        # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
-                        param.debug = "insert 2___"
-                        if pvp > 0:
-                            for x in range(0, len(id_bbdd)):
-                                cursor.execute("""INSERT INTO erp_productos_pvp (id_producto, id_BBDD, tipo, pvp)
-                                                                         VALUES (%s, %s, %s, %s)""",
-                                    (codigo, id_bbdd[x], tipo, pvp)
-                                )
+                print(row["Descripción"])
+            
 
         # Confirmar transacciones y cerrar conexión
         conn_mysql.commit()

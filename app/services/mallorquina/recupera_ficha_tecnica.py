@@ -34,7 +34,61 @@ def proceso(param: InfoTransaccion) -> list:
         conn_mysql = get_db_connection_mysql()
         cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
-        cursor_mysql.execute("SELECT * FROM erp_productos WHERE ID = %s",
+        cursor_mysql.execute("""SELECT  t.ID, 
+                                        t.nombre, 
+                                        t.codigo_barras, 
+                                        t.composicion_etiqueta, 
+                                        t.composicion_completa, 
+                                        t.temporada, 
+                                        t.descatalogado, 
+                                        t.familia_cod, 
+                                        t.familia_desc, 
+                                        t.grupo_de_carta, 
+                                        t.centro_preparacion_1, t.centro_preparacion_2, t.centro_preparacion_3, 
+                                        t.alta_tpv,             t.alta_glovo,           t.alta_web,             t.alta_catering, 
+                                        t.codigo_alergenos,     t.listado_alergenos,    t.nombre_alergenos, 
+                                        -- Alérgenos: toma de la fila de alérgenos si corresponde
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.huevo ELSE t.huevo END AS huevo,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.leche ELSE t.leche END AS leche,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.crustaceos ELSE t.crustaceos END AS crustaceos,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.cascara ELSE t.cascara END AS cascara,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.gluten ELSE t.gluten END AS gluten,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.pescado ELSE t.pescado END AS pescado,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.altramuz ELSE t.altramuz END AS altramuz,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.mostaza ELSE t.mostaza END AS mostaza,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.cacahuetes ELSE t.cacahuetes END AS cacahuetes,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.apio ELSE t.apio END AS apio,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.sulfitos ELSE t.sulfitos END AS sulfitos,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.soja ELSE t.soja END AS soja,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.moluscos ELSE t.moluscos END AS moluscos,
+                                        CASE WHEN t.codigo_alergenos != t.ID AND t_alerg.ID IS NOT NULL THEN t_alerg.sesamo ELSE t.sesamo END AS sesamo,
+                                        -- resto de campos igual que antes
+                                        t.poblacion_diana, 
+                                        t.uso_esperado, 
+                                        t.condiciones_almacenamiento, 
+                                        t.condiciones_conservacion, 
+                                        t.vida_fri_desde_fabric, 
+                                        t.peso_neto_aprox, 
+                                        t.rec_aerobios_totales, 
+                                        t.rec_enterobacterias, 
+                                        t.rec_escherichia_coli, 
+                                        t.rec_staphylococcus_aureus, 
+                                        t.det_salmonella_cpp, 
+                                        t.rec_listeria_monocytogenes, 
+                                        t.rec_mohos_y_levaduras, 
+                                        t.valor_energetico_kcal_kj, 
+                                        t.grasas_g, 
+                                        t.de_las_cuales_saturadas_g, 
+                                        t.hidratos_de_carbono_g, 
+                                        t.de_los_cuales_azucares_g, 
+                                        t.proteinas_g, 
+                                        t.sal_g, 
+                                        t.fibra_dietetica_g, 
+                                        t.otros, 
+                                        t.fec_modificacion
+                                   FROM erp_productos t
+                                    LEFT JOIN erp_productos t_alerg ON t.codigo_alergenos = t_alerg.ID
+                                    WHERE t.ID = %s""",
                              (id_producto,))
         producto = cursor_mysql.fetchone()
         close_connection_mysql(conn_mysql, cursor_mysql)
@@ -71,7 +125,7 @@ def generar_html(param: InfoTransaccion, producto: dict) -> str:
         composicion = imprimible(param, producto)
         if 1 == 1: # composicion: 
             id_producto = producto['ID']
-            imprime([producto], "-    ..... Datos de productos .....", 2)
+            # imprime([producto], "-    ..... Datos de productos .....", 2)
             ficha_campos = {
                 'codigo': id_producto,
                 'nombre': producto.get("nombre", "").strip() or " ",
@@ -120,6 +174,7 @@ def generar_html(param: InfoTransaccion, producto: dict) -> str:
                 'vida_en_congelacion': producto.get("vida_en_congelacion", "").strip() or " ",
             }
             fichas_content += reemplazar_campos(fichas_html, ficha_campos)
+            # imprime([ficha_campos], "-    ..... Datos de la ficha técnica .....", 2)
 
         return fichas_content
     
@@ -181,7 +236,7 @@ def reemplazar_fijos(param, plantilla):
 #----------------------------------------------------------------------------------------
 def reemplazar_campos(plantilla, campos):
     for placeholder, valor in campos.items():
-        imprime([placeholder, "{"+f"{placeholder}"+"}", valor, valor or f"{placeholder}"],'=')
+        # imprime([placeholder, "{"+f"{placeholder}"+"}", valor, valor or f"{placeholder}"],'=')
         plantilla = plantilla.replace("{"+f"{placeholder}"+"}", f"{valor}" or f"{placeholder}")
 
     return plantilla
@@ -211,24 +266,24 @@ def imprimible(param: InfoTransaccion, fila):
 #----------------------------------------------------------------------------------------
 # Graba un archivo pero previamente hace una copia del mismo si ya existe
 #----------------------------------------------------------------------------------------
-def graba_archivo(param: InfoTransaccion, archivo: str, contenido: str):
-    try: 
-        # Verificar si el archivo ya existe
-        if os.path.exists(archivo):
-            # Crear el nombre del archivo de copia con fecha y hora
-            timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
-            backup_nombre = f"{os.path.splitext(archivo)[0]}_{timestamp}.html"
+# def graba_archivo(param: InfoTransaccion, archivo: str, contenido: str):
+#     try: 
+#         # Verificar si el archivo ya existe
+#         if os.path.exists(archivo):
+#             # Crear el nombre del archivo de copia con fecha y hora
+#             timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+#             backup_nombre = f"{os.path.splitext(archivo)[0]}_{timestamp}.html"
 
-            # Copiar el archivo con el nuevo nombre
-            shutil.copy(archivo, backup_nombre)
+#             # Copiar el archivo con el nuevo nombre
+#             shutil.copy(archivo, backup_nombre)
 
-        # Guardar el nuevo archivo
-        with open(archivo, 'w', encoding='utf-8') as f:
-            f.write(contenido)
+#         # Guardar el nuevo archivo
+#         with open(archivo, 'w', encoding='utf-8') as f:
+#             f.write(contenido)
 
 
 
-    except Exception as e:
-        param.error_sistema(e=e, debug="graba_archivo.Exception")
-        raise 
+#     except Exception as e:
+#         param.error_sistema(e=e, debug="graba_archivo.Exception")
+#         raise 
 

@@ -1,6 +1,7 @@
 import os
 import shutil
 from datetime import datetime
+import pymysql
 
 from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
@@ -8,11 +9,11 @@ from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
 # Rutas de los archivos
-LOGO =        os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
-RUTA_ICONOS = os.path.join(settings.RUTA_LOCAL, settings.RUTA_IMAGEN, "alergenos/")
+LOGO =        os.path.join(settings.WEB_RUTA_LOCAL, settings.WEB_RUTA_IMAGEN, "Logotipo con tagline - negro.svg")
+RUTA_ICONOS = os.path.join(settings.WEB_RUTA_LOCAL, settings.WEB_RUTA_IMAGEN, "alergenos/")
 
-PLANTILLA       = os.path.join(settings.RUTA_ALERGENOS, "plantilla.html")
-PLANTILLA_FICHA = os.path.join(settings.RUTA_ALERGENOS, "plantilla_producto.html")
+PLANTILLA       = os.path.join(settings.RUTA_ALERGENOS, "plantilla_productos.html")
+PLANTILLA_FICHA = os.path.join(settings.RUTA_ALERGENOS, "plantilla_ficha_tecnica.html")
 
 FICH_NO_IMPRIMIBLES = os.path.join(settings.RUTA_ALERGENOS_HTML, "no_imprimibles.csv")
 
@@ -37,41 +38,15 @@ def proceso(param: InfoTransaccion) -> list:
             punto_venta = param.parametros[1]
 
         param.debug = f"{salida}"
-        # Conectar a la base de datos
         conn_mysql = get_db_connection_mysql()
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
+        cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
-        # Consultar los datos principales  CUANDO CARGEMOS LOS PRECIOS BIEN, HAY QUE CAMBIAR el WHERE para solo coger productos que se vendan en "punto_venta"
-        cursor_mysql.execute("""SELECT * FROM erp_productos "
-        "                        WHERE (alta_tpv = 'Sí' 
-                                    or alta_glovo = 'Sí' 
-                                    or alta_web = 'Sí' 
-                                    or alta_catering = 'Sí')
-                             --    and listado_alergeno = 'Sí'
-                             --    and cod_referencia = codigo
-                                 ORDER BY familia_desc, nombre
-                             """)
+        cursor_mysql.execute("SELECT * FROM erp_productos WHERE descatalogado = 'No' ORDER BY nombre")
         productos = cursor_mysql.fetchall()
-
-        # Consultar los precios
-        cursor_mysql.execute("""SELECT a.id, a.id_producto, a.id_bbdd, a.tipo, a.pvp , b.nombre 
-                                  FROM erp_productos_pvp a
-                                 inner join mll_cfg_bbdd b on b.id = a.id_bbdd
-                                 order by a.id_producto, a.id_bbdd, a.tipo""")
-        precios = cursor_mysql.fetchall()
-
-        # Crear un diccionario de precios por ID
-        precios_dict = {}
-        for precio in precios:
-            id_producto = precio['id_producto']
-            if id_producto not in precios_dict:
-                precios_dict[id_producto] = []
-            precios_dict[id_producto].append(precio)
-
         close_connection_mysql(conn_mysql, cursor_mysql)
 
         # Generación del HTML
-        html = generar_html(param, productos, precios_dict, punto_venta)
+        html = generar_html(param, productos, punto_venta)
 
         # Guardar el archivo HTML
         graba_archivo(param, salida, html)
@@ -92,7 +67,7 @@ def proceso(param: InfoTransaccion) -> list:
 #----------------------------------------------------------------------------------------
 # Generar el HTML completo
 #----------------------------------------------------------------------------------------
-def generar_html(param: InfoTransaccion, productos: list, precios: dict, punto_venta: int) -> str: 
+def generar_html(param: InfoTransaccion, productos: list, punto_venta: int) -> str: 
     param.debug = "generar_html"
     html_final = ""
 
@@ -112,7 +87,7 @@ def generar_html(param: InfoTransaccion, productos: list, precios: dict, punto_v
 
         # Solo hacemos fichas cuando se generen todos los productos
         if punto_venta == 0:
-            fichas(param, productos, precios)
+            fichas(param, productos)
 
         return html_final
     
@@ -142,8 +117,9 @@ def reemplazar_fijos(param, plantilla):
     html = plantilla
     try:
         ruta = os.path.join(RUTA_ICONOS, "")
+
         html = html.replace("{LOGO}", LOGO)
-        html = html.replace("{titulo_principal}", "Alérgenos alimentarios")
+        html = html.replace("{titulo_principal}", "Listado de productos")
         html = html.replace("{Huevo}", f"{ruta}Huevo.ico")
         html = html.replace("{Leche}", f"{ruta}Leche.ico")
         html = html.replace("{Crustaceos}", f"{ruta}Crustaceos.ico")
@@ -179,22 +155,9 @@ def indice(param, productos):
         for producto in productos:
             composicion = imprimible(param, producto)
             if composicion: 
-                if producto['familia_desc'] != familia_actual:
-                    indice_alergenos += f"<tr id='familia'><td colspan='15'><p class='lista-familia'>{producto['familia_desc']}</p></td></tr>\n"
-                    familia_actual = producto['familia_desc']
-
                 indice_alergenos += f"<tr id='producto'>"
-                # indice_alergenos += f"<td><p class='lista-producto'><a href='#{producto['ID']}'>{producto['nombre']}</a></p></td>"
-                indice_alergenos += f"<td><p class='lista-producto'><a href='fichas/{producto['ID']}.html' target='_blank' rel='noopener noreferrer'>{producto['nombre']}</a></p></td>"
-
-                for alergeno in ['huevo', 'leche', 'crustaceos', 'cascara', 'gluten', 'pescado', 'altramuz', 'mostaza', 'cacahuetes', 'apio', 'sulfitos', 'soja', 'moluscos', 'sesamo']:
-                    valor = producto.get(alergeno, "")
-                    if valor == "Sí":
-                        indice_alergenos += f"<td><p class='lista-X'>X</p></td>"
-                    elif valor == "Trazas":
-                        indice_alergenos += f"<td><p class='lista-T'>T</p></td>"
-                    else:
-                        indice_alergenos += f"<td><p class='lista-X'>&nbsp;</p></td>"
+                indice_alergenos += f"<td><p class='lista-producto'><a href='fichas/{producto['ID']}.html' target='_blank' rel='noopener noreferrer'>{producto['ID']}</a></p></td>"
+                indice_alergenos += f"<td><p class='lista-producto'>{producto['nombre']}</p></td>"
                 indice_alergenos += "</tr>\n"
 
         return indice_alergenos
@@ -219,7 +182,7 @@ def reemplazar_campos(plantilla, campos):
 #----------------------------------------------------------------------------------------
 # Reemplazar FICHAS
 #----------------------------------------------------------------------------------------
-def fichas(param: InfoTransaccion, productos: list, precios: dict):
+def fichas(param: InfoTransaccion, productos: list):
     fichas_html = cargar_plantilla(param, PLANTILLA_FICHA)
     plantilla_fichas = os.path.join(settings.RUTA_ALERGENOS_HTML, "fichas/")
 
@@ -297,17 +260,6 @@ def fichas(param: InfoTransaccion, productos: list, precios: dict):
                     'vida_en_congelacion': producto.get("vida_en_congelacion", "").strip() or " ",
                 }
                 fichas_content += reemplazar_campos(fichas_html, ficha_campos)
-                
-                # Generar la sección de precios
-                if id_producto in precios:
-                    precios_content = ""
-                    precios_content += f"<h3>Precios para {producto['nombre']}</h3><ul>"
-
-                    # datos_ordenados = sorted(datos, key=lambda x: (x['id_producto'], x['id_bbdd'], x['tipo']))
-                    for precio in precios[id_producto]:
-                        precios_content += f"<li>{precio['nombre']} - {precio['tipo']}: {precio['pvp']}</li>"
-                    precios_content += "</ul>"
-                fichas_content = reemplazar_campos(fichas_content, {'precios': precios_content})
 
                 # Guardar la ficha en el archivo HTML
                 with open(f"{plantilla_fichas}{id_producto}.html", 'w', encoding='utf-8') as f:

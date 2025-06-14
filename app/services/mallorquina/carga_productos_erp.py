@@ -131,7 +131,7 @@ def carga (param: InfoTransaccion, excel):
         # Procesar registros del Excel
         for x, row in df.iterrows():
             row = row.fillna('')  # Reemplazar valores NaN con cadenas vacías
-            if row["Descripción"].startswith(("4-", "2-")):
+            if row["Descripción"].startswith(("4-", "2-", "0-")):
                 # if not row["Descripción"].startswith(("4-", "2-")):
                 #     row["Listado_alergenos"]  = 'No'   # Me da igual lo que diga el listado de alergenos, si no es de estos grupos, no sale en el listado
                 if row["Codigo_alergenos"] == '':      # Verificar si el valor está vacío

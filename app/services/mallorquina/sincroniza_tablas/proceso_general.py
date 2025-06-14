@@ -302,6 +302,8 @@ def generar_where(param: InfoTransaccion, lista_pk_campos, lista_pk_valores, lis
                     where_clause.append(formatted_value)
         
         # Unir las condiciones con AND
+        imprime([where_clause], "*  WHERE", 2)
+
         return f"WHERE {' AND '.join(where_clause)}"
 
     except Exception as e:

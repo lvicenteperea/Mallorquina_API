@@ -1,4 +1,7 @@
 *.log
+*.log.*
+*.pyc
+*.pyo
 .env
 app/config/settings.py
 app/ficheros/datos/alergenos/reports/*

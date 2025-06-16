@@ -5,10 +5,10 @@
 #       chmod +x sincroniza.py
 #
 # Luego en el crontab poner algo parecido a esto:
-#       0 3 * * * \ruta_completa\scripts\crontab\sincroniza.py --id_app 1 --user "Crontab" --parametros NO_HAY >> /ruta_completa/logs/Sincroniza.log 2>&1
+#       0 3 * * * scripts\crontab\sincroniza.py --id_app 1 --user "Crontab"  >> /ruta_completa/logs/Sincroniza.log 2>&1
 #
 # En Vindows:
-#       python sincroniza.py --id_app 1 --user "Crontab" --parametros NO_HAY
+#       python sincroniza.py --id_app 1 --user "Crontab"
 """
 import argparse
 
@@ -25,15 +25,15 @@ def main():
     )
     parser.add_argument('--id_app', type=int, default=0, help='ID de la aplicación')
     parser.add_argument('--user', type=str, default='Sistema_', help='Usuario del sistema que ejecuta')
-    parser.add_argument('--parametros', nargs='+', help='Lista de parámetros principales (ej:  NO_HAY1  NO_HAY2)', required=True)
+    # parser.add_argument('--parametros', nargs='+', help='Lista de parámetros principales (ej:  NO_HAY1  NO_HAY2)', required=True)
 
     args = parser.parse_args()
 
     # Prepara el objeto InfoTransaccion
     info = InfoTransaccion(
         id_App=args.id_app,
-        user=args.user,
-        parametros=[args.parametros]
+        user=args.user
+        # ,parametros=[args.parametros]
     )
 
     # Llama a la función REAL de sincronización
@@ -41,7 +41,6 @@ def main():
 
     print("\n------ RESULTADO FINAL ------")
     print("Resultado:", resultado)
-    print("InfoTransaccion:", info.json(indent=2, ensure_ascii=False))
 
 if __name__ == '__main__':
     main()

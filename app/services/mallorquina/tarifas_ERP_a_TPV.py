@@ -111,7 +111,7 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                 # Crear DataFrame y exportar a Excel
                 df_export = pd.DataFrame(data, columns=COLUMNAS_EXCEL)
                 output_file = f"{output_path}{tienda}.xlsx"
-                df_export.to_excel(f"{PATH}{output_file}", index=False)
+                df_export.to_excel(f"{PATH}{output_file}", index=False, sheet_name="Productos")
                 
                 resultado.append({"fichero": f'{output_file}', "texto": f'{tienda}: {len(data)} precios de {total_filas}'})
 

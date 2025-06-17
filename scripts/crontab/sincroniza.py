@@ -5,7 +5,7 @@
 #       chmod +x sincroniza.py
 #
 # Luego en el crontab poner algo parecido a esto:
-#       0 3 * * * scripts\crontab\sincroniza.py --id_app 1 --user "Crontab"  >> /ruta_completa/logs/Sincroniza.log 2>&1
+#       0 3 * * * python scripts\crontab\sincroniza.py --id_app 1 --user "Crontab"  >> logs\Sincroniza.log 2>&1
 #
 # En Vindows:
 #       python sincroniza.py --id_app 1 --user "Crontab"

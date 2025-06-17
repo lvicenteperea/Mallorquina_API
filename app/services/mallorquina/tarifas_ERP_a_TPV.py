@@ -66,7 +66,8 @@ def proceso(param: InfoTransaccion) -> list:
 # Generar los archivos Excel por tienda
 def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
     resultado = []
-    error_log_path = f"{PATH}errores_{datetime.now().strftime('%Y%m%d%H%M%S')}.log"
+    error_log_nombre = f"errores_{datetime.now().strftime('%Y%m%d%H%M%S')}.log"
+    error_log_path = f"{PATH}{error_log_nombre}"
     errores = []
 
     try:
@@ -85,7 +86,8 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                 terraza = producto.loc[producto["tipo"] == "Terraza", "pvp"].values[0] if "Terraza" in producto["tipo"].values else ""
 
                 # Si todas las columnas de precio están vacías, omitir el registro
-                if not barra and not comedor and not terraza:
+                if (not barra or barra == 0) and (not comedor or comedor == 0) and (not terraza or terraza == 0):
+                    errores.append(f"Producto {producto_id} de la tienda {tienda} no tiene precio ni de barra, ni de comedor, ni de terraza")
                     continue
 
                 grupo_carta = producto.iloc[0]["Grupo Carta 1"]
@@ -106,7 +108,8 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
             filas = len(data)
             if filas == 0:
                 print(f"No hay datos para la tienda {tienda}")
-                resultado.append(f"No hay datos para la tienda {tienda}")
+                resultado.append({"fichero": f'{output_file}', "texto": f'{tienda}: {len(data)} precios de {total_filas}'})
+                # resultado.append(f"No hay datos para la tienda {tienda}")
             else:
                 # Crear DataFrame y exportar a Excel
                 df_export = pd.DataFrame(data, columns=COLUMNAS_EXCEL)
@@ -119,6 +122,7 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
             with open(error_log_path, "w") as error_file:
                 for error in errores:
                     error_file.write(error + "\n")
+            resultado.append({"fichero": f'{error_log_nombre}', "texto": f'errores: {len(error_log_path)}'})
 
         return resultado
 

@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from app.utils.InfoTransaccion import InfoTransaccion
 import os
+from pathlib import Path
 # import shutil
 import zipfile
 import tempfile
@@ -36,10 +37,10 @@ def proceso(param: InfoTransaccion):
     
 
     except MiException as e:
-        param.error_sistema(e=e, debug="MiExcepción descarga.proceso")
+        param.error_sistema(e=e, debug=f"{funcion}.MiExcepción")
         raise
     except Exception as e:
-        param.error_sistema(e=e, debug="Excepción descarga.proceso")
+        param.error_sistema(e=e, debug=f"{funcion}.Excepción")
         raise
 
 
@@ -48,18 +49,19 @@ def proceso(param: InfoTransaccion):
 def descarga_fichero(param: InfoTransaccion, path: str, nombres: list):
     try:
 
-        DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, path)
-
         if len(nombres) != 1:
             raise MiException(param,f"No viene un nombre de fichero, vienen:  {len(nombres)}-{nombres}", -1)
         else:
             nombre = nombres[0]
 
         # Construir la ruta completa del archivo
-        file_path = os.path.join(DOWNLOAD_PATH, nombre)
+        # DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, path)
+        # file_path = os.path.join(DOWNLOAD_PATH, nombre)
+        file_path = Path(settings.RUTA_LOCAL) / path / nombre
         
         # Verificar si el archivo existe
-        if not os.path.exists(file_path):
+        # if not os.path.exists(file_path):
+        if not file_path.exists():
             raise MiException(param,f"Archivo '{file_path}' no encontrado", -1)
         
         # Crear una respuesta mixta con el archivo y el JSON con la descripción

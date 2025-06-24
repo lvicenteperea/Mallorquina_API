@@ -281,16 +281,31 @@ def carga (param: InfoTransaccion, excel):
 # -----------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------
 def determinar_bbdd_y_tipo(columna):
+    """
+        Carga de precios por ID_BBDD. Formato estructura:
+            'Nombre de la columna en el excel': ([lista Ids de BBDD a las que asignar], 'Zona de la tienda'),
+
+        y ejemplos (hay tres 'zonas' como máximo por tienda, aunque se pueden añadir más, como por ejemplo "Menú del día"):
+            'pvp_tienda_quevedo': ([4, 5], 'Barra'),
+            'pvp_tienda_quevedo': ([4], 'Comedor'),
+            'pvp_terraza_quevedo': ([4], 'Terraza'),
+
+        Si no se pone una Zona, pues es que no tiene esa zona.
+    """
     mapping_bbdd_tipo = {
-        # 'pvp_tienda_sol_quevedo': ([4, 5], 'Barra'),
-        'pvp_tienda_sol_quevedo': ([4, 5], 'Comedor'),
+        'pvp_tienda_velazquez': ([2], 'Comedor'),
+
+        'pvp_tienda_mg': ([3], 'Comedor'),
+
+        'pvp_tienda_quevedo': ([4], 'Comedor'),
         'pvp_terraza_quevedo': ([4], 'Terraza'),
 
-        # 'pvp_tienda_velzquez_mg': ([1, 3, 6], 'Barra'),
-        'pvp_tienda_velazquez_mg': ([1, 3, 6], 'Comedor'),
+        # 'pvp_tienda_mg_Kiosko': ([6], 'Barra'),   NO SE LLAMABA ASI; IBA CON VELAZQUEZ, PERO PARA TENRELO ORDENADO
+        # 'pvp_tienda_mg_Kiosko': ([6], 'Comedor'),
 
-        # 'pvp_salon_sol': ([7], 'Barra'),
-        'pvp_salon_sol': ([7], 'Comedor'),
+        'pvp_tienda_sol': ([5, 7], 'Comedor'),  # Cafetería y Bombonería
+
+        'pvp_salon_sol': ([8], 'Comedor'),
 
         'pvp_web': ([91], 'Web'),
         'pvp_glovo': ([92], 'Glovo'),

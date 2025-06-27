@@ -8,12 +8,27 @@ from app.config.settings import settings
 
 PATH: str = settings.RUTA_TPV # f"{settings.RUTA_DATOS}tarifas_a_TPV/"
 # Definición de las tiendas y su correspondencia con id_bbdd
+"""
+  En la carga del ERP a TPV, se asignan los precios de las tiendas a los tipos de servicio.
+    'pvp_tienda_velazquez': ([2], '*****'),
+    'pvp_tienda_mg': ([3], '*****'),
+    'pvp_tienda_quevedo': ([4], '*****'),
+  # 'pvp_tienda_mg_Kiosko': ([6], '*****'),
+    'pvp_tienda_sol': ([5, 7], '*****'),  # Cafetería (Barra de la izquierda) y Bombonería (Tienda de la derecha)
+    'pvp_salon_sol': ([8], '*****'),
+
+    'pvp_web': ([91], 'Web'),
+    'pvp_glovo': ([92], 'Glovo'),
+    'pvp_catering': ([90], 'Catering')
+"""
 TIENDAS = {
-    5: "Sol",
-    4: "Quevedo",
-    1: "Velazquez",
-    6: "Moraleja",
-    7: "Salon_SOL"
+    2: "Velazquez",
+    3: "Moraleja",
+    4: "Quevedo",    
+    5: "Sol_Cafeteria",  # Cafetería (Barra de la izquierda)
+  # 6: "Kiosko_MG",
+    7: "Sol_Bonboneria",
+    8: "Sol_Salon",
 }
 
 COLUMNAS_EXCEL = [
@@ -24,21 +39,26 @@ COLUMNAS_EXCEL = [
 ]
 
 # Consulta SQL para obtener los datos de ambas tablas
-QUERY = """
+QUERY = f"""
 SELECT p.ID AS 'Id Plato', 
     p.nombre AS 'Descripcion',
-    p.codigo_barras AS 'Código Barras',
+    CASE 
+        WHEN p.codigo_barras = p.ID THEN NULL
+        ELSE p.codigo_barras
+    END AS 'Código Barras',
     p.grupo_de_carta AS 'Grupo Carta 1',
     p.centro_preparacion_1 AS 'Centro',
     p.centro_preparacion_2 AS 'Centro 2',
     p.centro_preparacion_3 AS 'Centro 3',
+    p.lleva_codigo_barras AS 'Lleva_Codigo_Barras',
     pv.id_bbdd,
     pv.tipo,
     pv.pvp
 FROM erp_productos p
 LEFT JOIN erp_productos_pvp pv ON p.ID = pv.id_producto
-WHERE pv.id_bbdd IN (1, 3, 4, 5, 6, 7)
+WHERE pv.id_bbdd IN ({",".join(map(str, TIENDAS.keys()))}) -- (2, 3, 4, 5, 7, 8)
 and p.alta_tpv = "Sí"
+and p.descatalogado = "No"
 """
 
 
@@ -101,7 +121,8 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
                     barra, comedor, terraza,
                     "", "", "", "", "", "",
                     grupo_carta, "", "", "",
-                    "", producto.iloc[0]["Código Barras"],
+                    "",
+                    producto.iloc[0]["Código Barras"] if producto.iloc[0]["Lleva_Codigo_Barras"] in('Sí', 'Si') else "",
                     producto.iloc[0]["Centro"], producto.iloc[0]["Centro 2"], producto.iloc[0]["Centro 3"]
                 ])
 

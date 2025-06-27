@@ -70,6 +70,7 @@ def carga (param: InfoTransaccion, excel):
             'Código': 'ID',
             'Nombre': 'nombre',
             'Código de barras': 'codigo_barras',
+            'Cod_ Barras_TPV': 'lleva_codigo_barras',
             'Composición_para_etiqueta': 'composicion_etiqueta',
             'Composición_completa': 'composicion_completa',
             'temporada': 'temporada',
@@ -294,18 +295,23 @@ def determinar_bbdd_y_tipo(columna):
     """
     mapping_bbdd_tipo = {
         'pvp_tienda_velazquez': ([2], 'Comedor'),
+        'pvp_tienda_velazquez': ([2], 'Barra'),
 
         'pvp_tienda_mg': ([3], 'Comedor'),
+        'pvp_tienda_mg': ([3], 'Barra'),
 
         'pvp_tienda_quevedo': ([4], 'Comedor'),
+        'pvp_tienda_quevedo': ([4], 'Barra'),
         'pvp_terraza_quevedo': ([4], 'Terraza'),
 
         # 'pvp_tienda_mg_Kiosko': ([6], 'Barra'),   NO SE LLAMABA ASI; IBA CON VELAZQUEZ, PERO PARA TENRELO ORDENADO
         # 'pvp_tienda_mg_Kiosko': ([6], 'Comedor'),
 
-        'pvp_tienda_sol': ([5, 7], 'Comedor'),  # Cafetería y Bombonería
+        'pvp_tienda_sol': ([5, 7], 'Comedor'),  # Cafetería (Barra de la izquierda) y Bombonería (Tienda de la derecha)
+        'pvp_tienda_sol': ([5, 7], 'Barra'),  # Cafetería (Barra de la izquierda) y Bombonería (Tienda de la derecha)
 
         'pvp_salon_sol': ([8], 'Comedor'),
+        'pvp_salon_sol': ([8], 'Barra'),
 
         'pvp_web': ([91], 'Web'),
         'pvp_glovo': ([92], 'Glovo'),

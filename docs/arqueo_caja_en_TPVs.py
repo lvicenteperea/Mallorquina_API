@@ -40,11 +40,11 @@ def proceso(param: InfoTransaccion) -> list:
         cursor_mysql = conn_mysql.cursor(dictionary=True)
 
         param.debug = "Select"
-        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where activo= 'S'") 
+        cursor_mysql.execute("SELECT * FROM mll_cfg_bbdd where cierre_caja = 'S'") 
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime([f"Procesando TIENDA: {json.loads(bbdd['Conexion'])['database']}"], "-")
+            imprime([f"📚 Procesando TIENDA: {bbdd['nombre']} - {json.loads(bbdd['Conexion'])['database']}"], "-")
             fechas = []
             if not fecha: # si no tiene parametro fecha
                 # if bbdd['ultimo_cierre']: # si tiene último cierre

@@ -39,27 +39,28 @@ COLUMNAS_EXCEL = [
 ]
 
 # Consulta SQL para obtener los datos de ambas tablas
-QUERY = f"""
-SELECT p.ID AS 'Id Plato', 
-    p.nombre AS 'Descripcion',
-    CASE 
-        WHEN p.codigo_barras = p.ID THEN NULL
-        ELSE p.codigo_barras
-    END AS 'Código Barras',
-    p.grupo_de_carta AS 'Grupo Carta 1',
-    p.centro_preparacion_1 AS 'Centro',
-    p.centro_preparacion_2 AS 'Centro 2',
-    p.centro_preparacion_3 AS 'Centro 3',
-    p.lleva_codigo_barras AS 'Lleva_Codigo_Barras',
-    pv.id_bbdd,
-    pv.tipo,
-    pv.pvp
-FROM erp_productos p
-LEFT JOIN erp_productos_pvp pv ON p.ID = pv.id_producto
-WHERE pv.id_bbdd IN ({",".join(map(str, TIENDAS.keys()))}) -- (2, 3, 4, 5, 7, 8)
-and p.alta_tpv = "Sí"
-and p.descatalogado = "No"
-"""
+# QUERY = f"""
+# SELECT p.ID AS 'Id Plato', 
+#     p.nombre AS 'Descripcion',
+#     CASE 
+#         WHEN p.codigo_barras = p.ID THEN NULL
+#         ELSE p.codigo_barras
+#     END AS 'Código Barras',
+#     p.grupo_de_carta AS 'Grupo Carta 1',
+#     p.centro_preparacion_1 AS 'Centro',
+#     p.centro_preparacion_2 AS 'Centro 2',
+#     p.centro_preparacion_3 AS 'Centro 3',
+#     p.lleva_codigo_barras AS 'Lleva_Codigo_Barras',
+#     pv.id_bbdd,
+#     pv.tipo,
+#     pv.pvp
+# FROM erp_productos p
+# LEFT JOIN erp_productos_pvp pv ON p.ID = pv.id_producto
+# WHERE p.ID IN %s -- Lista de productos a filtrar
+# and pv.id_bbdd IN ({",".join(map(str, TIENDAS.keys()))}) -- (2, 3, 4, 5, 7, 8)
+# and p.alta_tpv = "Sí"
+# and p.descatalogado = "No"
+# """
 
 
 #----------------------------------------------------------------------------------------
@@ -67,11 +68,14 @@ and p.descatalogado = "No"
 def proceso(param: InfoTransaccion) -> list:
     resultado = []
     param.debug = "proceso"
-
+ 
     try:
+        listaCodigos = ','.join(map(str, param.parametros[0])) if len(param.parametros) > 0 and param.parametros[0] else 'p.id'
+        imprime([f"Lista de códigos: {listaCodigos}", param.parametros[0]], "*", 2)
+        
         output_path = f"tarifas_{datetime.now().strftime('%Y%m%d%H%M%S')}_"
 
-        df = obtener_datos(param)
+        df = obtener_datos(param, listaCodigos)
         resultado = generar_excel(param, df, output_path)
         
         return resultado
@@ -156,13 +160,37 @@ def generar_excel(param: InfoTransaccion, df, output_path: str) -> list:
 
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 
-def obtener_datos(param: InfoTransaccion) -> pd.DataFrame:
+def obtener_datos(param: InfoTransaccion, listaCodigos) -> pd.DataFrame:
+    consulta = f"""
+                    SELECT p.ID AS 'Id Plato', 
+                        p.nombre AS 'Descripcion',
+                        CASE 
+                            WHEN p.codigo_barras = p.ID THEN NULL
+                            ELSE p.codigo_barras
+                        END AS 'Código Barras',
+                        p.grupo_de_carta AS 'Grupo Carta 1',
+                        p.centro_preparacion_1 AS 'Centro',
+                        p.centro_preparacion_2 AS 'Centro 2',
+                        p.centro_preparacion_3 AS 'Centro 3',
+                        p.lleva_codigo_barras AS 'Lleva_Codigo_Barras',
+                        pv.id_bbdd,
+                        pv.tipo,
+                        pv.pvp
+                    FROM erp_productos p
+                    LEFT JOIN erp_productos_pvp pv ON p.ID = pv.id_producto
+                    WHERE p.ID IN ({listaCodigos}) -- Lista de productos a filtrar
+                    and pv.id_bbdd IN ({",".join(map(str, TIENDAS.keys()))}) -- (2, 3, 4, 5, 7, 8)
+                    and p.alta_tpv = "Sí"
+                    and p.descatalogado = "No"
+                """
     try: 
+
+        
         param.debug = "obtener_datos"
         conn_mysql = get_db_connection_mysql()
 
         param.debug = "read_sql_query"
-        df = pd.read_sql_query(QUERY, conn_mysql)
+        df = pd.read_sql_query(consulta, conn_mysql)
 
         conn_mysql.close()
         return df

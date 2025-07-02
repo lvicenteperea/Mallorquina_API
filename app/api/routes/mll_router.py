@@ -239,8 +239,11 @@ async def mll_alergenos(request: Request, body_params: FichasTecnicasRequest = B
 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
+class ConvierteTarifasRequest(ParamRequest):
+    codigos: List[int] = []
+    
 @router.post("/mll_convierte_tarifas", response_model=InfoTransaccion)
-async def mll_convierte_tarifas(request: Request, body_params: ParamRequest = Body(...)):
+async def mll_convierte_tarifas(request: Request, body_params: ConvierteTarifasRequest = Body(...)):
     """ Genera tarifas para los TPVs de Infosoft. """
     return await procesar_request(request, body_params, tarifas_ERP_a_TPV, "mll_convierte_tarifas")
 

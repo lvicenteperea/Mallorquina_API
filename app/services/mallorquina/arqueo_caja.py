@@ -265,7 +265,9 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
                     )
                     medios_pago_registros  += cursor_mysql.rowcount
 
-        if ventas_registros != 0:
+        if ventas_registros == 0:
+            resultado = [f"para el {fecha} y entidad {id_entidad}: No se han creado ventas"]
+        else:
             resultado = [f"para el {fecha} y entidad {id_entidad}: se han creado {ventas_registros} regsitros de venta, con un total de {total_ventas}€ ({cierre[4]}) para {total_operaciones} operaciones. En Medios de pago se han creado {medios_pago_registros} registros"]
 
         return resultado

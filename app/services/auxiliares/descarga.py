@@ -59,6 +59,8 @@ def descarga_fichero(param: InfoTransaccion, path: str, nombres: list):
         # file_path = os.path.join(DOWNLOAD_PATH, nombre)
         file_path = Path(settings.RUTA_LOCAL) / path / nombre
         
+        print("   ------->    ", file_path, nombre)
+        print("   ------->     E:\\Nube\\Github\\Mallorquina_API\\app\\ficheros\\datos\\tarifas_a_TPV\\tarifas_20250914221904_Velazquez.xlsx")
         # Verificar si el archivo existe
         # if not os.path.exists(file_path):
         if not file_path.exists():

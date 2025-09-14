@@ -16,7 +16,7 @@ class Settings(BaseSettings):
                                        "https://intranet.pastelerialamallorquina.es",
                                       ]
 
-    RUTA_LOCAL: str = "C:/GitHub/Mallorquina_API/" # /opt/MALLORQUINBA_API/
+    RUTA_LOCAL: str = "E:/Nube/GitHub/Mallorquina_API/" # /opt/MALLORQUINBA_API/
     RUTA_IMAGEN: str = "app/ficheros/imagen/"
     RUTA_BASE: str = "app/ficheros/"
     RUTA_DATOS: str = "app/ficheros/datos/"

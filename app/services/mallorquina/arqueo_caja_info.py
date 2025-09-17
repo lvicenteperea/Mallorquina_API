@@ -1,5 +1,4 @@
 from datetime import datetime, date
-import json
 
 # Para trabajar con Excel PANDA
 import pandas as pd
@@ -11,7 +10,6 @@ from app.models.mll_cfg import obtener_cfg_general
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
-from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 from app.utils.mis_excepciones import MiException
@@ -25,7 +23,6 @@ def proceso(param: InfoTransaccion) -> list:
     resultado = []
     datos = []
     config = obtener_cfg_general(param)
-    # fecha = param.parametros[0] # el primer  atributo de InfArqueoCajaRequest
     entidad = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
 
     param.debug = "get_db_connection_mysql"
@@ -44,7 +41,6 @@ def proceso(param: InfoTransaccion) -> list:
         lista_entidades = cursor_mysql.fetchall()
 
         for entidad in lista_entidades:
-            imprime([f"Procesando TIENDA: {entidad['ID']}-{entidad['Nombre']}. De la BBDD: {entidad['id_bbdd']}"], "-")
             datos.append(consultar(param, entidad["ID"], conn_mysql))
 
         if datos:
@@ -56,8 +52,6 @@ def proceso(param: InfoTransaccion) -> list:
             return resultado
         else:
             return ["No se ha generado fichero porque no hay datos"]
-
-
 
     except MiException as e:
         param.error_sistema(e=e, debug="arqueo_caja_info.Proceso.MiExcepcion")
@@ -133,9 +127,6 @@ def consultar(param: InfoTransaccion, id_entidad, conn_mysql) -> list:
     except Exception as e:
         param.error_sistema(e=e, debug="proceso.Exception")
         raise 
-
-
-
 
 #----------------------------------------------------------------------------------------
 # Creamos el escritor de Excel con la librería PANDA
@@ -219,7 +210,6 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
             #    - Convertimos "total_ventas" y "total_operaciones" a float
             #    - Quitamos las columnas que no queremos
             datos_procesados = []
-            # imprime([sublista], "*")
             for fila in sublista:
                 # Creamos una copia limpia
                 nueva_fila = {}
@@ -250,7 +240,6 @@ def a_excel_con_openpyxl(param: InfoTransaccion, todos_los_conjuntos):
             sheet_name = nombre_tienda[:31]
 
             param.debug = "5. Creamos nueva hoja"
-            # imprime([param.debug, sheet_name], "=")
             # 5. Creamos una hoja nueva con el nombre de la tienda
             ws = wb.create_sheet(title=sheet_name)
             

@@ -10,7 +10,7 @@ from sshtunnel import SSHTunnelForwarder
 import random
 
 from app.config.settings import settings
-from app.utils.utilidades import graba_log, imprime
+from app.utils.utilidades import graba_log
 from app.utils.InfoTransaccion import InfoTransaccion
 
 
@@ -46,12 +46,6 @@ def get_db_connection_mysql():
         if settings.SSH_CONEX:
             # Crear el túnel SSH
             tunnel, local_port = crea_tunel_ssh(param)
-            # print(f"""Parámetros: 
-            #             SSH_HOST: {settings.SSH_HOST} 
-            #             SSH_PORT: {settings.SSH_PORT} 
-            #             SSH_USER: {settings.SSH_USER}  
-            #             Puerto local asignado: {local_port}
-            #             """)
             
             # Pequeña pausa para asegurar que el túnel esté completamente establecido
             import time
@@ -69,17 +63,6 @@ def get_db_connection_mysql():
                 read_timeout=30,
                 write_timeout=30
             )
-
-            # # Verificar que la conexión funciona
-            # cursor = connection.cursor()
-            # cursor.execute("SELECT 1")
-            # result = cursor.fetchone()
-            # cursor.close()
-            
-            # if result:
-            #     print("✅ Conexión MariaDB verificada exitosamente")
-            # else:
-            #     print("❌ Error al verificar la conexión MariaDB")
         else:
             connection = pymysql.connect(
                 host=settings.MYSQL_DB_HOST,
@@ -105,16 +88,6 @@ def get_db_connection_mysql():
         raise
 
 #----------------------------------------------------------------------------------------
-# def close_connection_mysql(conn, cursor):
-#     try:
-#         if conn and conn.is_connected():
-#             if isinstance(cursor, mysql.connector.cursor.MySQLCursor):
-#                 cursor.close()
-#             conn.close()
-    
-#     except Error as e:
-#         raise 
-
 def close_connection_mysql(conn, cursor, tunnel=None):
     mi_error = "close_connection_mysql"
 
@@ -144,7 +117,6 @@ def get_db_connection_sqlserver(param: InfoTransaccion, conexion_json):
     try:
         param.debug = "Inicio get_db_connection_sqlserver"
         conexion = f"DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={conexion_json['host']},{conexion_json['port']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD={conexion_json['password']};TrustServerCertificate=yes;"
-        # imprime([conexion,pyodbc.drivers()], "*   -- la conexión --", 2)
         param.debug =  f"DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={conexion_json['host']},{conexion_json['port']};DATABASE={conexion_json['database']};UID={conexion_json['user']};PWD=xxxxxxxx;TrustServerCertificate=yes;"
         connection =  pyodbc.connect(conexion)
 
@@ -164,4 +136,3 @@ def close_connection_sqlserver(param: InfoTransaccion, conn, cursor):
     
     except Error as e:
         return
-

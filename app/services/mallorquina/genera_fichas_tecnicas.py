@@ -3,7 +3,6 @@ import shutil
 from datetime import datetime
 import pymysql
 
-from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
@@ -190,7 +189,6 @@ def indice(param, productos):
 #----------------------------------------------------------------------------------------
 def reemplazar_campos(plantilla, campos):
     for placeholder, valor in campos.items():
-        #imprime([placeholder, "{"+f"{placeholder}"+"}", valor, valor or f"{placeholder}"],'=')
         plantilla = plantilla.replace("{"+f"{placeholder}"+"}", f"{valor}" or f"{placeholder}")
 
     return plantilla
@@ -211,25 +209,6 @@ def fichas(param: InfoTransaccion, productos: list):
             composicion = imprimible(param, producto)
             if composicion: 
                 id_producto = producto['ID']
-                """
-                imprime([producto, type(producto)], "=")
-
-                {'familia_cod': None, 
-                'familia_desc': '4- BOMBONERIA/6. Productos Venta Directa', 
-                'grupo_de_carta': '', 
-                'alta_tpv': 'Sí', 
-                'alta_glovo': '', 
-                'alta_web': '', 
-                'alta_catering': '', 
-                'peso_neto_aprox': '', 
-                'fibra_dietetica_g': '', 
-                'otros': '', 
-                'fec_modificacion': '', 
-                'created_at': datetime.datetime(2025, 1, 5, 19, 15, 18), 
-                'updated_at': None, 
-                'modified_by': None}
-                """
-
                 ficha_campos = {
                     'codigo': id_producto,
                     'nombre': producto.get("nombre", "").strip() or " ",

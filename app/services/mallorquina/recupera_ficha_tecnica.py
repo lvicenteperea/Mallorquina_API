@@ -3,7 +3,6 @@ import shutil
 from datetime import datetime
 import pymysql
 
-from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
@@ -125,7 +124,6 @@ def generar_html(param: InfoTransaccion, producto: dict) -> str:
         composicion = imprimible(param, producto)
         if 1 == 1: # composicion: 
             id_producto = producto['ID']
-            # imprime([producto], "-    ..... Datos de productos .....", 2)
             ficha_campos = {
                 'codigo': id_producto,
                 'nombre': producto.get("nombre", "").strip() or " ",
@@ -174,7 +172,6 @@ def generar_html(param: InfoTransaccion, producto: dict) -> str:
                 'vida_en_congelacion': producto.get("vida_en_congelacion", "").strip() or " ",
             }
             fichas_content += reemplazar_campos(fichas_html, ficha_campos)
-            # imprime([ficha_campos], "-    ..... Datos de la ficha técnica .....", 2)
 
         return fichas_content
     
@@ -195,7 +192,6 @@ def cargar_plantilla(param, ruta):
     except Exception as e:
         param.error_sistema(e=e, debug="cargar_plantilla.Exception")
         raise 
-
 
 #----------------------------------------------------------------------------------------
 # Reemplazar Fijos
@@ -229,19 +225,14 @@ def reemplazar_fijos(param, plantilla):
         param.error_sistema(e=e, debug="reemplazar_fijos.Exception")
         raise 
 
-
-
 #----------------------------------------------------------------------------------------
 # Reemplazar placeholders en la plantilla
 #----------------------------------------------------------------------------------------
 def reemplazar_campos(plantilla, campos):
     for placeholder, valor in campos.items():
-        # imprime([placeholder, "{"+f"{placeholder}"+"}", valor, valor or f"{placeholder}"],'=')
         plantilla = plantilla.replace("{"+f"{placeholder}"+"}", f"{valor}" or f"{placeholder}")
 
     return plantilla
-
-
 
 #----------------------------------------------------------------------------------------
 # Comprueba que tenemos descripción de la composición del productos, porque si no tiene, 
@@ -261,29 +252,3 @@ def imprimible(param: InfoTransaccion, fila):
     except Exception as e:
         param.error_sistema(e=e, debug="cargar_plantilla.Exception")
         raise 
-
-
-#----------------------------------------------------------------------------------------
-# Graba un archivo pero previamente hace una copia del mismo si ya existe
-#----------------------------------------------------------------------------------------
-# def graba_archivo(param: InfoTransaccion, archivo: str, contenido: str):
-#     try: 
-#         # Verificar si el archivo ya existe
-#         if os.path.exists(archivo):
-#             # Crear el nombre del archivo de copia con fecha y hora
-#             timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
-#             backup_nombre = f"{os.path.splitext(archivo)[0]}_{timestamp}.html"
-
-#             # Copiar el archivo con el nuevo nombre
-#             shutil.copy(archivo, backup_nombre)
-
-#         # Guardar el nuevo archivo
-#         with open(archivo, 'w', encoding='utf-8') as f:
-#             f.write(contenido)
-
-
-
-#     except Exception as e:
-#         param.error_sistema(e=e, debug="graba_archivo.Exception")
-#         raise 
-

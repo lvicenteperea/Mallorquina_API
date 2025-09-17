@@ -2,7 +2,6 @@ from datetime import datetime
 import re
 import pymysql
 
-from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
 
@@ -22,13 +21,6 @@ def proceso(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, 
         proximo_valor = tabla["ult_valor"]
         nombre_tabla_destino = tabla_config['Tabla_Destino'] 
         nombre_tabla_origen  = tabla_config['Tabla_Origen'] 
-        # imprime([entidad], "* --- entidad ---", 2)
-        # imprime([bbdd_config], "* --- bbdd_config ---", 2)
-        # imprime([nombre_tabla], "* --- nombre_tabla ---", 2)
-        # imprime([tabla_config], "* --- tabla_config ---", 2)
-        # imprime([tabla], "* --- tabla ---", 2)
-        # imprime([campos], "* --- campos ---", 2)
-        # z=1/0
 
         while True:
             registros,lista_pk,lista_max_valor,txt_conexion = Obtener_datos_origen(param, conn_sqlserver, entidad, bbdd_config, nombre_tabla_origen, campos, tabla_config["campos_PK"], proximo_valor) # , salto)
@@ -92,18 +84,12 @@ def proceso(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, 
                     campos_update_filtrado = [campo for campo in campos_update if not (campo['Nombre'].startswith('{') and campo['Nombre'].endswith('}'))]
                     valores_update = [registro[[campo["Nombre"] for campo in campos].index(campo["Nombre"])]
                                                 for campo in campos_update_filtrado] + [pk_value, entidad["id_bbdd"]]
-                    # imprime(["update:......", pk_value, update_query, valores_update], "=......UPDATE......")
                     cursor_mysql.execute(update_query, valores_update)
                     actualizados += cursor_mysql.rowcount
                 else:
                     # Realizar un INSERT
                     registro_destino = list(registro) + [entidad["id_bbdd"]]  # Campos + Origen
-                    # if insert_query.count(", stIdEnt)") == 1:
-                    #     registro_destino += [entidad['stIdEnt']] # Campos + stIdEnt
-                    # if insert_query.count(", id_entidad)") == 1:
-                    #     registro_destino += [entidad['ID']] # Campos + id_entidad
 
-                    # if any(campo["Nombre"] == "{stIdEnt}" for campo in campos):
                     if  existe_en_campos(campos, "{stIdEnt}"):
                         registro_destino += [entidad['stIdEnt']] # Campos + stIdEnt
 
@@ -111,8 +97,6 @@ def proceso(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, 
                     if  existe_en_campos(campos, "{id_entidad}"):
                         registro_destino += [entidad['ID']] # Campos + id_entidad
 
-
-                    # imprime([insert_query, registro_destino, entidad], "=......INSERT......", 2)
                     cursor_mysql.execute(insert_query, registro_destino)
                     insertados += cursor_mysql.rowcount
 
@@ -131,16 +115,6 @@ def proceso(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad, tabla, 
         param.error_sistema(e=e, debug="proceso_general.Exception")
         raise 
 
-
-
-#----------------------------------------------------------------------------------------
-#----------------------------------------------------------------------------------------
-# Función para convertir datetime en string
-# def convertir_fechas(tupla):
-#     return tuple(
-#         elemento.strftime("%Y-%m-%d %H:%M:%S") if isinstance(elemento, datetime) else elemento
-#         for elemento in tupla
-#     )
 
 
 def Obtener_datos_origen(param: InfoTransaccion, conn_sqlserver, entidad, bbdd_config, nombre_tabla, campos, campos_PK, ult_valor) -> list: 
@@ -164,15 +138,10 @@ def Obtener_datos_origen(param: InfoTransaccion, conn_sqlserver, entidad, bbdd_c
         param.debug = "Construir Select"
         select_query, lista_pk, lista_max_valor = construir_consulta(param, entidad, campos, nombre_tabla, campos_PK, ult_valor) # ya no se recibe como parametro, salto)
 
-        # Ejecución del cursor
-        # imprime([select_query], "*")
         param.debug = "Ejecutar select"
         cursor_sqlserver.execute(select_query)
 
         registros = cursor_sqlserver.fetchall()
-        # datos = cursor_sqlserver.fetchall()
-        # registros = [convertir_fechas(tupla) for tupla in datos]
-        # imprime(registros, "* --- REGISTROS ---",2)
 
         return [registros, lista_pk, lista_max_valor, None]
 
@@ -212,14 +181,6 @@ def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, ca
         if condiciones_order:
             query += f" ORDER BY {' , '.join(condiciones_order)}"
 
-            # ... esto no está hecho para tablas en las que haya que paginar....
-            # query = f"""{query} 
-            #         OFFSET {salto} ROWS            -- Salta 0 filas
-            #         FETCH NEXT {PAGINACION} ROWS ONLY; -- Toma las siguientes 100"""
-        
-
-        # imprime([query, lista_pk, lista_max_valor], "*  construir_consulta", 2)
-
         return [query, lista_pk, lista_max_valor]
 
     except Exception as e:
@@ -230,20 +191,6 @@ def construir_consulta(param: InfoTransaccion, entidad, campos, nombre_tabla, ca
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def separar_campos_pk(cadena):
-    """
-        cfg_tables.campos_pk debe tener un formato de 3 partes encerradas entre parentesis:
-        - La primera parte son los nombres de los campos entre comillas (")
-        - La segunda es como transformar cada uno de esos campos para hacer el where, 
-            teniendo en cuenta que {V1} es el nombre del campo (de la zona anterior) y {V2} va a ser el valor del campo
-        - La tercera será los campos que realmente van a formar parte del where
-            
-        ejemplo de la cadena mostrada en tres lineas para identificarlo mejor:
-            ("stIdEnt"; "Fecha"; "[Serie Puesto Facturacion]"; "[Factura Num]"; "[Id Relacion]") 
-            ("{v1} >= '{v2}'"; "{v1} >= CONVERT(DATETIME, '{v2}', 121) "; "{v1} >= '{v2}'"; "{v1} >= {v2}"; "{v1} >= {v2}") 
-            (1) o (0; 1) ...  --> tener en cuenta que los elementos empiezan en el 0 y el separador es el punto y coma
-
-        
-    """
     # Separar las dos partes
     partes = cadena.split(") (")
     if len(partes) != 3:
@@ -258,7 +205,6 @@ def separar_campos_pk(cadena):
     lista_campos = [item.strip().strip('"') for item in parte1.split(";")]
     lista_formatos = [item.strip().strip('"') for item in parte2.split(";")]
     lista_orden_str = [item.strip().strip('"') for item in parte3.split(";")] # deben ser números pero crea la lista de str
-    # imprime(lista_orden_str, "*Orden")
     lista_orden = []
     for cadena in lista_orden_str:
         try:
@@ -280,10 +226,6 @@ def separar_campos_pk(cadena):
 #----------------------------------------------------------------------------------------
 def generar_where(param: InfoTransaccion, lista_pk_campos, lista_pk_valores, lista_pk_formato, lista_pk_para_where):
     try:    
-        # Verificar que todas las listas tengan la misma longitud
-
-        # imprime([lista_pk_campos, lista_pk_valores, lista_pk_formato], "*  Lista PK2", 2)
-
         if not (len(lista_pk_campos) == len(lista_pk_valores) == len(lista_pk_formato)):
             param.debug = f"Campos({len(lista_pk_campos)}): {lista_pk_campos}  --  Valores ({len(lista_pk_valores)}): {lista_pk_valores}  --  Formato ({len(lista_pk_formato)}): {lista_pk_formato}"
             raise ValueError("Las listas deben tener la misma longitud.")
@@ -302,7 +244,6 @@ def generar_where(param: InfoTransaccion, lista_pk_campos, lista_pk_valores, lis
                     where_clause.append(formatted_value)
         
         # Unir las condiciones con AND
-        imprime([where_clause], "*  WHERE", 2)
 
         return f"WHERE {' AND '.join(where_clause)}"
 
@@ -327,12 +268,9 @@ def carga_lista_pk(lista, valor, posicion, relleno=None):
 def comando_insert(campos, nombre_tabla_destino):
     columnas_mysql = [campo["Nombre_Destino"] for campo in campos if not campo["Nombre"].startswith("{")]
     columnas_mysql.append("Origen_BBDD")
-    # Si existe un campo con 'Nombre' igual a '{stIdEnt}', agregamos 'stIdEnt' a la lista
-    # if any(campo["Nombre"] == "{stIdEnt}" for campo in campos):
     if  existe_en_campos(campos, "{stIdEnt}"):
         columnas_mysql.append("stIdEnt")
 
-    # if any(campo["Nombre"] == "{id_entidad}" for campo in campos):
     if  existe_en_campos(campos, "{id_entidad}"):
         columnas_mysql.append("id_entidad")
 

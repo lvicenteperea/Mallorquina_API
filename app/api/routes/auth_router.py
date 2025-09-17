@@ -9,8 +9,6 @@ import pymysql
 # from mysql.connector.cursor import MySQLCursorDict
 
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
-from app.utils.utilidades import graba_log, imprime
-from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.api.schemas.user_app import LoginRequest, RegisterRequest
 
@@ -19,14 +17,11 @@ router = APIRouter()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
-
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 @router.get("/endpoint_sin_auth")
 async def endpoint_sin_auth():
     return {"message": "Esta es una ruta pública."}
-
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -36,7 +31,6 @@ class TokenRequest(BaseModel):
     id_App: int
     username: str = None
     password: str = None
-
 
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
@@ -115,26 +109,11 @@ async def login(request: Request,
         else:
             lista_opciones = []
 
-            # "options": [{ "text": 'Consulta Cierre', "action": 'openConsultaCierre' },
-            #             { "text": 'Sincroniza BBDD', "action": 'openSincronizaTodo' },
-            #             { "text": 'Carga ERP', "action": 'openCargaProdErp' },
-            #             { "text": 'Arqueo Caja', "action": 'openArqueoCaja' },
-            #             { "text": 'Informe Arqueo Caja', "action": 'openArqueoCajaInf' },
-            #             { "text": 'Convierte Tarifas', "action": 'openConvierteTarifas' },
-            #             { "text": 'Fichas Técnicas', "action": 'openFichasTecnicas' },
-            #             { "text": 'PRueba de SincTodo', "action": 'openSincronizaTodo2' },
-            #            ]
-
-
         if "password_hash" not in user_bbdd:
             raise HTTPException(status_code=500, detail="Error en la estructura de datos de usuario")
 
         if not pwd_context.verify(login_request.password, user_bbdd["password_hash"]):
             raise HTTPException(status_code=401, detail=f"La Contraseña ({login_request.password}) y el Usuario ({login_request.username}) no son credenciales válidas")
-
-
-        # imprime([user_bbdd, pwd_context.verify(login_request.password, user_bbdd["password_hash"])], "=", 2)
-
 
         # Generar Token JWT
         token_data = {

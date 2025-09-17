@@ -1,22 +1,14 @@
-from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from app.utils.InfoTransaccion import InfoTransaccion
 import os
 from pathlib import Path
-# import shutil
 import zipfile
 import tempfile
 
-
-
-
-from app.utils.utilidades import graba_log, imprime
-from app.services.auxiliares.sendgrid_service import enviar_email
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
 from app.config.settings import settings
 
-# DOWNLOAD_PATH = "D:\\Nube\\GitHub\\Mallorquina_API\\app\\ficheros\\datos\\tarifas_a_TPV\\"
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion):
@@ -54,15 +46,9 @@ def descarga_fichero(param: InfoTransaccion, path: str, nombres: list):
         else:
             nombre = nombres[0]
 
-        # Construir la ruta completa del archivo
-        # DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, path)
-        # file_path = os.path.join(DOWNLOAD_PATH, nombre)
         file_path = Path(settings.RUTA_LOCAL) / path / nombre
         
-        print("   ------->    ", file_path, nombre)
-        print("   ------->     E:\\Nube\\Github\\Mallorquina_API\\app\\ficheros\\datos\\tarifas_a_TPV\\tarifas_20250914221904_Velazquez.xlsx")
         # Verificar si el archivo existe
-        # if not os.path.exists(file_path):
         if not file_path.exists():
             raise MiException(param,f"Archivo '{file_path}' no encontrado", -1)
         
@@ -77,40 +63,6 @@ def descarga_fichero(param: InfoTransaccion, path: str, nombres: list):
         param.error_sistema(e=e, debug="Excepción descarga.descarga_fichero")
         raise
 
-
-
-
-# #----------------------------------------------------------------------------------------
-# #----------------------------------------------------------------------------------------
-# def descarga_precios_tpv(param: InfoTransaccion, nombres: list):
-#     try:
-    
-#         DOWNLOAD_PATH = os.path.join(settings.RUTA_LOCAL, settings.RUTA_TPV)
-
-#         if len(nombres) != 1:
-#             raise MiException(param,f"No viene un nombre de fichero, vienen:  {len(nombres)}-{nombres}", -1)
-#         else:
-#             nombre = nombres[0]
-
-#         # Construir la ruta completa del archivo
-#         file_path = os.path.join(DOWNLOAD_PATH, nombre)
-        
-#         # Verificar si el archivo existe
-#         if not os.path.exists(file_path):
-#             raise MiException(param,f"Archivo '{file_path}' no encontrado", -1)
-        
-#         # Crear una respuesta mixta con el archivo y el JSON con la descripción
-#         resultado = FileResponse(file_path, filename=nombre)
-#         return resultado
-
-#     except MiException as e:
-#         param.error_sistema(e=e, debug="MiExcepción descarga.descarga_precios_tpv")
-#         raise
-#     except Exception as e:
-#         param.error_sistema(e=e, debug="Excepción descarga.descarga_precios_tpv")
-#         raise
-
-
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------
 def descarga_alergenos(param: InfoTransaccion):
@@ -124,16 +76,6 @@ def descarga_alergenos(param: InfoTransaccion):
         if (not os.path.exists(file_to_add) or
             not os.path.exists(dir_to_add)):
             raise MiException(param, f"Archivo o directorio de fichas técnicas", -1)
-
-        #----------------------------------------------------
-        # empaquetamos los ficheros  
-        #----------------------------------------------------
-        # file_path = os.path.join(settings.RUTA_ALERGENOS_HTML, "fichas")
-        # temp_dir = tempfile.gettempdir()
-        # zip_filename = os.path.join(temp_dir, f"{nombre}.zip")
-        # shutil.make_archive(zip_filename.replace('.zip', ''), 'zip', file_path)
-        # file_path = zip_filename
-        # nombre += ".zip"
 
         # Crear archivo ZIP temporal
         temp_dir = tempfile.gettempdir()

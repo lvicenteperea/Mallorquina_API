@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
-import json
 import pymysql
 
-from app.utils.utilidades import graba_log, imprime
 from app.models.mll_cfg_tablas import obtener_campos_tabla, crear_tabla_destino
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
@@ -15,15 +13,6 @@ from app.utils.InfoTransaccion import InfoTransaccion
 from app.utils.mis_excepciones import MiException
 
 #----------------------------------------------------------------------------------------
-# Este proceso se encarga de recorrer todas las tiendas y entidades y tablas que se van a tratar para sincronizar desde esas Tiendas/BBDD a la BBDD de La Mallorquina
-# para ello:
-#   - Recorre todas las tiendas activas: mll_cfg_bbdd.activo=S
-#   - Recorre todas las entidades activas: mll_cfg_entidades.activo=S
-#   - Recorre todas las tablas de cada entidad y para cada una de ellas:
-#       - Si la tabla no tiene fecha de última actualización, se toma como fecha de última actualización la fecha 01/01/2025    
-#       - Se calcula si se debe procesar en función de la diferencia entre la fecha de última actualización y la fecha actual
-#       - Si se debe procesar, se ejecuta el proceso de sincronización
-#       - Se actualiza la fecha de última actualización de la tabla
 #----------------------------------------------------------------------------------------
 def proceso(param: InfoTransaccion) -> list:
     funcion = "sincroniza.proceso"
@@ -85,8 +74,6 @@ def recorre_tiendas(param: InfoTransaccion) -> list:
         lista_bbdd = cursor_mysql.fetchall()
 
         for bbdd in lista_bbdd:
-            imprime([f"📚 Procesando Tienda: {bbdd['ID']}-{bbdd['Nombre']}"], "*")
-
             # ---------------------------------------------------------------------------------------
             param.debug = f"{funcion}.por tablas"
             resultado.extend(recorre_entidades(param, bbdd, conn_mysql))
@@ -134,8 +121,6 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
             lista_entidades = cursor_mysql.fetchall()
 
             for entidad in lista_entidades:
-                imprime([f"📒 Procesando ENTIDAD:, {entidad['ID']}-{entidad['Nombre']}  -  stIdEnt: {entidad['stIdEnt']}", tienda_bbdd["Nombre"]], "-")
-                
                 # -------------------------------------------------------------------------
                 param.debug = f"{funcion}.por tablas"
                 resultado.extend(recorre_tablas(param, tienda_bbdd["Nombre"], entidad, conn_sqlserver, conn_mysql))
@@ -151,7 +136,6 @@ def recorre_entidades(param: InfoTransaccion, tienda_bbdd, conn_mysql) -> list:
 
         param.debug = "Fin"
         return resultado
-
                   
     except Exception as e:
         param.error_sistema(e=e, debug=f"{funcion}.excepcion")
@@ -179,7 +163,6 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_sqlserver,
         # ----------------------------------------------------------------------------------------------------
         # recogemos primero la configuración Tabla-Entidad
         param.debug = "Inicio"
-      # cursor_mysql = conn_mysql.cursor(dictionary=True)
         cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
         param.debug = "execute mll_cfg_tablas_entidades"
@@ -191,7 +174,6 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_sqlserver,
         # recogemos los datos de la tabla a tratar que vamos a tratar en el bucle
         param.debug = "Obtener cursor"
         # Obtener configuración y campos necesarios
-      # cursor_mysql = conn_mysql.cursor(dictionary=True)
         cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
         # ----------------------------------------------------------------------------------------------------
 
@@ -212,7 +194,6 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_sqlserver,
                 tabla_config = cursor_mysql.fetchone()
                 # -----------------------------------------------------------------------------------------
 
-                imprime([f"🔖 Procesando TABLA:", tabla_config["Tabla_Origen"]], "-")
                 param.debug = f"Procesando tabla: {tabla}"
 
                 # -----------------------------------------------------------------------------------------
@@ -238,8 +219,6 @@ def recorre_tablas(param: InfoTransaccion, nombre_bbdd, entidad, conn_sqlserver,
     finally:
         if cursor_mysql is not None:
             cursor_mysql.close()
-
-
 
 #----------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------

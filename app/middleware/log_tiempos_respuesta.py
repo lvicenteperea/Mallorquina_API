@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 import time
 # import logging
-from app.utils.utilidades import graba_log_info, imprime
+from app.utils.utilidades import graba_log_info
 
 # Configuración básica de logging
 # print("inciando loger tiempos respuesa: logger = logging.getLogger('tiempo_respuesta')")
@@ -21,7 +21,6 @@ async def log_tiempos_respuesta(request: Request, call_next):
     ip = request.client.host  # IP del cliente
     servicio = request.url.path  # Ruta del endpoint llamado
     usuario = request.headers.get('X-User')  # Cambiar 'X-User' según tu sistema de autenticación
-
 
     # Registrar la solicitud (opcional)
     # logger.info(f"Solicitud entrante: {request.method} {request.url}")

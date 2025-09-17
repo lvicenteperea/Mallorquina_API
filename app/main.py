@@ -4,13 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 # from app.api.routes import router as api_router
 from app.api.routes.mll_router import router as mallorquina_router
 from app.api.routes.auth_router import router as auth_router
-from app.api.routes.email_router import router as email_router
 from app.config.settings import settings
-
 
 from app.middleware.auth import AuthMiddleware
 import json 
-
 
 from app.exceptions import http_exception_handler, json_decode_error_handler, generic_exception_handler, mi_exception_handler, type_error_handler
 from app.config.settings import settings
@@ -39,7 +36,6 @@ app.middleware("http")(log_tiempos_respuesta)
 # app.include_router(api_router)
 app.include_router(mallorquina_router, prefix="/mallorquina", tags=["Mallorquina"])
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(email_router, prefix="/email", tags=["Email"])
 
 # -----------------------------------------------------------------------------------------------
 # AUTENTICACIÓN
@@ -106,12 +102,6 @@ app.add_middleware(
 )
 '''
 
-'''
-Este bloque de código se usa para iniciar la aplicación FastAPI utilizando uvicorn 
-como servidor cuando ejecutas directamente el script Python. 
-Es un método estándar para lanzar aplicaciones web con FastAPI y asegurar que el servidor 
-web esté escuchando en el puerto y dirección IP correctos, con la configuración de logging adecuada.
-'''
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level=settings.LOG_LEVEL)

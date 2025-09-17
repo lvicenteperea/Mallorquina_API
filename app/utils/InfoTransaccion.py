@@ -4,16 +4,13 @@ from typing import List, Optional, Any
 import json
 import traceback
 
-
-from app.utils.utilidades import graba_log, imprime
+from app.utils.utilidades import graba_log
 
 class ParamRequest(BaseModel):
     id_App: int = 1           # aplicación a la que conectarse  
     user: str = "usuario_dev" # usuario de autenticación en el servidor
     ret_code: int = 0         # debería llegar siempre a cero
     ret_txt: str = "OK"       # Debería llegar siempre a Ok o vacio
-
-
 
 class InfoTransaccion(BaseModel):
     id_App: int = 0
@@ -24,7 +21,6 @@ class InfoTransaccion(BaseModel):
 
     parametros: Optional[List[Any]] = None  # Parámetros específicos que ha recibido el servicio, función,....
     resultados: List[Any] = []  # Lista vacía predeterminada para resultados, siempre será una lista, con un texto, varios, con un listado.....
-    
 
     @classmethod
     def from_request(cls, request: ParamRequest) -> "InfoTransaccion":
@@ -76,14 +72,7 @@ class InfoTransaccion(BaseModel):
                 archivo, linea, funcion, texto_err = tb[-1]
                 loc = f'{texto_err.replace("-", "_")} - {archivo.replace("-", "_")} - {linea} - {funcion}'
 
-            imprime([f"param: {self}",
-                    f"Excepción: {str(e) if e else 'No es una excepción'}",
-                    f"Parametros: {txt_adic}, {debug}",
-                    f"Traza: {loc}",
-                    ],"* --- LOG error_sistema --- ",2)
-
             graba_log(param, f"error_sistema: {loc}", e)
-
 
     #----------------------------------------------------------------------------------------
     #----------------------------------------------------------------------------------------
@@ -130,18 +119,10 @@ class InfoTransaccion(BaseModel):
     
     def __str__(self):
         return f"App: {self.id_App}, Usuario: {self.user}, Error: {self.ret_code} - {self.ret_txt}, debug: {self.debug}, parametros: {self.parametros}"
-    
-
-
-
-
-
 
     def sistem_error(self, txt_adic: str = '.', debug: str = ""):
         if self.ret_code is None or self.ret_code >= 0:
             self.ret_code = -99
             self.ret_txt = f"Error general. contacte con su administrador ({datetime.now().strftime('%Y%m%d%H%M%S')}){txt_adic}"
         
-        self.debug = self.debug if not debug else debug
-
-    
+        self.debug = self.debug if not debug else debug   

@@ -16,7 +16,6 @@ from app.services.auxiliares import descarga
 
 from app.config.settings import settings
 from app.utils.functions import control_usuario
-from app.utils.utilidades import imprime
 
 from app.utils.mis_excepciones import MiException
 from app.utils.InfoTransaccion import InfoTransaccion, ParamRequest
@@ -66,7 +65,7 @@ async def procesar_request(
         return param  # si no es MiException, se retorna el param
     
     finally:
-        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
+        print([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
 
 # -----------------------------------------------
@@ -206,7 +205,7 @@ async def mll_carga_prod_erp(
         manejar_excepciones(e, param, "mll_carga_prod_erp")
 
     finally:
-        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
+        print([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
 
 #------------------------------------------------------------------------------------------------------
@@ -274,7 +273,7 @@ async def mll_descarga(request: Request,
         # --------------------------------------------------------------------------------
         # Validaciones y construcción Básica
         # --------------------------------------------------------------------------------
-        imprime([type(body_params.nombres), len(body_params.nombres), body_params.nombres], "*")
+        print([type(body_params.nombres), len(body_params.nombres), body_params.nombres], "*")
         param = InfoTransaccion.from_request(body_params)
 
         control_usuario (param,  request)
@@ -283,20 +282,12 @@ async def mll_descarga(request: Request,
         # Servicio
         # --------------------------------------------------------------------------------
         return descarga.proceso(param=param)
-        # resultado = descarga.proceso(param=param)
-
-        # param.debug = f"Retornando: {type(resultado)}"
-        # param.resultados = resultado or []
-        # print("3")
-
-        # return param
-
 
     except Exception as e:
         manejar_excepciones(e, param, "mll_descarga")
 
     finally:
-        imprime([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
+        print([tiempo, datetime.now().strftime('%Y-%m-%d %H:%M:%S')], "* FIN TIEMPOS *")
 
 
 #------------------------------------------------------------------------------------------------------

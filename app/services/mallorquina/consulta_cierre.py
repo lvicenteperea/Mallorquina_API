@@ -11,7 +11,6 @@ from app.models.mll_cfg import obtener_cfg_general
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
-from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 from app.utils.mis_excepciones import MiException
@@ -26,11 +25,8 @@ def proceso(param: InfoTransaccion) -> list:
     datos = []
     config = obtener_cfg_general(param)
 
-    # imprime([param], "*  ver parametros", 2)
-
     fecha = param.parametros[0] # el primer  atributo de InfArqueoCajaRequest
     entidad = param.parametros[1]  # el segundo atributo de InfArqueoCajaRequest
-
 
     print(fecha, entidad)
     param.debug = "get_db_connection_mysql"
@@ -44,19 +40,13 @@ def proceso(param: InfoTransaccion) -> list:
 
         lista_entidades = cursor_mysql.fetchall()  # Solo debería haber una
 
-        # imprime([lista_entidades, type(lista_entidades), len(lista_entidades), fecha, entidad], "*  LISTA_ENTIDADES", 2)
-
         for entidad in lista_entidades:
-            imprime([f"Procesando TIENDA: {entidad['ID']}-{entidad['Nombre']}. De la BBDD: {entidad['id_bbdd']}"], "-")
             datos.extend(consultar(param, entidad["ID"], conn_mysql, fecha))
 
         if datos:
-            # imprime ([datos, type(datos), len(datos)], "*  DATOS", 2)
             return datos
         else:
             return ["No se ha generado información  porque no hay datos"]
-
-
 
     except MiException as e:
         param.error_sistema(e=e, debug="Consulta_Cierre.Proceso.MiExcepcion")

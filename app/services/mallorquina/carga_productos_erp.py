@@ -8,7 +8,6 @@ from app.config.db_mallorquina import get_db_connection_mysql, close_connection_
 from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.mis_excepciones import MiException
-from app.utils.utilidades import graba_log, imprime
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
 
@@ -204,7 +203,6 @@ def carga (param: InfoTransaccion, excel):
                         param.debug = "update___"
                         campos = ', '.join(f"{v} = %s" for k, v in mapping.items() if k in row)
                         valores = tuple(row[k] for k in mapping.keys() if k in row) + (codigo,)
-                        # imprime([campos, valores], "*  Campos y valores", 2)
                         cursor.execute(f"UPDATE erp_productos SET {campos} WHERE ID = %s", valores)
 
                         # Procesar campos "pvp_*" para modificar en erp_productos_pvp
@@ -212,7 +210,6 @@ def carga (param: InfoTransaccion, excel):
                             if col.startswith('pvp_') and row[col]:
                                 id_bbdd, tipo = determinar_bbdd_y_tipo(col)
                                 pvp = convertir_a_decimal(row[col])
-                                # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
                                 if pvp > 0:
                                     param.debug = "insert/update 3___"
                                     for x in range(0, len(id_bbdd)):
@@ -250,7 +247,6 @@ def carga (param: InfoTransaccion, excel):
                         if col.startswith('pvp_') and row[col]:
                             id_bbdd, tipo = determinar_bbdd_y_tipo(col)
                             pvp = convertir_a_decimal(row[col])
-                            # imprime([id_bbdd, tipo, pvp, col, row[col]], "=")
                             param.debug = "insert 2___"
                             if pvp > 0:
                                 for x in range(0, len(id_bbdd)):
@@ -265,10 +261,6 @@ def carga (param: InfoTransaccion, excel):
         # Confirmar transacciones y cerrar conexión
         conn_mysql.commit()
 
-        # return [f"<ul><li>Registros insertados: {insertados}</li>",
-        #         f"<li>Registros modificados: {modificados}</li>",
-        #         f"<li>Registros eliminados: {eliminados}[</li></ul>"
-        #        ]
         return [f"<ul><li>Registros insertados: {insertados}</li><li>Registros modificados: {modificados}</li><li>Registros eliminados: {eliminados}[</li></ul>"]
 
     except Exception as e:
@@ -282,17 +274,6 @@ def carga (param: InfoTransaccion, excel):
 # -----------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------
 def determinar_bbdd_y_tipo(columna):
-    """
-        Carga de precios por ID_BBDD. Formato estructura:
-            'Nombre de la columna en el excel': ([lista Ids de BBDD a las que asignar], 'Zona de la tienda'),
-
-        y ejemplos (hay tres 'zonas' como máximo por tienda, aunque se pueden añadir más, como por ejemplo "Menú del día"):
-            'pvp_tienda_quevedo': ([4, 5], 'Barra'),
-            'pvp_tienda_quevedo': ([4], 'Comedor'),
-            'pvp_terraza_quevedo': ([4], 'Terraza'),
-
-        Si no se pone una Zona, pues es que no tiene esa zona.
-    """
     mapping_bbdd_tipo = {
         'pvp_tienda_velazquez': ([2], 'Comedor'),
         'pvp_tienda_velazquez': ([2], 'Barra'),

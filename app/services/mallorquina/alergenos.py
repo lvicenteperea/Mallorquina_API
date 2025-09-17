@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 import pymysql
 
-from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_mysql, close_connection_mysql
 from app.utils.InfoTransaccion import InfoTransaccion
 from app.config.settings import settings
@@ -25,14 +24,11 @@ def proceso(param: InfoTransaccion) -> list:
     try:
         # Conectar a la base de datos
         conn_mysql = get_db_connection_mysql()
-      # cursor_mysql = conn_mysql.cursor(dictionary=True)
         cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
         param.debug = f"Punto de venta: {punto_venta}"
-        # imprime([punto_venta], "*  punto_venta")
-
+        
         # Consultar los datos principales  CUANDO CARGEMOS LOS PRECIOS BIEN, HAY QUE CAMBIAR el WHERE para solo coger productos que se vendan en "punto_venta"
-        # if punto_venta == 0:
         cursor_mysql.execute("""SELECT distinct ID
                                       ,IF(TRIM(nombre_alergenos) = '' OR nombre_alergenos IS NULL, nombre, nombre_alergenos) AS nombre, familia_desc
                                       ,huevo, leche, crustaceos, cascara, gluten, pescado, altramuz, mostaza, cacahuetes, apio, sulfitos, soja, moluscos, sesamo
@@ -42,33 +38,14 @@ def proceso(param: InfoTransaccion) -> list:
                                  ORDER BY nombre""")
         productos = cursor_mysql.fetchall()
 
-        # Calcula la fecha del la última modificación que es el registro con la fecha mas alta, independientemente de que salga en el listado o no
-        cursor_mysql.execute("SELECT ifnull(max(fec_modificacion), now())  as fec_max_modificacion FROM erp_productos")
-        fec_max_mod_str = cursor_mysql.fetchone()
-
-        if fec_max_mod_str["fec_max_modificacion"]:
-            # imprime([fec_max_mod_str], "*     VAMOS A VER LA FECHA    ", 2)
-            fec_max_mod = datetime.strptime(fec_max_mod_str["fec_max_modificacion"], "%Y-%m-%d %H:%M:%S")
-        else:
-            fec_max_mod = datetime.now().strftime('%d/%m/%Y')
-
-
         param.debug = "Generar HTML"
         # Generación del HTML
         html = generar_html(param, cursor_mysql, productos, punto_venta)
 
         close_connection_mysql(conn_mysql, cursor_mysql)
 
-        # # Grabar el HTML en un archivo
-        # ruta_html = os.path.join(settings.RUTA_ALERGENOS_HTML, f"alergenos_{punto_venta}_{fec_max_mod.strftime('%Y%m%d_%H%M%S')}.html")
-        # with open(ruta_html, 'w', encoding='utf-8') as f:
-        #     f.write(html)
-
-        # imprime([f"HTML generado en: {ruta_html}"], "*")
-        
         resultado = [f"Listado generado correctamente", html]
-        return resultado
-    
+        return resultado    
 
     except Exception as e:
         param.error_sistema(e=e, debug="proceso.Exception")
@@ -99,8 +76,6 @@ def generar_html(param: InfoTransaccion, cursor_mysql, productos: list, punto_ve
             'indice_alergenos': indice_alergenos,
             # 'fichas': fichas_content
         })
-
-        # imprime([html_final[2001:8000]], "*")
 
         return html_final
     
@@ -196,11 +171,6 @@ def indice(param, cursor_mysql, productos, punto_venta):
         for producto in productos:
             if listable(param, cursor_mysql, producto, punto_venta, producto['ID']): 
                 registros += 1
-                # if producto['familia_desc'] != familia_actual:
-                #     # indice_alergenos += f"<tr id='familia'><td colspan='15'><p class='lista-familia'>{producto['familia_desc']}</p></td></tr>\n"
-                #     indice_alergenos += f"<tr class='category-row-styling-hook'><td class='lista-familia' colspan='15'>{producto['familia_desc']}</td></tr>"
-                #     familia_actual = producto['familia_desc']
-                
 
                 indice_alergenos += f"<tr>"
                 # indice_alergenos += f"<td><p class='lista-producto'>{producto['nombre']}</p></td>"
@@ -232,11 +202,9 @@ def indice(param, cursor_mysql, productos, punto_venta):
 #----------------------------------------------------------------------------------------
 def reemplazar_campos(plantilla, campos):
     for placeholder, valor in campos.items():
-        #imprime([placeholder, "{"+f"{placeholder}"+"}", valor, valor or f"{placeholder}"],'=')
         plantilla = plantilla.replace("{"+f"{placeholder}"+"}", f"{valor}" or f"{placeholder}")
 
     return plantilla
-
 
 
 #----------------------------------------------------------------------------------------
@@ -249,7 +217,6 @@ def existe_alguno_en_alta(param: InfoTransaccion, cursor_mysql, id_producto, tip
         query_final = query_inicial.replace("{TIPO_ALTA}", tipo_alta)
         cursor_mysql.execute(query_final, (id_producto, ))
         existe = cursor_mysql.fetchone()
-        # imprime([query_final, id_producto, len(existe), existe], "*  --  query_final  --  ")
         if existe['valor'] and existe['valor'] > 0:
             return True
         else:

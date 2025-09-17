@@ -1,7 +1,7 @@
 import pymysql
 
 import json
-from app.utils.utilidades import graba_log, imprime
+from app.utils.utilidades import graba_log
 
 def obtener_conexion_bbdd_origen(conn_mysql, id_bbdd):
     try:

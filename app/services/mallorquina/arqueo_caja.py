@@ -1,15 +1,12 @@
 from datetime import datetime, timedelta
 import pymysql
 
-import json
-
 from app.models.mll_cfg import obtener_cfg_general, actualizar_en_ejecucion
 from app.models.mll_cfg_bbdd import obtener_conexion_bbdd_origen
 from app.config.db_mallorquina import get_db_connection_sqlserver, get_db_connection_mysql, close_connection_mysql
 from app.services.auxiliares.sendgrid_service import enviar_email
 
 from app.utils.mis_excepciones import MiException
-from app.utils.utilidades import graba_log, imprime
 from app.utils.functions import select_mysql
 from app.utils.InfoTransaccion import InfoTransaccion
 
@@ -44,10 +41,6 @@ def proceso(param: InfoTransaccion) -> list:
             param.registrar_error(ret_txt= f"No se han encontrado datos de configuración: {config['En_Ejecucion']}", debug=f"{funcion}.config-ID")
             raise MiException(param = param)
             
-        # if config["En_Ejecucion"]:
-        #     param.registrar_error(ret_txt="El proceso ya está en ejecución.", debug=f"{funcion}.config.en_ejecucion")
-        #     raise MiException(param = param)
-
         # Buscamos la conexión a MySQL porque es donde vamos a grabar y donde vamos a buscar datos auxiliares del arqueo de caja
         param.debug="actualizar_en_ejecucion"
         actualizar_en_ejecucion(param, 1)
@@ -75,7 +68,7 @@ def proceso(param: InfoTransaccion) -> list:
 
             for entidad in lista_entidades:
                 fecha = datetime.strptime(entidad["ultimo_cierre"], "%Y-%m-%d") + timedelta(days=x)
-                imprime([f"Procesando TIENDA: {entidad}", fecha, entidad["ultimo_cierre"], x], "-")
+                print([f"Procesando TIENDA: {entidad}", fecha, entidad["ultimo_cierre"], x], "-")
 
                 # ---------------------------------------------------------------------------------------------------------------
                 resultado_dict = consultar_y_grabar(param, conn_mysql, conn_sqlserver, entidad["ID"], entidad["stIdEnt"], fecha)
@@ -141,8 +134,6 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_en
         cursor_mysql.execute(query, (fecha, fecha_mas_1, stIdEnt))
         ids_cierre = cursor_mysql.fetchall()
 
-        # imprime([query, len(ids_cierre), (fecha, fecha_mas_1, stIdEnt)], "* query", 2)
-        
         for cierre in ids_cierre:
             # Leer datos desde SQL Server
             cursor_sqlserver = conn_sqlserver.cursor()
@@ -165,8 +156,6 @@ def consultar_y_grabar(param: InfoTransaccion, conn_mysql, conn_sqlserver, id_en
             cursor_sqlserver.execute(select_query, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],))
             datos = cursor_sqlserver.fetchall()
             cursor_sqlserver.close()
-
-            # imprime([select_query, len(datos), (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'])], "* select_query", 2)
 
             param.debug = "Llamada a Grabar"
             resultado.extend(grabar(param, conn_mysql, id_entidad, datos, fecha, (cierre["Id_Cierre"], cierre["Serie"], cierre["id_cobro"],cierre['stIdEnt'],cierre["importe"],cierre['fecha_hora'])))
@@ -230,10 +219,6 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
 
             insert_diarias = """INSERT INTO mll_rec_ventas_diarias (id_entidad, Serie, id_mae_tpv, fecha, imp_arqueo_ciego, ventas, operaciones, cierre_tpv_id, cierre_tpv_desc)
                                                             VALUES (%s, %s, %s, STR_TO_DATE(%s, '%%d/%%m/%%Y'), %s, %s, %s, %s, %s)"""
-            # imprime([insert_diarias, 
-            #          (data["id_entidad"],data["id_tpv"],id_mae_tpv,data["fecha"],cierre[4],data["ventas"],data["operaciones"],ID_Apertura,cierre[4],)
-            #         ], 
-            #         "*     DATOS mll_rec_ventas_diarias", 2)
             cursor_mysql.execute( insert_diarias,
                                   (data["id_entidad"],
                                    data["id_tpv"],
@@ -275,35 +260,3 @@ def grabar(param: InfoTransaccion, conn_mysql, id_entidad, datos, fecha, cierre)
     except Exception as e:
         param.error_sistema(e=e, debug="grabar.Exception")
         raise 
-
-
-# #----------------------------------------------------------------------------------------
-# #----------------------------------------------------------------------------------------
-# def busca_tvp(param: InfoTransaccion, conn_mysql, id_tienda,  id_tpv) -> int:
-#     resultado = 0
-#     param.debug = "busca_tvp Inicio"
-
-#     try: 
-#         cursor_mysql = conn_mysql.cursor(dictionary=True)
-#         query = f"""SELECT pf.id_mae_tpv FROM tpv_puestos_facturacion pf
-#                      where pf.serie={id_tpv}
-#                        and pf.Origen_BBDD = {id_tienda}
-#                  """
-#         param.debug="execute del cursor"
-#         cursor_mysql.execute(query)
-#         datos = cursor_mysql.fetchall()
-#         if datos:
-#             # imprime([type(datos), datos], "=")
-#             param.debug= "en el FOR, solo debería tener un registro"
-#             resultado = datos[0]['id_mae_tpv']
-
-
-#     except Exception as e:
-#         param.error_sistema(e=e, debug="busca_tvp.Exception")
- 
-
-#     finally:
-#         return resultado
-
-    
-

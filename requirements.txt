@@ -1,13 +1,7 @@
-# pip install -r requirements.txt
-
-# pip show pydantic pydantic-extra-types pydantic-settings
-
-# pip install fastapi
 fastapi
 uvicorn==0.23.0
 starlette==0.27.0
 
-# pip uninstall pydantic pydantic-extra-types pydantic-settings -y
 pydantic
 pydantic-extra-types
 pydantic-settings

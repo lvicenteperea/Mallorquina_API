@@ -3,7 +3,6 @@ from decimal import Decimal
 import re
 import pymysql
 
-from app.utils.utilidades import graba_log, imprime
 from app.config.db_mallorquina import get_db_connection_sqlserver, close_connection_sqlserver
 
 from app.utils.InfoTransaccion import InfoTransaccion
@@ -23,19 +22,7 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
     try:
         campos_origen = [campo['Nombre'] for campo in campos]
         campos_destino = [campo['Nombre_Destino'] for campo in campos]
-        # imprime([f"entidad: {entidad}",  
-        #          f"Tabla: {tabla}",  
-        #          f"bbdd_config: {bbdd_config}",  
-        #          f"Campos Origen: {campos_origen}",    
-        #          f"Campos Destino: {campos_destino}",  
-        #          f"Campos placeholders: {', '.join(['%s'] * len(campos_destino))}", 
-        #          f"tabla_config: {tabla_config}"], 
-        #          f"*...¿Que parametros?...", 2)     
-        # ------------------------------------------------------------------------------------------------------------------------
-        # Validaciones
-        # para [Facturas Cabecera] ULT_VALOR debe tener la fecha de siguiente carga y los dias a cargar de una tirada, 
-        # por ejemplo: "2025-01-01, 1" que indica que la próxima carga desde empezar en el día 01/01/2025 y se debe cargar un dia.
-        # ------------------------------------------------------------------------------------------------------------------------
+
         valores = tabla['ult_valor'].replace(" ", "").split(",")  
         desde = valores[0]  # fecha en formato yyyy-mm-dd
 
@@ -52,10 +39,6 @@ def proceso(param: InfoTransaccion, conn_mysql, entidad, tabla, bbdd_config, cam
             # ------------------------------------------------------------------------------------------------------------------------
             registros = obtener_y_grabar(param, conn_sqlserver, conn_mysql, entidad, tabla, desde.date(), campos_origen, campos_destino, tabla_config)
             # ------------------------------------------------------------------------------------------------------------------------
-            # imprime([f"Segundos: {(datetime.now()-empieza).total_seconds()}",
-            #         f"Registros: {len(registros)} - desde {empieza} a {datetime.now()}",
-            #         f"Fechas tratadas: {desde} - {hasta}"],
-            #         "*", 2)
         
         return registros
 
@@ -104,9 +87,6 @@ def obtener_y_grabar(param: InfoTransaccion, conn_sqlserver, conn_mysql, entidad
                                     OFFSET ? ROWS            -- Salta x filas
                                     FETCH NEXT {SALTO} ROWS ONLY; -- Toma las siguientes SALTO lineas
                                 """
-                if pos == 0:
-                    imprime([select_query, stIdEnt, tratar_desde, tratar_hasta, pos], "* -- QUERY -- ", 2)
-
                 cursor_sqlserver.execute(select_query, (stIdEnt, tratar_desde, tratar_hasta, pos)) 
                 datos = cursor_sqlserver.fetchall()
                 if len(datos) == 0:   # hemos terminado
@@ -168,7 +148,6 @@ def grabar_datos(param: InfoTransaccion, conn_mysql, id_BBDD, datos, campos_dest
         # for i in range(0, len(datos_convertidos), 1):
         #     lote = [tuple(registro) for registro in datos_convertidos[i:i + 1]]  # Convertir a tuplas extrayendo una porción de la lista
         #     if len(lote[0]) != 44:
-        #         imprime([f"lote: {lote[0]}"], f"*...Lote: {i}-{len(lote[0])}...", 2)
         #         raise ValueError(f"Error en el lote {i} de {len(lote[0])} elementos")
 
         with conn_mysql.cursor() as cursor_mysql:
@@ -179,7 +158,6 @@ def grabar_datos(param: InfoTransaccion, conn_mysql, id_BBDD, datos, campos_dest
                 lote = datos_convertidos[i:i + TAMAÑO_LOTE]  # Extraer una porción de la lista
 
                 lote = [tuple(registro) for registro in datos_convertidos[i:i + TAMAÑO_LOTE]]  # Convertir a tuplas extrayendo una porción de la lista
-                # imprime([f"type(lote): {type(lote)}", f"type(lote[0]): {type(lote[0])}"], f"-", 2)
                 # for x, fila in enumerate(lote):
                 #     print(f"Fila {x}: {type(fila)} - {len(fila)} elementos")
                 #     for j, valor in enumerate(fila):

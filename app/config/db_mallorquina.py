@@ -41,7 +41,7 @@ def get_db_connection_mysql():
     param = InfoTransaccion(debug=f"Conectando con: {settings.MYSQL_DB_HOST}/{settings.MYSQL_DB_PORT}/{settings.MYSQL_DB_USER}/{settings.MYSQL_DB_DATABASE}")
     connection = None
     tunnel = None
-
+    
     try:
         if settings.SSH_CONEX:
             # Crear el túnel SSH

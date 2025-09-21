@@ -153,16 +153,17 @@ async def register(register_request: RegisterRequest,
                 ret_txt: str = Query(..., description="Texto descriptivo del estado inicial"),
                ):
     try:
-        resultado = []
+        conn_mysql = None
+        cursor_mysql = None
         param = InfoTransaccion(id_App=id_App, user=user, ret_code=ret_code, ret_txt=ret_txt, parametros=[])
         param.debug = f"infoTrans: {id_App} - {user} - {ret_code} - {ret_txt}"
 
         param.debug = "get_db_connection_mysql"
         conn_mysql = get_db_connection_mysql()
-        cursor_mysql = conn_mysql.cursor(dictionary=True)
+        # cursor_mysql = conn_mysql.cursor(dictionary=True)
+        cursor_mysql = conn_mysql.cursor(pymysql.cursors.DictCursor)
 
         hashed_password = pwd_context.hash(register_request.password)
-
         cursor_mysql.execute(
             "INSERT INTO hxxi_users (username, email, password_hash) VALUES (%s, %s, %s)",
             (register_request.username, register_request.email, hashed_password),
